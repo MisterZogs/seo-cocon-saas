@@ -357,7 +357,7 @@ export default function NewGenerationPage() {
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">
                           Structure + entités + questions + plan maillage. Vos
-                          rédacteurs produisent le contenu final. ~$5-10 par cocon.
+                          rédacteurs produisent le contenu final. ~{currency}5-10 par cocon.
                         </p>
                       </div>
                     </label>
