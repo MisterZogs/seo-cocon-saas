@@ -368,7 +368,7 @@ export default function NewGenerationPage() {
                         <p className="text-sm text-muted-foreground mt-1">
                           Articles Markdown prêts + FAQ + schema JSON-LD + score
                           E-E-A-T. Nécessite l&apos;upload d&apos;au moins un
-                          élément d&apos;expérience client (ci-dessous). ~$15-25 par cocon.
+                          élément d&apos;expérience client (ci-dessous). ~{currency}15-25 par cocon.
                         </p>
                       </div>
                     </label>
