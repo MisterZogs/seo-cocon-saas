@@ -99,7 +99,28 @@ export default function NewGenerationPage() {
       3: ["num_cocoons", "mode", "experience_elements"],
     };
     const ok = await form.trigger(fieldsPerStep[step] ?? []);
-    if (!ok) return;
+    if (!ok) {
+      const errs = form.formState.errors;
+      const messages: string[] = [];
+      for (const field of fieldsPerStep[step] ?? []) {
+        const err = errs[field];
+        if (err?.message) messages.push(String(err.message));
+        else if (err?.root?.message) messages.push(String(err.root.message));
+      }
+      // Erreurs imbriquées (ex: experience_elements[0].content)
+      if (errs.experience_elements && Array.isArray(errs.experience_elements)) {
+        errs.experience_elements.forEach((item, idx) => {
+          if (item?.title?.message)
+            messages.push(`Élément ${idx + 1} — titre : ${item.title.message}`);
+          if (item?.content?.message)
+            messages.push(`Élément ${idx + 1} — contenu : ${item.content.message}`);
+        });
+      }
+      toast.error(messages[0] || "Corrige les champs signalés avant de continuer.", {
+        description: messages.slice(1).join(" · ") || undefined,
+      });
+      return;
+    }
     setStep((s) => Math.min(4, s + 1));
   }
 
