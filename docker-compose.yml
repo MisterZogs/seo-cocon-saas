@@ -1,0 +1,82 @@
+# Stack de production — Cocon Sémantique SaaS
+#
+# Utilisation :
+#   cp .env.production.example .env
+#   # éditer .env (DOMAIN, ANTHROPIC_API_KEY, etc.)
+#   docker compose up -d --build
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: always
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENV: production
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  worker:
+    build:
+      context: ./backend
+    restart: always
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENV: production
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: rq worker pipeline --url redis://redis:6379/0
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_URL: /api
+    restart: always
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN: ${DOMAIN}
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  redis_data:
+  caddy_data:
+  caddy_config:
