@@ -40,6 +40,9 @@ Thumbs.db
 *.swo
 *~
 
+# ============ Claude Code local settings ============
+.claude/
+
 # ============ Logs & tmp ============
 *.log
 logs/

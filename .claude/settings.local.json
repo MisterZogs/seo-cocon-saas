@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp .env.production.example .env)",
+      "Bash(docker compose *)",
+      "Bash(echo \"---exit code: $?\")"
+    ]
+  }
+}
