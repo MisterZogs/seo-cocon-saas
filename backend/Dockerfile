@@ -24,4 +24,4 @@ USER app
 EXPOSE 8000
 
 # Par défaut : lance FastAPI. Le worker override cette commande dans docker-compose.
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
