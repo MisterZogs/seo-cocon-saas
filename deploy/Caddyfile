@@ -1,0 +1,28 @@
+# Caddyfile — HTTPS auto (Let's Encrypt), un seul domaine, deux upstreams.
+#
+# Le domaine est fourni par la variable {$DOMAIN} injectée depuis docker-compose.
+# Frontend (Next.js) est servi à la racine, backend (FastAPI) sous /api/*.
+
+{$DOMAIN} {
+    encode zstd gzip
+
+    # ---- Backend API (FastAPI) sous /api/* ----
+    # `handle_path` strip le préfixe /api avant de forwarder.
+    handle_path /api/* {
+        # SSE : désactive le buffering pour un vrai streaming temps réel
+        reverse_proxy backend:8000 {
+            flush_interval -1
+        }
+    }
+
+    # ---- Frontend (Next.js standalone) sur toute autre route ----
+    handle {
+        reverse_proxy frontend:3000
+    }
+
+    # ---- Logs ----
+    log {
+        output stdout
+        format console
+    }
+}
