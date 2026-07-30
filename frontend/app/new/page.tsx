@@ -92,6 +92,9 @@ export default function NewGenerationPage() {
   const mode = form.watch("mode");
   const values = form.watch();
 
+  // €EUR pour marchés FR/ES/DE, $USD pour EN
+  const currency = values.language === "en" ? "$" : "€";
+
   async function goNext() {
     const fieldsPerStep: Record<number, (keyof FormValues)[]> = {
       1: ["product", "description", "niche", "audience"],
