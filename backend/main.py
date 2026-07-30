@@ -61,9 +61,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+_allowed_origins = ["http://localhost:3000", "http://localhost:5173"]
+_domain = os.getenv("DOMAIN")
+if _domain:
+    _allowed_origins.append(f"https://{_domain}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=_allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
