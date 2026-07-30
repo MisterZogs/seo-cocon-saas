@@ -1,0 +1,378 @@
+# Cocon Sémantique SaaS — Contexte Projet
+
+## Concept
+Outil SaaS B2B pour **agences SEO françaises premium** : automatise la création de cocons sémantiques rigoureux (méthode Bourrelly) avec maillage interne précis + optionnellement génération d'articles complets.
+
+**Positionnement :** "Le premier outil SaaS qui automatise la vraie méthode cocon sémantique française. Pas du 'topic cluster' hub/spoke flou — la rigueur Bourrelly appliquée à l'échelle."
+
+**Deux modes disponibles :**
+- **Mode Brief** — briefs éditoriaux détaillés + structure + maillage précis. L'agence rédige avec ses rédacteurs.
+- **Mode Génération complète** — articles rédigés en premier jet. Nécessite upload d'éléments d'expérience (case study, data, screenshots) par le client final pour éviter les pénalités Google.
+
+## Fondateur
+Gaetan — co-fondateur de Wall of Traders (walloftraders.com/blog), expert SEO cocons sémantiques et maillage interne. Répondre au niveau technique quand il pose des questions techniques.
+
+---
+
+## Décisions prises (session Opus 4.7)
+
+### Stratégie (pivot après analyse concurrentielle Scalenut)
+| Décision | Choix |
+|---|---|
+| **Persona cible** | Agences SEO françaises premium (bulk, white-label, export WP) |
+| **Positioning** | "Automation cocon sémantique Bourrelly-rigoureux" — Mode hybride Brief OU Génération |
+| **Marché V1** | **France uniquement** — angle Bourrelly authentique, réseau exploitable |
+| **Marché V2+** | Vision long-terme : concurrencer Scalenut sur l'international EN une fois le modèle prouvé en FR |
+| **Angle défendable** | Rigueur maillage Bourrelly + Mode Brief distinct + white hat + FR-native |
+| **Pricing cible** | €199-499/mois (adapté agences FR, couvre coûts API) |
+
+### Vision long-terme (V2+, 12-18 mois post-MVP)
+Concurrencer Scalenut de front sur le marché international n'est PAS exclu. Le marché SEO tools mondial pèse plusieurs milliards — plusieurs acteurs peuvent coexister. Slack a été lancé après HipChat, Notion après Evernote, Airbnb après les hôtels. La question n'est pas "y a-t-il un concurrent" mais "peut-on mieux servir un segment précis".
+
+**Séquence probable :**
+1. **MVP → V1 (0-12 mois)** : dominer marché FR agences avec cocon Bourrelly premium
+2. **V2 (12-18 mois)** : décliner en EN avec les apprentissages FR, entrer sur l'international
+3. **V3+ (18+ mois)** : concurrencer Scalenut/Frase/Outranking avec différenciateurs affinés (Mode Brief, rigueur maillage, E-E-A-T score, white hat)
+
+**Ce qui doit rester vrai pour justifier V2+ :** différenciateurs clairs vs Scalenut (voir section "Différenciateurs assumés"), pas juste "on est moins cher" ou "on est en plus".
+
+### Stratégie multi-vertical (V2+) — "One brand, industry solutions"
+
+**Principe :** UNE seule marque, UN seul site, UN seul produit — mais plusieurs **solutions verticales** dans le même site + produit qui s'adapte à la verticale choisie par le client.
+
+**Modèle inspiré de Stripe / HubSpot / Segment :**
+```
+domaine.com                            ← marque unique forte
+├── /                                  ← homepage agences (cible principale)
+├── /solutions/agences-seo             ← vertical principal MVP
+├── /solutions/e-commerce              ← vertical 2 (V2)
+├── /solutions/finance-fintech         ← vertical 3
+├── /solutions/saas-tech               ← vertical 4
+├── /solutions/crypto-trading          ← vertical 5 (angle Wall of Traders)
+├── /solutions/immobilier              ← vertical 6
+└── /solutions/services-pro            ← vertical 7 (avocats, comptables, etc.)
+```
+
+**Chaque page verticale a :**
+- Titre spécifique ("Cocons sémantiques pour agences SEO", "Cocons sémantiques pour e-commerce")
+- Case studies clients de la verticale
+- Features mises en avant pertinentes
+- Templates de cocons pré-configurés (téléchargeables en démo)
+- Pricing/packaging adapté si besoin
+
+**Dans le produit :**
+- Le formulaire demande "Quel secteur ?" en étape 1
+- Selon la réponse, l'IA charge :
+  - Templates spécifiques (structure d'articles adaptée à la verticale)
+  - Prompts optimisés (vocabulaire, exemples, ton propre à la niche)
+  - Base de KW pré-populée pour la verticale
+  - Réglages spécifiques (finance = compliance + disclaimers YMYL, tech = jargon technique OK, crypto = données live + réglementation)
+  - Structures de cocons de référence pour la verticale
+
+**Verticales prioritaires identifiées :**
+1. **Agences SEO** (MVP) — cible principale, revenu récurrent élevé
+2. **E-commerce** — gros marché, besoins SEO clairs
+3. **Crypto / Trading** — angle Wall of Traders, ticket élevé, réseau exploitable
+4. **Finance / Fintech** — YMYL premium, haute valeur
+5. **SaaS / Tech** — early adopters, comprennent le SEO
+6. **Services professionnels** (avocats, comptables, consultants) — local SEO fort
+7. **Immobilier** — SEO local + long tail
+
+**⚠️ Ce qu'on NE fait PAS : multi-brand (5 sites séparés)**
+
+Rationale documenté :
+- Coût marketing ×5 (5 SEO strategies, 5 blogs à maintenir, 5 landing pages, 5 personas)
+- Dilution marque : réputation se construit sur UNE identité
+- Piège du "same product, different paint" : Google/prospects détectent → footprints SEO + perte de confiance
+- Complexité opérationnelle (5 supports, 5 CRM, 5 SSL, facturation confuse)
+- Apprentissage dilué : focus = apprentissage rapide
+- Only makes sense pour : Toyota/Lexus (positionning radicalement différent), acquisition (rachat concurrent), cibles conflictuelles B2B/B2C, entreprises 50+ employés avec équipes dédiées
+
+Note : à V4+ (18+ mois), SI une verticale explose (ex: crypto/trading grâce à Wall of Traders), un site dédié premium avec marque propre peut être envisagé — mais basé sur data, pas intuition initiale.
+
+**Attention piège vocabulaire :** "IA" n'est PAS une verticale industrie, c'est une horizontale techno. Une entreprise IA peut être finance/e-commerce/B2B/etc. Préférer les vraies industries (finance, santé, immobilier...).
+
+### Stack technique
+| Composant | Choix |
+|---|---|
+| **Frontend** | Next.js + shadcn/ui (TypeScript) — déploy Vercel |
+| **Backend API** | FastAPI (Python async) — déploy Railway/Render/Fly.io |
+| **Workers** | RQ (Redis Queue) pour jobs longs de génération |
+| **Base de données** | Supabase (Postgres + Auth + Storage) |
+| **Cache / Queue** | Upstash Redis (serverless) |
+| **APIs tierces MVP** | DataForSEO uniquement (KW + SERP + backlinks) |
+| **APIs tierces V1** | Ahrefs backlinks, Hunter.io outreach |
+
+### Modèles Claude
+| Usage | Modèle | Raison |
+|---|---|---|
+| **Article mère (pillar)** | `claude-opus-4-7` | Qualité maximale sur l'article central |
+| **Articles filles (cluster)** | `claude-sonnet-4-6` | Bon rapport qualité/coût, 5 filles par cocon |
+| **Tâches simples** | `claude-haiku-4-5-20251001` | Slug, meta description, classification intent |
+| **Prompt caching** | **OBLIGATOIRE** | Sans caching = 4x plus cher (contexte cocon + SERP réutilisés) |
+
+Doc caching : https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
+
+---
+
+## Pipeline
+
+```
+1. Formulaire agence (interface FR-native, tone pro)
+   → produit client, description, langue (FR par défaut au MVP), mots clés seeds, audience, niche
+   → nb de cocons souhaités (1-3)
+   → MODE : Brief OU Génération complète
+   → Si Génération : upload obligatoire d'éléments d'expérience
+     (case study, data propres, screenshots, insights)
+
+2. Keyword Research
+   → Claude (Haiku) étend les seeds → 30 KW candidats + intent + cluster
+   → DataForSEO Keywords API → volume, CPC, concurrence
+   → DataForSEO SERP API → analyse SERP features par KW (guides ? listicles ? snippets ? PAA ?)
+   → Claude (Sonnet) sélectionne top KW et les groupe en N cocons
+   → Retour au client : validation cocons avant génération
+
+3. Design des cocons (Claude Sonnet)
+   → Chaque cocon : 1 article mère + 5 articles filles
+   → Génère slug, titre H1, meta description, meta title pour chaque article
+   → Définit la stratégie de maillage (voir étape 6)
+   → Attribue KW principal + KW secondaires à chaque article
+
+4. Analyse SERP par article (Surfer-like)
+   → DataForSEO SERP → top 10 URLs pour chaque KW cible
+   → httpx + BeautifulSoup → scrape contenu, H2/H3, word count
+   → Claude (Sonnet) analyse : entités clés, questions PAA récurrentes,
+     angles non couverts, longueur moyenne, structure gagnante
+   → Produit un brief calibré par article
+
+5a. MODE BRIEF (sortie immédiate)
+   → JSON structuré : titre, meta, plan H2/H3 détaillé, entités à couvrir,
+     questions à répondre (FAQ), suggestions liens externes,
+     brief backlinks, ratio ancres, plan maillage complet
+
+5b. MODE GÉNÉRATION COMPLÈTE (si activé et éléments uploadés)
+   → Claude (Opus pour mère, Sonnet pour filles) génère article complet :
+      - Structure H2/H3 calibrée SERP
+      - Corps intégrant les éléments d'expérience uploadés
+      - Section FAQ (questions PAA)
+      - 1-3 liens externes vers sources autoritaires
+      - Schema JSON-LD (Article + FAQ)
+      - Liens internes avec ancres précises (maillage)
+   → Score E-E-A-T par article (0-100) basé sur :
+      - Expérience démontrée (éléments client intégrés)
+      - Sources externes citées
+      - Données originales présentes
+      - Unicité vs top 10 SERP
+
+6. Maillage interne (modèle hybride Bourrelly 2026)
+   → Fille → Mère (toujours, ancre sur KW principal de la mère)
+   → Mère → toutes ses Filles (toujours)
+   → Filles ↔ Filles (si l'intention utilisateur le justifie)
+   → Inter-cocons : libres dès que pertinence sémantique réelle
+   → 1 lien "cross-cocon" par article vers un cocon adjacent
+   → Ancres choisies pour l'utilisateur d'abord, optimisées KW ensuite
+   → Map complète : slug → [slugs liés + ancres + justification]
+
+   NOTE : Le siloing strict de Bourrelly est dépassé en 2026. Google est
+   sémantique, pas mathématique. Les liens cross-cocon pertinents aident.
+
+7. Rapport backlinks stratégique par cocon
+   → DataForSEO backlink API → analyse top 10 concurrents
+   → Types de sites qui linkent, DR moyen, ancres utilisées
+   → Opportunités : sites ayant linké vers concurrents, annuaires, médias niche
+   → Ratio d'ancres recommandé par article (exact / partial / brand / naked)
+   → Templates outreach prêts (guest post + niche edit)
+
+8. Output multi-format
+   → JSON structuré complet (source de vérité)
+   → Export Markdown (agences avec workflow custom)
+   → Export WordPress REST API (publication directe dans site client)
+   → Export HTML (agences avec site custom)
+```
+
+---
+
+## Stratégie Backlinks
+
+**Approche : rapport backlink stratégique par cocon — white hat, pas de marketplace de liens.**
+
+Raisons : marketplace = contre CGU Google, risque légal/réputationnel, meilleures marketplaces sans API publique. Construire son propre réseau = business à part entière hors scope.
+
+**Contenu du rapport par cocon :**
+- Analyse backlinks des top 10 concurrents (DataForSEO API, upgrade Ahrefs en V1)
+- Opportunités : sites ayant déjà linké vers concurrents, annuaires sectoriels, médias niche
+- Ratio d'ancres recommandé par article (exact / partial / brand / naked)
+- Templates d'outreach prêts (guest post + niche edit)
+
+**Roadmap backlinks :**
+- MVP : rapport stratégique + ancres recommandées + templates outreach
+- V1 : Ahrefs pour données backlinks premium
+- V2 : module outreach automatisé (Hunter.io + CRM léger)
+- Jamais : marketplace de liens achetés
+
+---
+
+## Compréhension SEO 2026 (référence)
+
+Points intégrés dans le design du pipeline :
+
+- **E-E-A-T** : Mode 2 exige upload d'expérience, score E-E-A-T par article
+- **AI Overviews (SGE)** : prompts optimisés pour réponse directe premiers 100 mots + structure liste/tableau
+- **Helpful Content** : information gain calculé vs top 10 SERP
+- **Schema markup** : Article + FAQ auto-générés
+- **Liens externes** : 1-3 par article vers sources autoritaires
+- **Intent mapping** : SERP analysis calibre l'intent par KW
+- **Topical Authority** : structure cocon = meilleur modèle pour ça
+- **Maillage hybride** : rigueur Bourrelly + siloing assoupli
+
+**Sur le mythe de l'humanizer :** un humanizer passe les détecteurs IA mais ne modifie AUCUN signal Google (information gain, first-hand experience, engagement, backlinks organiques). Ne PAS marketer l'humanizer comme shield anti-Google. Peut être proposé en option finale sans en faire un argument.
+
+Cas de deindex documentés : HouseFresh (-91%), RetroDodo, Giant Freakin Robot, majorité affiliate AI sites en 2024-2025.
+
+---
+
+## Paysage concurrentiel
+
+### Concurrents vérifiés
+
+**Scalenut** ⚠️ — leader international, fait 80% du concept mais généraliste
+- Features : keyword clusters (5-75/mois), article generation, internal linking (dès $89), SERP analysis, GEO audit (AI Overviews), tracking ChatGPT/AIO/Perplexity, backlinks marketplace
+- Pricing : $59-199/mois (Starter/Plus/Pro) + VIP custom
+- Cible : mixte (marketers + agences + enterprises), 1M+ users
+- **Faille exploitable** : positionning générique international, ne comprend PAS la rigueur cocon Bourrelly, marketplace de liens (angle éthique problématique), pas de mode Brief distinct, EN-centric
+- **Verdict** : concurrent sérieux sur marché EN, pas positionné FR/Bourrelly
+
+**Arvow (ex-Journalist AI)** — pas un vrai concurrent
+- Fait du bulk article/autoblog, pas de topic cluster structuré, pas de SERP analysis embarquée
+- Backlink Exchange + Link Building Service (marketplace de liens)
+- 20k+ marketeurs/agences mais positionning différent
+- **Verdict** : pas de conflit direct avec notre positionning
+
+**Autres concurrents identifiés :**
+- **Outranking.io** — cluster planning + génération mais maillage manuel
+- **NeuronWriter** — clusters + génération + optimisation, pas de KW research intégré
+- **Koala.sh / Byword.ai** — bulk articles, zéro logique cocon/maillage
+- **SEO.ai** — full articles + optimization
+- **GrowthBar** — clusters + articles
+- **AlliAI** — automatisation SEO complète
+
+**Différenciateurs assumés (par ordre de force) :**
+1. **Rigueur maillage Bourrelly codifiée** — règles précises (fille→mère→fille), ancres calculées, hiérarchie stricte. Aucun concurrent EN ne fait ça.
+2. **Positionnement FR-native** — interface FR, prompts optimisés FR, comprend le SEO à la française
+3. **Mode Brief vs Génération distincts** — Scalenut ne le fait pas clairement
+4. **Score E-E-A-T par article** anti-deindex — unique
+5. **White hat pur** (pas de marketplace de liens) — différenciation éthique vs Scalenut/Arvow
+6. **Multi-cocons reliés** — inter-cocon maillage explicite
+7. **Positionnement agences** (white-label, export WordPress, bulk)
+8. **Analyse SERP embarquée** sans abonnement externe (déjà couvert par Scalenut mais bien fait chez nous)
+
+---
+
+## Structure du code prévue
+
+```
+seo/
+├── backend/                    (FastAPI + workers Python)
+│   ├── main.py                 FastAPI routes
+│   ├── models.py               Pydantic schemas
+│   ├── pipeline/
+│   │   ├── keyword_research.py
+│   │   ├── serp_analyzer.py
+│   │   ├── cocon_builder.py
+│   │   ├── article_generator.py
+│   │   └── backlink_analyzer.py
+│   ├── workers/
+│   │   └── rq_worker.py        Job runner
+│   ├── clients/
+│   │   ├── anthropic_client.py (avec prompt caching)
+│   │   └── dataforseo_client.py
+│   ├── db/
+│   │   └── supabase.py
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── frontend/                   (Next.js)
+│   ├── app/                    App router
+│   ├── components/             shadcn/ui
+│   ├── lib/                    API client, utils
+│   └── package.json
+│
+└── CLAUDE.md                   (ce fichier)
+```
+
+---
+
+## Roadmap
+
+**MVP (à coder maintenant) — marché FR agences, 1 vertical** :
+- Interface FR-native
+- Formulaire agence (Next.js)
+- Pipeline complet en Mode Brief
+- 1 seule verticale = agences SEO (pas de sélecteur secteur au formulaire au MVP)
+- Export JSON + Markdown
+- Supabase auth basique
+- Dashboard agence : historique générations, projets clients
+- Pricing €199-499/mois
+
+**V1 (post-MVP, 1-2 mois) — consolidation FR** :
+- Mode Génération complète avec upload expérience
+- Score E-E-A-T par article
+- Export WordPress REST API
+- Ahrefs pour backlinks premium
+- White-label pour agences (leur logo, leur nom sur les livrables)
+- Prépration architecture "verticale-aware" du produit (formulaire step "secteur", système de templates)
+
+**V2 (3-6 mois) — expansion verticale FR (2-3 verticales)** :
+- Ajout landing pages verticales : `/solutions/e-commerce`, `/solutions/crypto-trading`
+- Templates + prompts + KW bases pré-populées par verticale
+- Sélecteur "secteur" dans formulaire → charge config adaptée
+- Case studies clients par verticale
+- Ranking tracking intégré (positions Google FR)
+- Content refresh (audit + mise à jour cocons existants)
+- Audit technique SEO (Core Web Vitals, sitemap, canonical)
+- Brand voice questionnaire
+
+**V3 (6-12 mois) — expansion verticale FR complète + préparation intl** :
+- Ajout des 4-5 verticales restantes (`/solutions/finance-fintech`, `/solutions/saas-tech`, `/solutions/services-pro`, `/solutions/immobilier`)
+- Pricing éventuellement différencié par verticale (finance/crypto premium)
+- Multi-langue (EN, ES, DE, IT)
+- Adaptation prompts par langue/marché
+- Module outreach automatisé (Hunter.io + CRM léger)
+- Import site existant (audit maillage existant + intégration cocons)
+- Domain rebranding possible (nom EN si besoin)
+
+**V4+ (12-18 mois) — attaque marché international + double-down verticales fortes** :
+- Concurrencer Scalenut/Frase/Outranking de front sur le marché EN
+- Positionning "The rigorous cocoon method — from France, now for the world"
+- Différenciateurs affinés grâce aux 12+ mois d'apprentissage FR
+- Pricing $199-799/mois (adapté marché international)
+- **Si une verticale explose** (ex: crypto/trading via Wall of Traders) : envisager site dédié premium avec marque propre — décision data-driven, pas intuition
+
+---
+
+## État d'avancement
+
+- [x] Concept validé et repositionné (mode hybride)
+- [x] Pipeline détaillé (8 étapes, cohérent)
+- [x] Stack technique tranchée (Next.js + FastAPI + Supabase + RQ + Upstash)
+- [x] Persona client défini (agences SEO françaises premium)
+- [x] Marché défini (FR d'abord, vision V4+ internationale)
+- [x] Choix modèles Claude par étape
+- [x] Prompt caching identifié comme obligatoire
+- [x] Analyse concurrentielle faite (Scalenut vérifié, Arvow vérifié)
+- [x] Pivot stratégique acté (FR premium suite à concurrence Scalenut sur EN)
+- [x] Stratégie backlinks tranchée (white hat pur)
+- [x] Vision long-terme documentée (V4+ concurrence Scalenut EN)
+- [x] requirements.txt initial créé
+- [x] .env.example initial créé
+- [ ] Setup projet Next.js + FastAPI + Supabase
+- [ ] Code métier pipeline
+
+---
+
+## Prochaine étape
+
+1. **Setup infrastructure** : projet Next.js, projet Supabase, compte Upstash Redis, compte DataForSEO
+2. **Coder backend dans l'ordre** :
+   `models.py → clients/anthropic_client.py (avec caching) → clients/dataforseo_client.py → pipeline/keyword_research.py → pipeline/serp_analyzer.py → pipeline/cocon_builder.py → pipeline/article_generator.py → pipeline/backlink_analyzer.py → workers/rq_worker.py → main.py`
+3. **Coder frontend Next.js** : formulaire multi-step FR → dashboard → preview cocon → export
