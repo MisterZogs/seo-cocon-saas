@@ -59,8 +59,13 @@ export default function JobProgressPage({
     });
 
     es.addEventListener("error", (event) => {
+      const raw = (event as MessageEvent).data;
+      if (!raw) {
+        // Coupure réseau / nginx timeout — EventSource reconnecte automatiquement, on ne fait rien
+        return;
+      }
       try {
-        const data = JSON.parse((event as MessageEvent).data ?? "{}");
+        const data = JSON.parse(raw);
         setState({
           kind: "error",
           message: data.error || "Erreur lors de la génération",
@@ -68,7 +73,7 @@ export default function JobProgressPage({
       } catch {
         setState({
           kind: "error",
-          message: "Connexion au backend perdue",
+          message: "Erreur lors de la génération",
         });
       }
       es.close();
