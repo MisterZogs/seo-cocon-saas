@@ -147,7 +147,6 @@ class AnthropicClient:
         user_prompt: str,
         cached_context: str | None = None,
         max_tokens: int = 4096,
-        temperature: float = 0.7,
     ) -> tuple[dict | list, CompletionResult]:
         """Complétion + parsing JSON robuste (extrait du markdown si besoin)."""
         result = await self.complete(
@@ -156,7 +155,6 @@ class AnthropicClient:
             user_prompt=user_prompt,
             cached_context=cached_context,
             max_tokens=max_tokens,
-            temperature=temperature,
         )
         parsed = _extract_json(result.text)
         return parsed, result
