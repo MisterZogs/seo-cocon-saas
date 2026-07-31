@@ -72,15 +72,21 @@ export default function NewGenerationPage() {
     resolver: zodResolver(formSchema),
     mode: "onBlur",
     defaultValues: {
-      product: "",
-      description: "",
-      niche: "",
-      audience: "",
+      product: "Extermination Frelons",
+      description: "mon client tue les frelons dans les maisons des particuliers et les copropriétés en passant de l'insecticide sous pression",
+      niche: "frelons",
+      audience: "propiétaires de maisons individuelles et syndics de copropriété",
       language: "fr",
-      seed_keywords_text: "",
+      seed_keywords_text: "tuer frelons\nexterminer frelons\nse débarasser des frelons\ndétruire nid de frelons\nnid de frelons",
       num_cocoons: 2,
-      mode: "brief",
-      experience_elements: [],
+      mode: "full",
+      experience_elements: [
+        {
+          type: "case_study",
+          title: "Intervention frelons",
+          content: "j'ai été appelé par un particulier ayant une petite maison avec un nid de frelons à détruire. J'ai passé de l'insecticide sous pression à 6 bars et les frelons ont été tués.",
+        },
+      ],
     },
   });
 
