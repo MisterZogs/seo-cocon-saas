@@ -330,7 +330,6 @@ class ArticleGenerator:
             user_prompt=_build_brief_prompt(stub, cocon, analysis),
             cached_context=cached_context,
             max_tokens=4096,
-            temperature=0.7,
         )
 
         sections = [
@@ -397,14 +396,15 @@ class ArticleGenerator:
         # Opus pour mère (qualité max), Sonnet pour filles
         model: ModelTier = "opus" if stub.article_type == ArticleType.MOTHER else "sonnet"
 
-        parsed, _ = await self.anthropic.complete_json(
+        parsed, meta = await self.anthropic.complete_json(
             model=model,
             system=_FULL_SYSTEM,
             user_prompt=_build_full_prompt(stub, cocon, analysis),
             cached_context=cached_context,
-            max_tokens=8192,
-            temperature=0.7,
+            max_tokens=16000,
         )
+        if meta.stop_reason == "max_tokens":
+            logger.warning("max_tokens hit for %s (%s tokens out)", stub.slug, meta.output_tokens)
 
         sections = [
             ArticleSection(
