@@ -137,6 +137,7 @@ async def job_stream(job_id: str) -> StreamingResponse:
 
     async def event_source():
         last_progress = None
+        last_ping = asyncio.get_event_loop().time()
         while True:
             job = Job.fetch(job_id, connection=app.state.redis)
             status = job.get_status(refresh=True)
@@ -144,6 +145,7 @@ async def job_stream(job_id: str) -> StreamingResponse:
 
             if progress != last_progress:
                 last_progress = progress
+                last_ping = asyncio.get_event_loop().time()
                 yield f"event: progress\ndata: {json.dumps(progress)}\n\n"
 
             if status == "finished":
@@ -153,6 +155,12 @@ async def job_stream(job_id: str) -> StreamingResponse:
                 error = str(job.exc_info) if job.exc_info else "Unknown"
                 yield f"event: error\ndata: {json.dumps({'error': error})}\n\n"
                 break
+
+            # Keepalive toutes les 20s pour éviter le proxy_read_timeout nginx (60s)
+            now = asyncio.get_event_loop().time()
+            if now - last_ping > 20:
+                yield ": keepalive\n\n"
+                last_ping = now
 
             await asyncio.sleep(1.0)
 
