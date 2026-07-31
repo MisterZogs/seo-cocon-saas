@@ -75,7 +75,6 @@ class AnthropicClient:
         user_prompt: str,
         cached_context: str | None = None,
         max_tokens: int = 4096,
-        temperature: float = 1.0,
     ) -> CompletionResult:
         """Complétion générique avec option de caching du contexte stable.
 
