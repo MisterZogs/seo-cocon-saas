@@ -14,7 +14,7 @@ import type { JobProgress, PipelineStep } from "@/lib/types";
 const STEP_LABELS: Record<PipelineStep, string> = {
   keyword_research: "Analyse et expansion des mots-clés",
   cocon_design: "Design des cocons sémantiques",
-  serp_analysis: "Analyse SERP (Surfer-like)",
+  serp_analysis: "Analyse des top résultats Google par article",
   article_generation: "Rédaction des articles",
   maillage: "Assemblage du maillage interne",
   backlinks: "Analyse concurrentielle backlinks",
