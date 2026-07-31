@@ -107,7 +107,6 @@ class AnthropicClient:
         response = await self._create_message(
             model=model_id,
             max_tokens=max_tokens,
-            temperature=temperature,
             system=system_blocks,
             messages=[{"role": "user", "content": user_content}],
         )
