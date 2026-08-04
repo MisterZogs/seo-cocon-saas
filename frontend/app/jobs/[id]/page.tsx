@@ -25,7 +25,7 @@ type StreamState =
   | { kind: "connecting" }
   | { kind: "running"; progress: JobProgress }
   | { kind: "done" }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string; traceback?: string };
 
 export default function JobProgressPage({
   params,
