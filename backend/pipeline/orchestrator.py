@@ -10,6 +10,7 @@ from collections.abc import Awaitable, Callable
 
 from clients.anthropic_client import AnthropicClient
 from clients.dataforseo_client import DataForSEOClient
+from db.checkpoints import CheckpointStore, NullCheckpointStore
 from models import (
     ArticleBrief,
     ClientForm,
