@@ -43,6 +43,59 @@ logger = logging.getLogger(__name__)
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 JOB_TIMEOUT_SECONDS = 1800  # 30 min max par run
+
+
+# Causes fréquentes → message actionnable en français. Le pattern est cherché
+# dans la traceback complète, du plus spécifique au plus générique.
+_ERROR_HINTS: list[tuple[str, str]] = [
+    (
+        "credit balance is too low",
+        "Crédit Anthropic épuisé. Rechargez le compte sur console.anthropic.com "
+        "(Plans & Billing) puis relancez la génération.",
+    ),
+    (
+        "invalid x-api-key",
+        "Clé API Anthropic invalide. Vérifiez ANTHROPIC_API_KEY dans le .env du serveur.",
+    ),
+    (
+        "authentication_error",
+        "Authentification Anthropic refusée. Vérifiez ANTHROPIC_API_KEY dans le .env du serveur.",
+    ),
+    (
+        "rate_limit_error",
+        "Limite de débit Anthropic atteinte malgré les retries. Réessayez dans quelques minutes.",
+    ),
+    (
+        "overloaded_error",
+        "API Anthropic surchargée. Réessayez dans quelques minutes.",
+    ),
+    (
+        "DataForSEO",
+        "Erreur DataForSEO. Vérifiez les credentials (ou laissez-les vides pour le mode mock).",
+    ),
+    (
+        "HorseTimeoutException",
+        "Le job a dépassé la limite de 30 minutes et a été interrompu.",
+    ),
+]
+
+
+def _friendly_error(exc_info: str | None) -> tuple[str, str | None]:
+    """Traduit une traceback RQ en (message lisible, traceback brute).
+
+    Le front affiche le message ; la traceback reste disponible en repli.
+    """
+    if not exc_info:
+        return "Erreur inconnue", None
+
+    raw = str(exc_info)
+    for needle, hint in _ERROR_HINTS:
+        if needle.lower() in raw.lower():
+            return hint, raw
+
+    # Sinon : dernière ligne non vide de la traceback, c'est l'exception réelle
+    lines = [line.strip() for line in raw.strip().splitlines() if line.strip()]
+    return (lines[-1] if lines else "Erreur inconnue"), raw
 QUEUE_NAME = "pipeline"
 
 
