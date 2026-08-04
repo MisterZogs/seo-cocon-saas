@@ -584,16 +584,14 @@ function BacklinkPanel({ report }: { report: BacklinkReport | undefined }) {
   if (!report) return null;
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Rapport backlinks
-      </h3>
-      <Card>
-        <CardContent className="pt-6 space-y-4">
+      <GroupHeading tone="backlinks">Rapport backlinks</GroupHeading>
+      <Card className="border-l-4 border-l-amber-400">
+        <CardContent className="pt-6 space-y-5">
           <div>
-            <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
+            <SectionHeading tone="backlinks">
               Ratio d&apos;ancres recommandé
-            </h4>
-            <div className="grid grid-cols-5 gap-2 text-xs">
+            </SectionHeading>
+            <div className="grid grid-cols-5 gap-3 text-xs">
               <RatioBar label="Exact" value={report.recommended_anchor_ratio.exact} />
               <RatioBar label="Partial" value={report.recommended_anchor_ratio.partial} />
               <RatioBar label="Brand" value={report.recommended_anchor_ratio.branded} />
@@ -603,25 +601,35 @@ function BacklinkPanel({ report }: { report: BacklinkReport | undefined }) {
           </div>
 
           <div>
-            <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
-              Opportunités ({report.opportunities.length})
-            </h4>
+            <SectionHeading tone="backlinks" count={report.opportunities.length}>
+              Opportunités
+            </SectionHeading>
             <ul className="space-y-2 text-sm">
               {report.opportunities.slice(0, 10).map((o, i) => (
-                <li key={i} className="border rounded-md p-3">
-                  <div className="flex items-center justify-between gap-2 mb-1">
-                    <span className="font-medium">{o.referring_domain}</span>
+                <li key={i} className="border rounded-lg p-3 bg-card">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="font-bold text-amber-800 dark:text-amber-300">
+                      {o.referring_domain}
+                    </span>
                     <div className="flex items-center gap-2 text-xs">
                       {o.domain_rating != null && (
-                        <Badge variant="outline">DR {o.domain_rating}</Badge>
+                        <Badge variant="outline" className="font-semibold">
+                          DR {o.domain_rating}
+                        </Badge>
                       )}
-                      <Badge>{o.outreach_template_type}</Badge>
+                      <Badge className="bg-amber-100 text-amber-900 font-medium dark:bg-amber-950 dark:text-amber-300">
+                        {o.outreach_template_type}
+                      </Badge>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">{o.reason}</p>
-                  <p className="text-xs mt-1">
-                    Ancre suggérée :{" "}
-                    <span className="font-mono">« {o.suggested_anchor} »</span>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {o.reason}
+                  </p>
+                  <p className="text-xs mt-1.5">
+                    <span className="text-muted-foreground">Ancre suggérée : </span>
+                    <span className="font-mono font-semibold text-foreground">
+                      « {o.suggested_anchor} »
+                    </span>
                   </p>
                 </li>
               ))}
@@ -636,9 +644,19 @@ function BacklinkPanel({ report }: { report: BacklinkReport | undefined }) {
 function RatioBar({ label, value }: { label: string; value: number }) {
   const pct = Math.round(value * 100);
   return (
-    <div className="text-center">
-      <p className="text-muted-foreground">{label}</p>
-      <p className="font-mono text-sm">{pct}%</p>
+    <div>
+      <div className="flex items-baseline justify-between mb-1">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">
+          {pct}%
+        </span>
+      </div>
+      <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+        <div
+          className="h-full rounded-full bg-amber-500"
+          style={{ width: `${Math.min(pct, 100)}%` }}
+        />
+      </div>
     </div>
   );
 }
