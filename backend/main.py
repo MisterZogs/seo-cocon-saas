@@ -44,7 +44,11 @@ logger = logging.getLogger(__name__)
 
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-JOB_TIMEOUT_SECONDS = 1800  # 30 min max par run
+# 1h : un run FULL de 12 articles tourne à ~2-4 min par article (Opus sur la
+# mère, 16k tokens de sortie), soit 30-45 min. L'ancienne limite de 30 min
+# coupait ces runs en plein milieu. Un dépassement reste rattrapable — les
+# checkpoints permettent de reprendre — mais autant ne pas le provoquer.
+JOB_TIMEOUT_SECONDS = 3600
 
 
 # Causes fréquentes → message actionnable en français. Le pattern est cherché
