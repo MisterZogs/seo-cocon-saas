@@ -521,27 +521,60 @@ function MaillageBlock({
 }: {
   links: { anchor_text: string; target_slug: string; target_h1: string; link_type: string }[];
 }) {
-  const typeLabel: Record<string, string> = {
-    daughter_to_mother: "→ Mère",
-    mother_to_daughter: "→ Fille",
-    sister_to_sister: "↔ Sœur",
-    cross_cocon: "⟶ Cross-cocon",
+  // Une couleur par type de lien : on voit d'un coup d'œil si la hiérarchie du
+  // cocon est respectée, et un lien inter-cocon (rare par défaut) saute aux yeux.
+  const LINK_STYLE: Record<string, { label: string; className: string }> = {
+    daughter_to_mother: {
+      label: "↑ Mère",
+      className:
+        "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300",
+    },
+    mother_to_daughter: {
+      label: "↓ Fille",
+      className: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
+    },
+    sister_to_sister: {
+      label: "↔ Sœur",
+      className:
+        "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+    },
+    cross_cocon: {
+      label: "⤳ Inter-cocon",
+      className:
+        "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300",
+    },
   };
+
   return (
     <div>
-      <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
-        Maillage interne ({links.length} liens)
-      </h4>
-      <ul className="space-y-1 text-xs">
-        {links.map((l, i) => (
-          <li key={i} className="flex items-center gap-2">
-            <Badge variant="outline" className="text-xs font-normal">
-              {typeLabel[l.link_type] ?? l.link_type}
-            </Badge>
-            <span className="font-medium">« {l.anchor_text} »</span>
-            <span className="text-muted-foreground">→ /{l.target_slug}</span>
-          </li>
-        ))}
+      <SectionHeading tone="maillage" count={links.length}>
+        Maillage interne
+      </SectionHeading>
+      <ul className="space-y-1.5 text-xs">
+        {links.map((l, i) => {
+          const style = LINK_STYLE[l.link_type];
+          return (
+            <li
+              key={i}
+              className="flex flex-wrap items-center gap-2 rounded-md border bg-card px-2.5 py-1.5"
+            >
+              <Badge
+                className={cn(
+                  "font-semibold shrink-0",
+                  style?.className ?? "bg-muted text-foreground",
+                )}
+              >
+                {style?.label ?? l.link_type}
+              </Badge>
+              <span className="font-semibold text-foreground">
+                « {l.anchor_text} »
+              </span>
+              <span className="font-mono text-muted-foreground">
+                → /{l.target_slug}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
