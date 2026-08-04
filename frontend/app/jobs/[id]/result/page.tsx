@@ -179,31 +179,58 @@ function ResultView({ result, jobId }: { result: PipelineResult; jobId: string }
 // Sub-components
 // ============================================================
 
-function StatCard({ label, value }: { label: string; value: number }) {
+function StatCard({
+  label,
+  value,
+  tone,
+  hint,
+}: {
+  label: string;
+  value: number;
+  tone: Tone;
+  hint?: string;
+}) {
+  const t = TONE[tone];
   return (
-    <Card>
+    <Card className={cn("border-l-4", t.border.replace("border-", "border-l-"))}>
       <CardContent className="pt-6">
-        <p className="text-xs uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        <p className="text-3xl font-bold mt-1">{value}</p>
+        <p className={cn("text-3xl font-bold mt-1 tabular-nums", t.text)}>{value}</p>
+        {hint && <p className="text-xs text-muted-foreground mt-0.5">{hint}</p>}
       </CardContent>
     </Card>
   );
 }
 
 function CoconOverview({ cocon }: { cocon: CoconStructure }) {
+  const t = TONE.cocon;
   return (
-    <Card>
+    <Card className={cn("border-l-4", t.border.replace("border-", "border-l-"))}>
       <CardHeader>
-        <CardTitle className="text-lg">{cocon.theme}</CardTitle>
+        <CardTitle className={cn("text-lg font-bold", t.text)}>
+          {cocon.theme}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 text-sm">
-        <div>
-          <span className="text-muted-foreground">Mot-clé principal :</span>{" "}
-          <span className="font-mono">{cocon.main_keyword}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Mot-clé principal
+          </span>
+          <span
+            className={cn(
+              "rounded-md px-2 py-0.5 font-mono text-xs font-semibold",
+              t.bg,
+              t.text,
+            )}
+          >
+            {cocon.main_keyword}
+          </span>
         </div>
-        <p className="text-muted-foreground italic">{cocon.rationale}</p>
+        <p className="text-muted-foreground italic leading-relaxed">
+          {cocon.rationale}
+        </p>
       </CardContent>
     </Card>
   );
