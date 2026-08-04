@@ -166,7 +166,6 @@ class BacklinkAnalyzer:
             system=_ANALYSIS_SYSTEM,
             user_prompt=_build_analysis_prompt(form, cocon, competitors_data),
             max_tokens=4096,
-            temperature=0.5,
         )
 
         opportunities = _parse_opportunities(parsed.get("opportunities", []))

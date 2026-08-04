@@ -214,7 +214,6 @@ class KeywordResearcher:
             system=_EXPANSION_SYSTEM,
             user_prompt=_build_expansion_prompt(form),
             max_tokens=4096,
-            temperature=0.8,
         )
         raw_keywords = parsed.get("keywords", []) if isinstance(parsed, dict) else []
         candidates: list[KeywordCandidate] = []
@@ -314,7 +313,6 @@ class KeywordResearcher:
             system=_SELECTION_SYSTEM,
             user_prompt=_build_selection_prompt(form, enriched),
             max_tokens=8192,
-            temperature=0.5,
         )
         cocoons = parsed.get("cocoons", []) if isinstance(parsed, dict) else []
         logger.info("Sélection: %d cocons proposés par le LLM", len(cocoons))

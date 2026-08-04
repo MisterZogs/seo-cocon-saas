@@ -169,7 +169,6 @@ class SerpAnalyzer:
                     serp_features=features,
                 ),
                 max_tokens=2048,
-                temperature=0.6,
             )
         else:
             # Fallback si aucune page scrapée : Claude analyse sans pages
