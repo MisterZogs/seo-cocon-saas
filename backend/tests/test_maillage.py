@@ -94,9 +94,9 @@ def _build_case():
     a, b = _cocon("cocon_a", "a"), _cocon("cocon_b", "b")
 
     articles = [
-        # mère A : n'annonce que 3 de ses 5 filles
+        # mère A : n'annonce que 3 de ses 5 filles, + 1 lien vers la mère de B
         _article(a.mother, [("a-fille-1", "fille 1"), ("a-fille-2", "fille 2"),
-                            ("a-fille-3", "fille 3")]),
+                            ("a-fille-3", "fille 3"), ("b-mere", "b mere")]),
         # fille 1 : mère + 1 sœur + 1 lien inter-cocon vers une FILLE de B
         _article(a.daughters[0], [("a-mere", "a mere"), ("a-fille-2", "fille 2"),
                                   ("b-fille-1", "b fille 1")]),
