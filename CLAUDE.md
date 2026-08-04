@@ -164,17 +164,44 @@ Doc caching : https://docs.anthropic.com/en/docs/build-with-claude/prompt-cachin
       - Données originales présentes
       - Unicité vs top 10 SERP
 
-6. Maillage interne (modèle hybride Bourrelly 2026)
+6. Maillage interne (méthode du cocon sémantique, appliquée strictement)
    → Fille → Mère (toujours, ancre sur KW principal de la mère)
    → Mère → toutes ses Filles (toujours)
-   → Filles ↔ Filles (si l'intention utilisateur le justifie)
-   → Inter-cocons : libres dès que pertinence sémantique réelle
-   → 1 lien "cross-cocon" par article vers un cocon adjacent
+   → Filles ↔ Filles : TOUTES liées entre elles, systématiquement et
+     réciproquement. Le maillage transversal fait partie de la méthode,
+     ce n'est pas une option réservée aux cas "justifiés".
+   → Inter-cocons : AUCUN par défaut (étanchéité des silos)
    → Ancres choisies pour l'utilisateur d'abord, optimisées KW ensuite
    → Map complète : slug → [slugs liés + ancres + justification]
 
-   NOTE : Le siloing strict de Bourrelly est dépassé en 2026. Google est
-   sémantique, pas mathématique. Les liens cross-cocon pertinents aident.
+   ARITHMÉTIQUE ATTENDUE d'un cocon de 1 mère + 5 filles :
+   mère → 5 filles, chaque fille → mère + 4 sœurs = 30 liens, et chaque
+   page reçoit exactement 5 liens entrants. Les filles égalent la mère en
+   liens entrants — c'est normal, la mère tire sa force de sa position
+   dans l'arbre, pas d'un surnombre de liens internes.
+
+   ÉTANCHÉITÉ (vérifié en août 2026 contre les sources). Le principe central
+   du siloing est qu'une page du cocon A ne lie pas vers une page du cocon B :
+   ça crée une rupture sémantique. Bourrelly lui-même reste prudent plutôt
+   qu'interdicteur ("on doit prendre garde aux liaisons entre les silos ;
+   elles doivent avoir du sens"), mais aucune source ne prescrit de lier les
+   cocons entre eux. Les cocons sont déjà reliés par le HAUT de l'arbre
+   (accueil → page cible de chaque cocon) : les relier latéralement est
+   redondant. D'où le défaut strict.
+
+   Réglage `inter_cocon_policy` sur le formulaire (models.py) :
+   - `strict` (DÉFAUT) — aucun lien inter-cocon, conforme à la méthode
+   - `mothers_only` — mère ↔ mère uniquement, jamais les filles
+   - `libre` — aucune contrainte, pour tester l'approche "siloing assoupli"
+
+   MISE EN CONFORMITÉ EN CODE, pas dans le prompt (pipeline/maillage.py).
+   Les règles sont déterministes, le LLM ne les respecte pas de lui-même :
+   sur un run mesuré il ne produisait que 27 des 40 liens transversaux
+   attendus, sans réciprocité, avec une page sans aucun lien entrant de ses
+   sœurs, et 14 liens inter-cocons tous entre filles. La normalisation
+   complète ce qui manque, retire ce qui viole la politique, et réécrit les
+   marqueurs [[INTERNAL_LINK:...]] du markdown pour que le corps de l'article
+   reste cohérent avec la map.
 
 7. Rapport backlinks stratégique par cocon
    → DataForSEO backlink API → analyse top 10 concurrents
