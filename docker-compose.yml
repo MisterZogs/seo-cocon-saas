@@ -48,12 +48,15 @@ services:
     env_file: .env
     environment:
       REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://cocon:${DB_PASSWORD}@db:5432/cocon_prod
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       ENV: production
     ports:
       - "127.0.0.1:8010:8000"
     depends_on:
       redis:
+        condition: service_healthy
+      db:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
