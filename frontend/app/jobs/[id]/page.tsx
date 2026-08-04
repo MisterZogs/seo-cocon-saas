@@ -35,6 +35,20 @@ export default function JobProgressPage({
   const { id: jobId } = use(params);
   const router = useRouter();
   const [state, setState] = useState<StreamState>({ kind: "connecting" });
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState<string | null>(null);
+
+  async function handleRetry() {
+    setRetrying(true);
+    setRetryError(null);
+    try {
+      const { job_id } = await retryJob(jobId);
+      router.push(`/jobs/${job_id}`);
+    } catch (e) {
+      setRetryError(e instanceof Error ? e.message : "Reprise impossible");
+      setRetrying(false);
+    }
+  }
 
   useEffect(() => {
     const url = jobStreamUrl(jobId);
