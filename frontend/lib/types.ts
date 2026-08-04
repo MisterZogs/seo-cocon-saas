@@ -232,4 +232,21 @@ export interface JobStatusResponse {
   ended_at: string | null;
   result?: PipelineResult;
   error?: string;
+  error_traceback?: string | null;
+}
+
+/** Ligne d'historique renvoyée par GET /runs (sans le `result`, trop lourd). */
+export interface RunSummary {
+  id: string;
+  job_id: string | null;
+  agency_id: string | null;
+  project_name: string | null;
+  mode: GenerationMode;
+  language: string;
+  status: "queued" | "running" | "completed" | "failed";
+  error: string | null;
+  cocoons_count: number;
+  articles_count: number;
+  created_at: string;
+  ended_at: string | null;
 }
