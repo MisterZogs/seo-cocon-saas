@@ -134,7 +134,43 @@ sur le VPS.
 
 ---
 
-## 8. Coûts approximatifs
+## 8. Persistance des runs (Supabase) — optionnel
+
+Sans Supabase, tout fonctionne : les runs vivent dans Redis et les checkpoints
+de reprise ont un TTL de 7 jours. Ce qui manque, c'est l'historique au-delà de
+24h et les endpoints `/runs`.
+
+Pour l'activer :
+
+1. Créer un projet sur [supabase.com](https://supabase.com) (plan gratuit suffisant au départ)
+2. SQL Editor → coller le contenu de `backend/db/schema.sql` → Run
+3. Settings → API → récupérer `Project URL` et la clé `service_role`
+4. Renseigner dans `/opt/cocon/.env` :
+   ```
+   SUPABASE_URL=https://xxxxx.supabase.co
+   SUPABASE_SERVICE_ROLE_KEY=eyJ...
+   ```
+5. `docker compose up -d backend worker`
+
+Au démarrage, les logs affichent `Supabase connecté — persistance des runs active.`
+Vérification : `curl https://<domaine>/api/runs` doit renvoyer `"enabled": true`.
+
+La clé `service_role` bypasse RLS — elle ne doit jamais atterrir côté frontend.
+Les policies par agence arriveront avec l'auth Supabase (V1).
+
+**Reprise après échec.** Un run qui casse en cours de route (crédit épuisé,
+rate limit, timeout) garde ses étapes déjà produites. Le bouton « Reprendre la
+génération » sur la page d'échec, ou `POST /api/jobs/{id}/retry`, repart de
+l'article fautif sans repayer le reste. Les checkpoints vivants sont visibles
+avec :
+
+```bash
+docker compose exec redis redis-cli --scan --pattern 'checkpoint:*'
+```
+
+---
+
+## 9. Coûts approximatifs
 
 - VPS : dépend de l'hébergeur (Hetzner CX22 ~4€/mois, suffit)
 - Domaine : ~10€/an
