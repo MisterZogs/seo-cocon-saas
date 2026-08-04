@@ -250,7 +250,8 @@ Points intégrés dans le design du pipeline :
 - **Liens externes** : 1-3 par article vers sources autoritaires
 - **Intent mapping** : SERP analysis calibre l'intent par KW
 - **Topical Authority** : structure cocon = meilleur modèle pour ça
-- **Maillage hybride** : rigueur Bourrelly + siloing assoupli
+- **Maillage strict** : étanchéité des silos par défaut, maillage transversal complet
+  entre sœurs, mise en conformité déterministe en code (voir étape 6 du pipeline)
 
 **Sur le mythe de l'humanizer :** un humanizer passe les détecteurs IA mais ne modifie AUCUN signal Google (information gain, first-hand experience, engagement, backlinks organiques). Ne PAS marketer l'humanizer comme shield anti-Google. Peut être proposé en option finale sans en faire un argument.
 
@@ -284,7 +285,10 @@ Cas de deindex documentés : HouseFresh (-91%), RetroDodo, Giant Freakin Robot, 
 - **AlliAI** — automatisation SEO complète
 
 **Différenciateurs assumés (par ordre de force) :**
-1. **Rigueur maillage Bourrelly codifiée** — règles précises (fille→mère→fille), ancres calculées, hiérarchie stricte. Aucun concurrent EN ne fait ça.
+1. **Rigueur maillage Bourrelly codifiée** — règles précises (fille→mère, mère→filles,
+   sœurs toutes liées entre elles, étanchéité inter-cocons), appliquées en code et non
+   laissées au bon vouloir du LLM. Vérifiable : chaque page reçoit exactement 5 liens
+   entrants dans un cocon de 6. Aucun concurrent EN ne fait ça.
 2. **Positionnement FR-native** — interface FR, prompts optimisés FR, comprend le SEO à la française
 3. **Mode Brief vs Génération distincts** — Scalenut ne le fait pas clairement
 4. **Score E-E-A-T par article** anti-deindex — unique
