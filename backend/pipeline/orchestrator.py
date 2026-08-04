@@ -103,7 +103,19 @@ async def run_pipeline(
         )
     )
     kw_researcher = KeywordResearcher(anthropic, dataforseo)
-    keywords, cocoon_proposals = await kw_researcher.research(form)
+    keywords, cocoon_proposals = await _checkpointed(
+        store,
+        "keyword_research",
+        produce=lambda: kw_researcher.research(form),
+        dump=lambda v: {
+            "keywords": [k.model_dump(mode="json") for k in v[0]],
+            "proposals": v[1],
+        },
+        load=lambda d: (
+            [KeywordWithData.model_validate(k) for k in d["keywords"]],
+            d["proposals"],
+        ),
+    )
     logger.info("[1/6] Keywords: %d, propositions cocons: %d", len(keywords), len(cocoon_proposals))
 
     # ============ 2. Cocon Building ============
