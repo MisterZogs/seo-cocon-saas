@@ -39,6 +39,33 @@ async def _no_op(_: JobProgress) -> None:
     return None
 
 
+async def _checkpointed(
+    store: CheckpointStore,
+    key: str,
+    *,
+    produce: Callable[[], Awaitable[Any]],
+    dump: Callable[[Any], Any],
+    load: Callable[[Any], Any],
+) -> Any:
+    """Exécute une étape, ou la relit si elle a déjà tourné sur ce run.
+
+    Un checkpoint illisible (schéma changé entre deux versions, JSON tronqué)
+    n'est jamais fatal : on relance simplement l'étape.
+    """
+    cached = await store.get(key)
+    if cached is not None:
+        try:
+            value = load(cached)
+            logger.info("↻ Étape %s reprise du checkpoint", key)
+            return value
+        except Exception as e:
+            logger.warning("Checkpoint %s illisible (%s) — l'étape est rejouée.", key, e)
+
+    value = await produce()
+    await store.set(key, dump(value))
+    return value
+
+
 async def run_pipeline(
     form: ClientForm,
     *,
