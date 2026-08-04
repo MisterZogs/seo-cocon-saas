@@ -19,12 +19,31 @@ from anthropic.types import Message
 from pydantic import BaseModel
 from tenacity import (
     retry,
-    retry_if_exception_type,
+    retry_if_exception,
     stop_after_attempt,
     wait_exponential,
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _should_retry(exc: BaseException) -> bool:
+    """Ne retry que ce qui a une chance de passer au coup d'après.
+
+    Retryable : rate limit (429), timeouts, coupures réseau, erreurs serveur
+    (5xx dont 529 overloaded).
+    Non retryable : les 4xx côté client (400 crédit insuffisant, 401 clé
+    invalide, 413 payload trop gros) — insister coûte 4 tentatives et ~1 min
+    d'attente pour la même erreur.
+    """
+    if isinstance(exc, (RateLimitError, APITimeoutError, APIConnectionError)):
+        return True
+    if isinstance(exc, APIStatusError):
+        return exc.status_code >= 500
+    return False
+
+
+_is_retryable = retry_if_exception(_should_retry)
 
 
 ModelTier = Literal["opus", "sonnet", "haiku"]
