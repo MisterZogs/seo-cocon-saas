@@ -78,18 +78,15 @@ class FakeAnthropic:
 
     @staticmethod
     def _classify(system: str) -> str:
-        s = system.lower()
-        if "cocon" in s and ("sélection" in s or "selection" in s or "groupe" in s):
-            return "selection"
-        if "backlink" in s or "netlinking" in s:
-            return "backlinks"
-        if "brief" in s:
-            return "brief"
-        if "rédige" in s or "redige" in s or "article complet" in s:
-            return "article"
-        if "serp" in s or "analyse" in s:
-            return "serp"
-        return "expansion"
+        # Comparaison au prompt système réel plutôt qu'à des mots-clés : un
+        # reformulage de prompt ne doit pas faire silencieusement dériver le test.
+        kind = _SYSTEM_PROMPTS.get(system)
+        if kind is None:
+            raise AssertionError(
+                "Prompt système inconnu — la doublure doit être mise à jour :\n"
+                f"{system[:200]}..."
+            )
+        return kind
 
     @staticmethod
     def _payload(kind: str, user_prompt: str) -> dict:
