@@ -73,6 +73,7 @@ async def run_pipeline(
     anthropic: AnthropicClient | None = None,
     dataforseo: DataForSEOClient | None = None,
     on_progress: ProgressCallback = None,
+    store: CheckpointStore | None = None,
 ) -> PipelineResult:
     """Exécute le pipeline complet et retourne le PipelineResult final.
 
@@ -83,10 +84,15 @@ async def run_pipeline(
     4. Article Generation (Brief ou Full selon form.mode)
     5. Maillage assembly
     6. Backlink Analysis (par cocon)
+
+    Si `store` est fourni, chaque étape est checkpointée : relancer le pipeline
+    sur le même run reprend là où il s'était arrêté, sans repayer les appels
+    LLM déjà effectués.
     """
     anthropic = anthropic or AnthropicClient()
     dataforseo = dataforseo or DataForSEOClient()
     emit = on_progress or _no_op
+    store = store or NullCheckpointStore()
 
     # ============ 1. Keyword Research ============
     await emit(
