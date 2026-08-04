@@ -175,7 +175,9 @@ async def job_status(job_id: str) -> dict:
     if job.is_finished:
         payload["result"] = job.result
     elif job.is_failed:
-        payload["error"] = str(job.exc_info) if job.exc_info else "Unknown error"
+        message, traceback_raw = _friendly_error(job.exc_info)
+        payload["error"] = message
+        payload["error_traceback"] = traceback_raw
 
     return payload
 
