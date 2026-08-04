@@ -134,37 +134,62 @@ sur le VPS.
 
 ---
 
-## 8. Persistance des runs (Supabase) — optionnel
+## 8. Persistance des runs (Postgres auto-hébergé)
 
-Sans Supabase, tout fonctionne : les runs vivent dans Redis et les checkpoints
-de reprise ont un TTL de 7 jours. Ce qui manque, c'est l'historique au-delà de
-24h et les endpoints `/runs`.
+Le service `db` du compose est un `postgres:16-alpine` dédié au projet, avec son
+propre volume. Instance distincte de celle de MyDoctorIA sur le même VPS : les
+deux ont des cycles de vie indépendants.
 
-Pour l'activer :
+Seule variable à renseigner dans `/opt/cocon/.env` :
 
-1. Créer un projet sur [supabase.com](https://supabase.com) (plan gratuit suffisant au départ)
-2. SQL Editor → coller le contenu de `backend/db/schema.sql` → Run
-3. Settings → API → récupérer `Project URL` et la clé `service_role`
-4. Renseigner dans `/opt/cocon/.env` :
-   ```
-   SUPABASE_URL=https://xxxxx.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=eyJ...
-   ```
-5. `docker compose up -d backend worker`
+```
+DB_PASSWORD=<valeur aléatoire — openssl rand -base64 32>
+```
 
-Au démarrage, les logs affichent `Supabase connecté — persistance des runs active.`
-Vérification : `curl https://<domaine>/api/runs` doit renvoyer `"enabled": true`.
+`DATABASE_URL` est construit automatiquement par le compose à partir de là. Le
+schéma (`backend/db/schema.sql`) est appliqué au démarrage du backend — il est
+idempotent, aucune migration manuelle à lancer.
 
-La clé `service_role` bypasse RLS — elle ne doit jamais atterrir côté frontend.
-Les policies par agence arriveront avec l'auth Supabase (V1).
+Vérification :
+
+```bash
+curl https://<domaine>/api/runs           # → {"enabled": true, ...}
+docker compose logs backend | grep Postgres
+# → Postgres connecté — persistance des runs active.
+docker compose exec db psql -U cocon -d cocon_prod -c '\dt'
+```
+
+Sans `DB_PASSWORD`, le backend démarre quand même en mode dégradé : le pipeline
+tourne, mais l'historique se limite au TTL Redis de 24h.
+
+**Sauvegardes.** En auto-hébergé, personne ne sauvegarde à notre place.
+`deploy/backup-db.sh` fait un dump compressé par jour avec 14 jours de
+rétention, installé en cron à 3h17 :
+
+```bash
+crontab -l | grep backup-db          # vérifier
+/opt/cocon/deploy/backup-db.sh       # lancer à la main
+ls -lh /opt/cocon-backups/           # les dumps
+tail /var/log/cocon-backup.log       # le journal
+```
+
+Restauration :
+
+```bash
+gunzip -c /opt/cocon-backups/cocon-AAAAMMJJ-HHMMSS.sql.gz \
+  | docker compose exec -T db psql -U cocon -d cocon_prod
+```
 
 **Reprise après échec.** Un run qui casse en cours de route (crédit épuisé,
 rate limit, timeout) garde ses étapes déjà produites. Le bouton « Reprendre la
 génération » sur la page d'échec, ou `POST /api/jobs/{id}/retry`, repart de
-l'article fautif sans repayer le reste. Les checkpoints vivants sont visibles
-avec :
+l'article fautif sans repayer le reste.
+
+Les checkpoints vont dans Postgres quand il est configuré, sinon dans Redis
+avec un TTL de 7 jours. Pour les inspecter :
 
 ```bash
+docker compose exec db psql -U cocon -d cocon_prod -c 'select run_id, step from run_checkpoints;'
 docker compose exec redis redis-cli --scan --pattern 'checkpoint:*'
 ```
 
