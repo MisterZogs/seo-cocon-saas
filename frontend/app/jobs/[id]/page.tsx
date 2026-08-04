@@ -162,7 +162,19 @@ export default function JobProgressPage({
 
             {state.kind === "error" && (
               <Alert variant="destructive">
-                <AlertDescription>{state.message}</AlertDescription>
+                <AlertDescription className="space-y-3">
+                  <p>{state.message}</p>
+                  {state.traceback && (
+                    <details className="text-xs">
+                      <summary className="cursor-pointer opacity-80 hover:opacity-100">
+                        Détail technique
+                      </summary>
+                      <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded bg-black/10 p-2 font-mono text-[11px] leading-snug">
+                        {state.traceback}
+                      </pre>
+                    </details>
+                  )}
+                </AlertDescription>
               </Alert>
             )}
 
