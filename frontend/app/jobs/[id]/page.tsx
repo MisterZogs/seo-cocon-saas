@@ -69,6 +69,7 @@ export default function JobProgressPage({
         setState({
           kind: "error",
           message: data.error || "Erreur lors de la génération",
+          traceback: data.error_traceback || undefined,
         });
       } catch {
         setState({
