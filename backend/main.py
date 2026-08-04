@@ -207,8 +207,9 @@ async def job_stream(job_id: str) -> StreamingResponse:
                 yield f"event: done\ndata: {json.dumps({'result': job.result})}\n\n"
                 break
             if status == "failed":
-                error = str(job.exc_info) if job.exc_info else "Unknown"
-                yield f"event: error\ndata: {json.dumps({'error': error})}\n\n"
+                message, traceback_raw = _friendly_error(job.exc_info)
+                payload = {"error": message, "error_traceback": traceback_raw}
+                yield f"event: error\ndata: {json.dumps(payload)}\n\n"
                 break
 
             # Keepalive toutes les 20s pour éviter le proxy_read_timeout nginx (60s)
