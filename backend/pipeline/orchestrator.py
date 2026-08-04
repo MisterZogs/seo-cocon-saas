@@ -211,10 +211,15 @@ async def run_pipeline(
         JobProgress(
             step=PipelineStep.MAILLAGE,
             percent=80,
-            message="Assemblage du maillage interne (règles Bourrelly hybrides)...",
+            message="Assemblage et mise en conformité du maillage interne...",
         )
     )
-    maillage_map = _assemble_maillage(briefs=briefs, articles=articles, cocoons=cocoons)
+    maillage_map = assemble_maillage(
+        briefs=briefs,
+        articles=articles,
+        cocoons=cocoons,
+        policy=form.inter_cocon_policy,
+    )
     logger.info(
         "[5/6] Maillage: %d nœuds, %d liens inter-cocons",
         len(maillage_map.links),
