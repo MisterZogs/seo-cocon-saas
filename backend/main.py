@@ -31,7 +31,7 @@ from rq.job import Job
 
 load_dotenv(Path(__file__).parent / ".env")
 
-from db.supabase import get_repository  # noqa: E402
+from db.postgres import get_repository  # noqa: E402
 from models import ClientForm  # noqa: E402
 from workers.pipeline_job import run_pipeline_job  # noqa: E402
 
@@ -81,7 +81,8 @@ _ERROR_HINTS: list[tuple[str, str]] = [
     ),
     (
         "HorseTimeoutException",
-        "Le job a dépassé la limite de 30 minutes et a été interrompu.",
+        "Le job a dépassé la durée maximale autorisée et a été interrompu. "
+        "La reprise repart des étapes déjà terminées.",
     ),
 ]
 
@@ -157,7 +158,7 @@ async def generate(form: ClientForm) -> dict:
     job_id = str(uuid.uuid4())
 
     # Le run_id est indépendant du job RQ : il survit au TTL de 24h et sert de
-    # clé aux checkpoints. Supabase le fournit quand il est configuré ; sinon on
+    # clé aux checkpoints. Postgres le fournit quand il est configuré ; sinon on
     # en génère un localement pour que la reprise fonctionne quand même.
     repo = get_repository()
     run_id = await repo.create_run(job_id=job_id, form=form_dict) or str(uuid.uuid4())
@@ -221,10 +222,10 @@ async def retry_job(job_id: str) -> dict:
 
 @app.get("/runs")
 async def list_runs(agency_id: str | None = None, limit: int = 50) -> dict:
-    """Historique des générations — nécessite Supabase configuré."""
+    """Historique des générations — nécessite Postgres configuré."""
     repo = get_repository()
     if not repo.enabled:
-        return {"enabled": False, "runs": [], "detail": "Supabase non configuré."}
+        return {"enabled": False, "runs": [], "detail": "Base de données non configurée."}
     runs = await repo.list_runs(agency_id=agency_id, limit=min(limit, 200))
     return {"enabled": True, "runs": runs}
 
@@ -233,7 +234,7 @@ async def list_runs(agency_id: str | None = None, limit: int = 50) -> dict:
 async def get_run(run_id: str) -> dict:
     repo = get_repository()
     if not repo.enabled:
-        raise HTTPException(status_code=503, detail="Supabase non configuré.")
+        raise HTTPException(status_code=503, detail="Base de données non configurée.")
     run = await repo.get_run(run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Run introuvable")
