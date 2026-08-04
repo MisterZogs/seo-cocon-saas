@@ -9,6 +9,7 @@ import re
 from typing import Any, Literal
 
 from anthropic import (
+    APIConnectionError,
     APIStatusError,
     APITimeoutError,
     AsyncAnthropic,
