@@ -14,6 +14,7 @@ from clients.dataforseo_client import DataForSEOClient
 from db.checkpoints import CheckpointStore, NullCheckpointStore
 from models import (
     ArticleBrief,
+    BacklinkReport,
     ClientForm,
     CoconStructure,
     GeneratedArticle,
@@ -21,9 +22,11 @@ from models import (
     InterCoconLink,
     InternalLinkType,
     JobProgress,
+    KeywordWithData,
     MaillageMap,
     PipelineResult,
     PipelineStep,
+    SerpAnalysis,
 )
 from pipeline.article_generator import ArticleGenerator
 from pipeline.backlink_analyzer import BacklinkAnalyzer
