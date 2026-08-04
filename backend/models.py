@@ -53,6 +53,10 @@ class ClientForm(BaseModel):
     niche: str = Field(..., description="Secteur / niche du client")
     num_cocoons: int = Field(default=2, ge=1, le=4)
     mode: GenerationMode = Field(default=GenerationMode.BRIEF)
+    inter_cocon_policy: InterCoconPolicy = Field(
+        default=InterCoconPolicy.STRICT,
+        description="Étanchéité entre cocons — strict par défaut (méthode Bourrelly)",
+    )
     experience_elements: list[ExperienceElement] = Field(default_factory=list)
     agency_id: str | None = None
     client_project_name: str | None = None
