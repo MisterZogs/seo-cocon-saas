@@ -127,7 +127,17 @@ async def run_pipeline(
         )
     )
     builder = CoconBuilder()
-    cocoons = builder.build(cocoon_proposals)
+    # Checkpointé bien que peu coûteux : `cocon_id` vient d'un uuid4(), donc
+    # rejouer cette étape lors d'une reprise réattribuerait de nouveaux ids et
+    # les articles déjà générés pointeraient vers des cocons fantômes (tout le
+    # maillage basculerait en cross_cocon).
+    cocoons = await _checkpointed(
+        store,
+        "cocon_design",
+        produce=lambda: _as_awaitable(builder.build(cocoon_proposals)),
+        dump=lambda v: [c.model_dump(mode="json") for c in v],
+        load=lambda d: [CoconStructure.model_validate(c) for c in d],
+    )
     if not cocoons:
         raise RuntimeError("Aucun cocon valide produit par le LLM.")
     logger.info("[2/6] Cocons construits: %d", len(cocoons))
