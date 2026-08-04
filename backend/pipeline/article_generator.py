@@ -375,6 +375,8 @@ class ArticleGenerator:
         form: ClientForm,
         cocoons: list[CoconStructure],
         serp_analyses: dict[str, SerpAnalysis],
+        *,
+        store: CheckpointStore | None = None,
     ) -> list[GeneratedArticle]:
         cocon_ref = _build_cocon_reference(cocoons)
         brand = _build_brand_context(form)
@@ -388,10 +390,19 @@ class ArticleGenerator:
                 if analysis is None:
                     logger.warning("Pas d'analyse SERP pour %s, skip", stub.slug)
                     continue
+
+                resumed = await _resume_one(
+                    store, f"article:{stub.slug}", GeneratedArticle
+                )
+                if resumed is not None:
+                    articles.append(resumed)
+                    continue
+
                 article = await self._generate_full_one(
                     stub, cocon, analysis, cocoons, cached_context
                 )
                 articles.append(article)
+                await _checkpoint_one(store, f"article:{stub.slug}", article)
         return articles
 
     async def _generate_full_one(
