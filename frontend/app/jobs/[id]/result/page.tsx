@@ -314,18 +314,26 @@ function ArticlesPanel({
 
 function MetaBlock({ stub }: { stub: CoconStructure["mother"] }) {
   return (
-    <div className="grid md:grid-cols-2 gap-4 text-xs bg-muted/40 rounded-md p-3">
+    <div className="grid md:grid-cols-2 gap-4 text-xs bg-muted/50 rounded-lg p-3 border">
       <div>
-        <p className="text-muted-foreground">Meta title</p>
-        <p className="font-mono">{stub.meta_title}</p>
+        <p className="font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">
+          Meta title
+        </p>
+        <p className="font-mono text-foreground">{stub.meta_title}</p>
       </div>
       <div>
-        <p className="text-muted-foreground">KW cible</p>
-        <p className="font-mono">{stub.target_keyword}</p>
+        <p className="font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">
+          KW cible
+        </p>
+        <p className="font-mono font-semibold text-teal-700 dark:text-teal-300">
+          {stub.target_keyword}
+        </p>
       </div>
       <div className="md:col-span-2">
-        <p className="text-muted-foreground">Meta description</p>
-        <p>{stub.meta_description}</p>
+        <p className="font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">
+          Meta description
+        </p>
+        <p className="text-foreground">{stub.meta_description}</p>
       </div>
     </div>
   );
