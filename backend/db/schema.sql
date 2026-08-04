@@ -1,10 +1,12 @@
--- Schéma Supabase pour la persistance des runs du pipeline.
--- À coller dans le SQL Editor du projet Supabase (une seule fois).
+-- Schéma de persistance des runs du pipeline (Postgres 16).
+--
+-- Appliqué automatiquement au démarrage du backend (cf. db/postgres.py) :
+-- tout est idempotent, le rejouer ne casse rien.
 --
 -- Un "run" = une exécution du pipeline déclenchée par le formulaire.
 -- Le job RQ associé (job_id) expire au bout de 24h ; le run, lui, reste.
 
-create table if not exists public.runs (
+create table if not exists runs (
     id            uuid primary key default gen_random_uuid(),
     job_id        text unique,
     agency_id     text,
@@ -25,7 +27,7 @@ create table if not exists public.runs (
     -- Sortie (le PipelineResult complet, source de vérité)
     result        jsonb,
 
-    -- Compteurs dénormalisés — évitent de parser `result` pour lister l'historique
+    -- Compteurs dénormalisés — évitent de charger `result` pour lister l'historique
     cocoons_count  int not null default 0,
     articles_count int not null default 0,
 
@@ -36,16 +38,14 @@ create table if not exists public.runs (
 );
 
 create index if not exists runs_agency_created_idx
-    on public.runs (agency_id, created_at desc);
+    on runs (agency_id, created_at desc);
 create index if not exists runs_status_idx
-    on public.runs (status);
-create index if not exists runs_job_id_idx
-    on public.runs (job_id);
+    on runs (status);
 
 -- Checkpoints : sortie de chaque étape du pipeline, pour reprendre un run
 -- échoué sans refaire (ni repayer) les étapes déjà passées.
-create table if not exists public.run_checkpoints (
-    run_id      uuid not null references public.runs(id) on delete cascade,
+create table if not exists run_checkpoints (
+    run_id      uuid not null references runs(id) on delete cascade,
     step        text not null,
     payload     jsonb not null,
     created_at  timestamptz not null default now(),
@@ -53,7 +53,7 @@ create table if not exists public.run_checkpoints (
 );
 
 -- updated_at auto
-create or replace function public.touch_updated_at()
+create or replace function touch_updated_at()
 returns trigger language plpgsql as $$
 begin
     new.updated_at = now();
@@ -61,13 +61,7 @@ begin
 end;
 $$;
 
-drop trigger if exists runs_touch_updated_at on public.runs;
+drop trigger if exists runs_touch_updated_at on runs;
 create trigger runs_touch_updated_at
-    before update on public.runs
-    for each row execute function public.touch_updated_at();
-
--- RLS : activée dès maintenant pour ne pas exposer la table en cas de fuite
--- de la clé anon. Le backend utilise la SERVICE_ROLE_KEY, qui bypasse RLS.
--- Les policies par agence viendront avec l'auth Supabase (V1).
-alter table public.runs enable row level security;
-alter table public.run_checkpoints enable row level security;
+    before update on runs
+    for each row execute function touch_updated_at();
