@@ -31,6 +31,7 @@ from rq.job import Job
 
 load_dotenv(Path(__file__).parent / ".env")
 
+from db.supabase import get_repository  # noqa: E402
 from models import ClientForm  # noqa: E402
 from workers.pipeline_job import run_pipeline_job  # noqa: E402
 
