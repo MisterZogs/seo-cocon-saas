@@ -147,15 +147,91 @@ async def health() -> dict:
 @app.post("/generate")
 async def generate(form: ClientForm) -> dict:
     """Enqueue une génération de cocons. Retourne le job_id."""
+    form_dict = form.model_dump(mode="json")
+    job_id = str(uuid.uuid4())
+
+    # Le run_id est indépendant du job RQ : il survit au TTL de 24h et sert de
+    # clé aux checkpoints. Supabase le fournit quand il est configuré ; sinon on
+    # en génère un localement pour que la reprise fonctionne quand même.
+    repo = get_repository()
+    run_id = await repo.create_run(job_id=job_id, form=form_dict) or str(uuid.uuid4())
+
     job = app.state.queue.enqueue(
         run_pipeline_job,
-        form.model_dump(mode="json"),
+        form_dict,
+        run_id,
+        job_id=job_id,
         job_timeout=JOB_TIMEOUT_SECONDS,
         result_ttl=86400,   # résultat conservé 24h après exécution
         failure_ttl=86400,
     )
-    logger.info("Job enqueued: %s", job.id)
-    return {"job_id": job.id, "status": job.get_status()}
+    logger.info("Job enqueued: %s (run %s)", job.id, run_id)
+    return {"job_id": job.id, "run_id": run_id, "status": job.get_status()}
+
+
+@app.post("/jobs/{job_id}/retry")
+async def retry_job(job_id: str) -> dict:
+    """Relance un job échoué en réutilisant ses checkpoints.
+
+    Les étapes déjà passées (et payées) sont relues au lieu d'être rejouées :
+    en pratique, une reprise après un crash à l'étape 4 repart directement à
+    l'article qui a échoué.
+    """
+    try:
+        job = Job.fetch(job_id, connection=app.state.redis)
+    except Exception:
+        raise HTTPException(
+            status_code=404,
+            detail="Job introuvable — au-delà de 24h, relancez depuis l'historique.",
+        )
+
+    if not job.is_failed:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Ce job n'est pas en échec (statut : {job.get_status()}).",
+        )
+
+    if not job.args:
+        raise HTTPException(status_code=422, detail="Job sans formulaire réutilisable.")
+
+    form_dict = job.args[0]
+    run_id = job.args[1] if len(job.args) > 1 else str(uuid.uuid4())
+    new_job_id = str(uuid.uuid4())
+
+    await get_repository().relink_job(run_id, new_job_id)
+
+    new_job = app.state.queue.enqueue(
+        run_pipeline_job,
+        form_dict,
+        run_id,
+        job_id=new_job_id,
+        job_timeout=JOB_TIMEOUT_SECONDS,
+        result_ttl=86400,
+        failure_ttl=86400,
+    )
+    logger.info("Job %s relancé en %s (run %s)", job_id, new_job.id, run_id)
+    return {"job_id": new_job.id, "run_id": run_id, "status": new_job.get_status()}
+
+
+@app.get("/runs")
+async def list_runs(agency_id: str | None = None, limit: int = 50) -> dict:
+    """Historique des générations — nécessite Supabase configuré."""
+    repo = get_repository()
+    if not repo.enabled:
+        return {"enabled": False, "runs": [], "detail": "Supabase non configuré."}
+    runs = await repo.list_runs(agency_id=agency_id, limit=min(limit, 200))
+    return {"enabled": True, "runs": runs}
+
+
+@app.get("/runs/{run_id}")
+async def get_run(run_id: str) -> dict:
+    repo = get_repository()
+    if not repo.enabled:
+        raise HTTPException(status_code=503, detail="Supabase non configuré.")
+    run = await repo.get_run(run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Run introuvable")
+    return run
 
 
 @app.get("/jobs/{job_id}")
