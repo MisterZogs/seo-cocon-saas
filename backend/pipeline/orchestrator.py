@@ -135,6 +135,16 @@ async def run_pipeline(
         )
     )
     builder = CoconBuilder()
+
+    async def _build_cocoons() -> list[CoconStructure]:
+        # La validation est ici, pas après le checkpoint : sinon un résultat
+        # vide serait sauvegardé, puis relu à chaque reprise — le run
+        # échouerait indéfiniment sans jamais retenter la construction.
+        built = builder.build(cocoon_proposals)
+        if not built:
+            raise RuntimeError("Aucun cocon valide produit par le LLM.")
+        return built
+
     # Checkpointé bien que peu coûteux : `cocon_id` vient d'un uuid4(), donc
     # rejouer cette étape lors d'une reprise réattribuerait de nouveaux ids et
     # les articles déjà générés pointeraient vers des cocons fantômes (tout le
@@ -142,12 +152,10 @@ async def run_pipeline(
     cocoons = await _checkpointed(
         store,
         "cocon_design",
-        produce=lambda: _as_awaitable(builder.build(cocoon_proposals)),
+        produce=_build_cocoons,
         dump=lambda v: [c.model_dump(mode="json") for c in v],
         load=lambda d: [CoconStructure.model_validate(c) for c in d],
     )
-    if not cocoons:
-        raise RuntimeError("Aucun cocon valide produit par le LLM.")
     logger.info("[2/6] Cocons construits: %d", len(cocoons))
 
     # ============ 3. SERP Analysis ============
