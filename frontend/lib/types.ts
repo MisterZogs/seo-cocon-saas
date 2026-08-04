@@ -3,6 +3,13 @@
 
 export type GenerationMode = "brief" | "full";
 
+/**
+ * Étanchéité entre cocons. `strict` par défaut : la méthode veut qu'une page
+ * d'un cocon ne lie pas vers un autre cocon, les cocons étant déjà reliés par
+ * le haut de l'arbre.
+ */
+export type InterCoconPolicy = "strict" | "mothers_only" | "libre";
+
 export type SearchIntent =
   | "informational"
   | "commercial"
