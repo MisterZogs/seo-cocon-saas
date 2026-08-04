@@ -427,38 +427,57 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
   );
 }
 
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <span className="inline-flex items-baseline gap-1.5 rounded-md border bg-muted/40 px-2 py-1">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-semibold text-foreground">{value}</span>
+    </span>
+  );
+}
+
+function EeatBadge({ score }: { score: number }) {
+  const tone =
+    score >= 70
+      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+      : score >= 50
+        ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
+        : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-baseline gap-1.5 rounded-md px-2 py-1 text-xs font-semibold",
+        tone,
+      )}
+    >
+      E-E-A-T
+      <span className="tabular-nums">{score}/100</span>
+    </span>
+  );
+}
+
 function ArticleContent({ article }: { article: GeneratedArticle }) {
+  const [raw, setRaw] = useState(false);
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-        <span>{article.word_count} mots</span>
-        {article.eeat_score && (
-          <span>
-            Score E-E-A-T :{" "}
-            <span
-              className={`font-mono ${
-                article.eeat_score.overall >= 70
-                  ? "text-green-600"
-                  : article.eeat_score.overall >= 50
-                    ? "text-amber-600"
-                    : "text-destructive"
-              }`}
-            >
-              {article.eeat_score.overall}/100
-            </span>
-          </span>
-        )}
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        <Metric label="Longueur" value={`${article.word_count} mots`} />
+        {article.eeat_score && <EeatBadge score={article.eeat_score.overall} />}
       </div>
 
       {article.eeat_score?.warnings.length ? (
-        <Alert>
+        <Alert className="border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
           <AlertDescription>
-            <p className="text-xs font-semibold mb-1">
-              À améliorer avant publication :
+            <p className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1.5">
+              À améliorer avant publication
             </p>
-            <ul className="text-xs list-disc list-inside space-y-0.5">
+            <ul className="text-xs space-y-1">
               {article.eeat_score.warnings.map((w, i) => (
-                <li key={i}>{w}</li>
+                <li key={i} className="flex gap-2">
+                  <span className="text-amber-600">•</span>
+                  {w}
+                </li>
               ))}
             </ul>
           </AlertDescription>
@@ -466,13 +485,27 @@ function ArticleContent({ article }: { article: GeneratedArticle }) {
       ) : null}
 
       <div>
-        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
-          Article Markdown
-        </h4>
-        <ScrollArea className="h-96 rounded-md border bg-muted/30 p-4">
-          <pre className="text-xs whitespace-pre-wrap font-mono">
-            {article.content_markdown}
-          </pre>
+        <div className="flex items-center justify-between">
+          <SectionHeading tone="article" className="mb-0">
+            Article rédigé
+          </SectionHeading>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-xs h-7"
+            onClick={() => setRaw((r) => !r)}
+          >
+            {raw ? "Vue lisible" : "Markdown brut"}
+          </Button>
+        </div>
+        <ScrollArea className="mt-2 h-[32rem] rounded-lg border bg-card px-5 py-3">
+          {raw ? (
+            <pre className="text-xs whitespace-pre-wrap font-mono text-muted-foreground">
+              {article.content_markdown}
+            </pre>
+          ) : (
+            <Markdown content={article.content_markdown} />
+          )}
         </ScrollArea>
       </div>
 
