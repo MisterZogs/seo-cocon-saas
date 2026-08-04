@@ -193,13 +193,26 @@ export default function JobProgressPage({
             )}
 
             {state.kind === "error" && (
-              <div className="flex gap-2">
-                <Link
-                  href="/new"
-                  className={buttonVariants({ variant: "outline" })}
-                >
-                  Recommencer
-                </Link>
+              <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
+                  <Button onClick={handleRetry} disabled={retrying}>
+                    {retrying ? "Reprise en cours..." : "Reprendre la génération"}
+                  </Button>
+                  <Link
+                    href="/new"
+                    className={buttonVariants({ variant: "outline" })}
+                  >
+                    Repartir de zéro
+                  </Link>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  La reprise repart de l&apos;étape qui a échoué : les mots-clés,
+                  cocons et articles déjà générés sont réutilisés, pas
+                  regénérés.
+                </p>
+                {retryError && (
+                  <p className="text-xs text-destructive">{retryError}</p>
+                )}
               </div>
             )}
 
