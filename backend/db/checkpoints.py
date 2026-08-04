@@ -8,7 +8,8 @@ Chaque étape sérialise sa sortie sous une clé `(run_id, step)`. À la reprise
 l'orchestrateur relit ce qui existe et saute directement là où ça s'est arrêté.
 
 Deux backends, choisis automatiquement :
-- **Supabase** si configuré — durable, la reprise reste possible des semaines après.
+- **Postgres** si `DATABASE_URL` est défini — durable, la reprise reste
+  possible des semaines après.
 - **Redis** sinon — déjà présent en prod, TTL 7 jours. Couvre le cas réel
   (on reprend un run quelques minutes après l'échec) sans aucun setup.
 """
