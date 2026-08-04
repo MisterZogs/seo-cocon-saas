@@ -96,6 +96,8 @@ def _friendly_error(exc_info: str | None) -> tuple[str, str | None]:
     # Sinon : dernière ligne non vide de la traceback, c'est l'exception réelle
     lines = [line.strip() for line in raw.strip().splitlines() if line.strip()]
     return (lines[-1] if lines else "Erreur inconnue"), raw
+
+
 QUEUE_NAME = "pipeline"
 
 
