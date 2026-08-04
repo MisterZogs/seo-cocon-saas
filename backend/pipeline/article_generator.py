@@ -17,6 +17,7 @@ import logging
 from datetime import date
 
 from clients.anthropic_client import AnthropicClient, ModelTier
+from db.checkpoints import CheckpointStore
 from models import (
     ArticleBrief,
     ArticleSection,
@@ -34,6 +35,37 @@ from models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+# ============================================================
+# CHECKPOINTS PAR ARTICLE
+# ============================================================
+#
+# Les deux boucles de génération sont séquentielles : sans checkpoint, une
+# erreur sur le 7e article jette les 6 précédents, déjà payés en tokens Opus
+# et Sonnet. On sauvegarde donc chaque article dès qu'il est produit.
+
+
+async def _resume_one(store: CheckpointStore | None, key: str, model_cls):
+    """Relit un article déjà généré. Un checkpoint corrompu est ignoré."""
+    if store is None:
+        return None
+    cached = await store.get(key)
+    if cached is None:
+        return None
+    try:
+        resumed = model_cls.model_validate(cached)
+    except Exception as e:
+        logger.warning("Checkpoint %s illisible (%s) — régénération.", key, e)
+        return None
+    logger.info("↻ %s repris du checkpoint (pas de nouvel appel LLM)", key)
+    return resumed
+
+
+async def _checkpoint_one(store: CheckpointStore | None, key: str, value) -> None:
+    if store is None:
+        return
+    await store.set(key, value.model_dump(mode="json"))
 
 
 # ============================================================
