@@ -124,10 +124,12 @@ def _check(label: str, cond: bool, detail: str = "") -> bool:
 def main() -> int:
     ok = True
 
+    # Le fixture contient 3 liens inter-cocons : a-mere→b-mere (mère↔mère),
+    # a-fille-1→b-fille-1 et a-fille-5→b-mere (les deux partant d'une fille).
     for policy, expect_cross in [
-        (InterCoconPolicy.STRICT, 0),
-        (InterCoconPolicy.MOTHERS_ONLY, 1),   # seul a-fille-5 → b-mere ? non : source fille
-        (InterCoconPolicy.LIBRE, 2),
+        (InterCoconPolicy.STRICT, 0),        # étanchéité totale
+        (InterCoconPolicy.MOTHERS_ONLY, 1),  # seul a-mere→b-mere survit
+        (InterCoconPolicy.LIBRE, 3),         # tout est conservé
     ]:
         cocoons, articles = _build_case()
         print(f"\n=== politique inter-cocons : {policy.value} ===")
