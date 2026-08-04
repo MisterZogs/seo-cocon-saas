@@ -106,5 +106,5 @@ def make_checkpoint_store(
     if not run_id:
         return NullCheckpointStore()
     if repository is not None and getattr(repository, "enabled", False):
-        return SupabaseCheckpointStore(repository, run_id)
+        return PostgresCheckpointStore(repository, run_id)
     return RedisCheckpointStore(redis_url, run_id)
