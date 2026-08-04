@@ -186,8 +186,17 @@ class FakeDataForSEO:
 
     is_mock = True
 
-    async def get_search_volume(self, keywords: list[str]) -> dict:
-        return {k: {"volume": 500, "cpc": 1.2, "competition": 0.4} for k in keywords}
+    async def get_search_volume(self, keywords: list[str]) -> list[dict]:
+        return [
+            {
+                "keyword": k,
+                "search_volume": 500,
+                "cpc": 1.2,
+                "competition": 0.4,
+                "keyword_difficulty": 35,
+            }
+            for k in keywords
+        ]
 
     async def get_serp(self, keyword: str, depth: int = 10) -> dict:
         return {"organic_results": [], "paa": ["PAA ?"], "features": {}}
