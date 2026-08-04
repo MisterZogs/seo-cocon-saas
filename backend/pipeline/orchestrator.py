@@ -181,7 +181,11 @@ async def run_pipeline(
                 message=f"Rédaction des briefs éditoriaux ({len(all_stubs)} articles)...",
             )
         )
-        briefs = await generator.generate_all_briefs(form, cocoons, serp_analyses)
+        # Checkpoint par article (dans le générateur), pas par étape : la boucle
+        # est séquentielle, on ne veut pas perdre les briefs déjà produits.
+        briefs = await generator.generate_all_briefs(
+            form, cocoons, serp_analyses, store=store
+        )
         logger.info("[4/6] Briefs générés: %d", len(briefs))
     else:
         await emit(
