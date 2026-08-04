@@ -51,6 +51,8 @@ export interface ClientForm {
   niche: string;
   num_cocoons: number;
   mode: GenerationMode;
+  /** Omis = `strict` côté backend. */
+  inter_cocon_policy?: InterCoconPolicy;
   experience_elements: ExperienceElement[];
   agency_id?: string | null;
   client_project_name?: string | null;
