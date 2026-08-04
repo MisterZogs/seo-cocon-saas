@@ -26,7 +26,7 @@ from typing import Any
 from rq import get_current_job
 
 from db.checkpoints import make_checkpoint_store
-from db.supabase import get_repository
+from db.postgres import get_repository
 from models import ClientForm, JobProgress
 from pipeline.orchestrator import run_pipeline
 

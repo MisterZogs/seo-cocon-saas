@@ -41,7 +41,7 @@ _SYSTEM_PROMPTS = {
 
 
 class InMemoryStore:
-    """CheckpointStore en mémoire — même contrat que Redis/Supabase."""
+    """CheckpointStore en mémoire — même contrat que Redis/Postgres."""
 
     def __init__(self) -> None:
         self.data: dict[str, Any] = {}

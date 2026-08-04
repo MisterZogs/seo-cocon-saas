@@ -95,11 +95,11 @@ Note : à V4+ (18+ mois), SI une verticale explose (ex: crypto/trading grâce à
 ### Stack technique
 | Composant | Choix |
 |---|---|
-| **Frontend** | Next.js + shadcn/ui (TypeScript) — déploy Vercel |
-| **Backend API** | FastAPI (Python async) — déploy Railway/Render/Fly.io |
+| **Frontend** | Next.js + shadcn/ui (TypeScript) — déployé sur le VPS (Docker) |
+| **Backend API** | FastAPI (Python async) — déployé sur le VPS (Docker) |
 | **Workers** | RQ (Redis Queue) pour jobs longs de génération |
-| **Base de données** | Supabase (Postgres + Auth + Storage) |
-| **Cache / Queue** | Upstash Redis (serverless) |
+| **Base de données** | Postgres 16 auto-hébergé (Docker Compose sur le VPS) |
+| **Cache / Queue** | Redis 7 auto-hébergé (Docker Compose sur le VPS) |
 | **APIs tierces MVP** | DataForSEO uniquement (KW + SERP + backlinks) |
 | **APIs tierces V1** | Ahrefs backlinks, Hunter.io outreach |
 
@@ -287,7 +287,8 @@ seo/
 │   │   ├── anthropic_client.py (avec prompt caching)
 │   │   └── dataforseo_client.py
 │   ├── db/
-│   │   └── supabase.py
+│   │   ├── postgres.py
+│   │   └── schema.sql
 │   ├── requirements.txt
 │   └── .env.example
 │
@@ -310,7 +311,7 @@ seo/
 - Pipeline complet en Mode Brief
 - 1 seule verticale = agences SEO (pas de sélecteur secteur au formulaire au MVP)
 - Export JSON + Markdown
-- Supabase auth basique
+- Auth basique (à trancher : JWT FastAPI maison ou service tiers)
 - Dashboard agence : historique générations, projets clients
 - Pricing €199-499/mois
 
@@ -354,7 +355,7 @@ seo/
 
 - [x] Concept validé et repositionné (mode hybride)
 - [x] Pipeline détaillé (8 étapes, cohérent)
-- [x] Stack technique tranchée (Next.js + FastAPI + Supabase + RQ + Upstash)
+- [x] Stack technique tranchée (Next.js + FastAPI + Postgres + RQ + Redis)
 - [x] Persona client défini (agences SEO françaises premium)
 - [x] Marché défini (FR d'abord, vision V4+ internationale)
 - [x] Choix modèles Claude par étape
@@ -365,14 +366,18 @@ seo/
 - [x] Vision long-terme documentée (V4+ concurrence Scalenut EN)
 - [x] requirements.txt initial créé
 - [x] .env.example initial créé
-- [ ] Setup projet Next.js + FastAPI + Supabase
-- [ ] Code métier pipeline
+- [x] Setup projet Next.js + FastAPI + Postgres
+- [x] Code métier pipeline (6 modules + orchestrateur + worker + API)
+- [x] Déploiement prod (VPS gringo, https://cocon.178.104.70.16.sslip.io)
+- [x] Persistance des runs + reprise sur checkpoint après échec
+- [ ] Test end-to-end avec DataForSEO réel (credentials à obtenir)
+- [ ] Auth multi-agences
 
 ---
 
 ## Prochaine étape
 
-1. **Setup infrastructure** : projet Next.js, projet Supabase, compte Upstash Redis, compte DataForSEO
+1. **Setup infrastructure** : ✅ fait (VPS gringo, Docker Compose, Postgres, Redis) — reste compte DataForSEO
 2. **Coder backend dans l'ordre** :
    `models.py → clients/anthropic_client.py (avec caching) → clients/dataforseo_client.py → pipeline/keyword_research.py → pipeline/serp_analyzer.py → pipeline/cocon_builder.py → pipeline/article_generator.py → pipeline/backlink_analyzer.py → workers/rq_worker.py → main.py`
 3. **Coder frontend Next.js** : formulaire multi-step FR → dashboard → preview cocon → export
