@@ -123,12 +123,25 @@ function ResultView({ result, jobId }: { result: PipelineResult; jobId: string }
       <main className="max-w-6xl mx-auto px-6 py-10 space-y-8">
         {/* Overview */}
         <div className="grid md:grid-cols-4 gap-4">
-          <StatCard label="Cocons" value={result.cocoons.length} />
-          <StatCard label="Articles" value={totalArticles} />
-          <StatCard label="Mots-clés analysés" value={result.keywords_researched.length} />
+          <StatCard label="Cocons" value={result.cocoons.length} tone="cocon" />
+          <StatCard label="Articles" value={totalArticles} tone="article" />
           <StatCard
-            label="Liens inter-cocons"
-            value={result.maillage_map.inter_cocon_links.length}
+            label="Mots-clés analysés"
+            value={result.keywords_researched.length}
+            tone="serp"
+          />
+          <StatCard
+            label="Liens internes"
+            value={Object.values(result.maillage_map.links).reduce(
+              (n, l) => n + l.length,
+              0,
+            )}
+            tone="maillage"
+            hint={
+              result.maillage_map.inter_cocon_links.length === 0
+                ? "cocons étanches"
+                : `dont ${result.maillage_map.inter_cocon_links.length} inter-cocons`
+            }
           />
         </div>
 
