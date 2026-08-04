@@ -82,7 +82,7 @@ class RedisCheckpointStore:
             logger.warning("Écriture checkpoint %s impossible (ignoré) : %s", step, e)
 
 
-class SupabaseCheckpointStore:
+class PostgresCheckpointStore:
     """Checkpoints dans la table `run_checkpoints` — durables."""
 
     def __init__(self, repository: Any, run_id: str) -> None:
