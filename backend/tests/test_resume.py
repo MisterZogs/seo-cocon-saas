@@ -19,7 +19,20 @@ from typing import Any
 
 from db.checkpoints import CheckpointStore
 from models import ClientForm, GenerationMode
+from pipeline.article_generator import _BRIEF_SYSTEM, _FULL_SYSTEM
+from pipeline.backlink_analyzer import _ANALYSIS_SYSTEM as _BACKLINK_SYSTEM
+from pipeline.keyword_research import _EXPANSION_SYSTEM, _SELECTION_SYSTEM
 from pipeline.orchestrator import run_pipeline
+from pipeline.serp_analyzer import _ANALYSIS_SYSTEM as _SERP_SYSTEM
+
+_SYSTEM_PROMPTS = {
+    _EXPANSION_SYSTEM: "expansion",
+    _SELECTION_SYSTEM: "selection",
+    _SERP_SYSTEM: "serp",
+    _BRIEF_SYSTEM: "brief",
+    _FULL_SYSTEM: "article",
+    _BACKLINK_SYSTEM: "backlinks",
+}
 
 
 # ============================================================
