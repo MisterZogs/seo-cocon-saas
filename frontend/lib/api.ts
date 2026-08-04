@@ -29,3 +29,29 @@ export async function fetchJobStatus(jobId: string): Promise<JobStatusResponse> 
 export function jobStreamUrl(jobId: string): string {
   return `${API_URL}/jobs/${jobId}/stream`;
 }
+
+/**
+ * Relance un job échoué. Le backend réutilise les checkpoints du run :
+ * les étapes déjà passées ne sont ni rejouées ni repayées.
+ */
+export async function retryJob(
+  jobId: string,
+): Promise<{ job_id: string; run_id: string; status: string }> {
+  const res = await fetch(`${API_URL}/jobs/${jobId}/retry`, { method: "POST" });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.detail || `Reprise impossible (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchRuns(): Promise<{
+  enabled: boolean;
+  runs: RunSummary[];
+}> {
+  const res = await fetch(`${API_URL}/runs`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Historique indisponible (${res.status})`);
+  }
+  return res.json();
+}
