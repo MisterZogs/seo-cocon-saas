@@ -19,11 +19,8 @@ from models import (
     CoconStructure,
     GeneratedArticle,
     GenerationMode,
-    InterCoconLink,
-    InternalLinkType,
     JobProgress,
     KeywordWithData,
-    MaillageMap,
     PipelineResult,
     PipelineStep,
     SerpAnalysis,
@@ -32,6 +29,7 @@ from pipeline.article_generator import ArticleGenerator
 from pipeline.backlink_analyzer import BacklinkAnalyzer
 from pipeline.cocon_builder import CoconBuilder
 from pipeline.keyword_research import KeywordResearcher
+from pipeline.maillage import assemble_maillage
 from pipeline.serp_analyzer import SerpAnalyzer
 
 logger = logging.getLogger(__name__)
@@ -261,63 +259,3 @@ async def run_pipeline(
         maillage_map=maillage_map,
         backlink_reports=backlink_reports,
     )
-
-
-# ============================================================
-# Maillage assembly
-# ============================================================
-
-
-def _assemble_maillage(
-    *,
-    briefs: list[ArticleBrief],
-    articles: list[GeneratedArticle],
-    cocoons: list[CoconStructure],
-) -> MaillageMap:
-    """Extrait les liens internes des briefs/articles et construit la map + inter-cocon.
-
-    Source de vérité : les internal_links / internal_links_plan déjà produits par
-    article_generator (avec validation des slugs). On les indexe par slug source.
-    """
-    # Map slug → cocon_id (pour identifier les cross-cocon)
-    slug_to_cocon: dict[str, str] = {}
-    for cocon in cocoons:
-        slug_to_cocon[cocon.mother.slug] = cocon.id
-        for d in cocon.daughters:
-            slug_to_cocon[d.slug] = cocon.id
-
-    links_by_slug: dict[str, list] = {}
-    inter_cocon: list[InterCoconLink] = []
-
-    def _process(source_slug: str, source_cocon_id: str, links: list) -> None:
-        links_by_slug.setdefault(source_slug, []).extend(links)
-        for link in links:
-            target_cocon_id = slug_to_cocon.get(link.target_slug)
-            if target_cocon_id and target_cocon_id != source_cocon_id:
-                inter_cocon.append(
-                    InterCoconLink(
-                        from_cocon_id=source_cocon_id,
-                        from_slug=source_slug,
-                        to_cocon_id=target_cocon_id,
-                        to_slug=link.target_slug,
-                        anchor_text=link.anchor_text,
-                        justification=link.justification,
-                    )
-                )
-                # Force le type sur cross_cocon pour cohérence
-                link.link_type = InternalLinkType.CROSS_COCON
-
-    for brief in briefs:
-        _process(
-            brief.stub.slug,
-            brief.stub.cocon_id,
-            brief.internal_links_plan,
-        )
-    for article in articles:
-        _process(
-            article.stub.slug,
-            article.stub.cocon_id,
-            article.internal_links,
-        )
-
-    return MaillageMap(links=links_by_slug, inter_cocon_links=inter_cocon)
