@@ -56,7 +56,9 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    command: rq worker pipeline --url redis://redis:6379/0
+    # Passe par le module plutôt que la CLI `rq worker` : c'est lui qui
+    # configure le logging applicatif (cf. workers/rq_worker.py).
+    command: python -m workers.rq_worker
 
   frontend:
     build:
