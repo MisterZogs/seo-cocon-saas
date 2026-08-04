@@ -251,26 +251,44 @@ function ArticlesPanel({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Articles ({stubs.length})
-      </h3>
+      <GroupHeading tone="article" count={stubs.length}>
+        Articles
+      </GroupHeading>
       {stubs.map((stub) => {
         const brief = briefs.find((b) => b.stub.slug === stub.slug);
         const article = articles.find((a) => a.stub.slug === stub.slug);
+        const isMother = stub.article_type === "mother";
         return (
-          <Card key={stub.slug}>
+          <Card
+            key={stub.slug}
+            className={cn(
+              "border-l-4",
+              isMother
+                ? "border-l-violet-500 bg-violet-50/30 dark:bg-violet-950/10"
+                : "border-l-sky-300 dark:border-l-sky-800",
+            )}
+          >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge variant={stub.article_type === "mother" ? "default" : "outline"}>
-                      {stub.article_type === "mother" ? "Mère" : "Fille"}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <Badge
+                      className={cn(
+                        "font-semibold",
+                        isMother
+                          ? "bg-violet-600 text-white"
+                          : "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
+                      )}
+                    >
+                      {isMother ? "Mère" : "Fille"}
                     </Badge>
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="outline" className="text-xs font-medium">
                       {stub.intent}
                     </Badge>
                   </div>
-                  <CardTitle className="text-base">{stub.h1_title}</CardTitle>
+                  <CardTitle className="text-base font-bold leading-snug">
+                    {stub.h1_title}
+                  </CardTitle>
                 </div>
               </div>
               <p className="text-xs font-mono text-muted-foreground mt-1">/{stub.slug}</p>
