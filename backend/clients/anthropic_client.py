@@ -60,7 +60,7 @@ class AnthropicClient:
         self._client = AsyncAnthropic(api_key=key)
 
     @retry(
-        retry=retry_if_exception_type((RateLimitError, APITimeoutError, APIStatusError)),
+        retry=_is_retryable,
         wait=wait_exponential(multiplier=2, min=2, max=30),
         stop=stop_after_attempt(4),
         reraise=True,
