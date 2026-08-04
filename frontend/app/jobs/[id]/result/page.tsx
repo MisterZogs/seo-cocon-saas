@@ -341,27 +341,30 @@ function MetaBlock({ stub }: { stub: CoconStructure["mother"] }) {
 
 function BriefContent({ brief }: { brief: ArticleBrief }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div>
-        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
-          Angle unique
-        </h4>
-        <p>{brief.unique_angle}</p>
+        <SectionHeading tone="article">Angle unique</SectionHeading>
+        <p className="text-sm leading-relaxed">{brief.unique_angle}</p>
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
+        <SectionHeading
+          tone="serp"
+          hint={`${brief.serp_analysis.scraped_pages_count} pages analysées`}
+        >
           Analyse SERP
-        </h4>
-        <p className="text-xs text-muted-foreground">
-          Longueur cible : {brief.serp_analysis.recommended_word_count} mots ·{" "}
-          {brief.serp_analysis.recommended_h2_count} H2 ·{" "}
-          {brief.serp_analysis.scraped_pages_count} pages analysées
-        </p>
+        </SectionHeading>
+        <div className="flex flex-wrap gap-2 text-xs">
+          <Metric label="Longueur cible" value={`${brief.serp_analysis.recommended_word_count} mots`} />
+          <Metric label="H2" value={String(brief.serp_analysis.recommended_h2_count)} />
+        </div>
         {brief.serp_analysis.key_entities.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1">
+          <div className="mt-2.5 flex flex-wrap gap-1">
             {brief.serp_analysis.key_entities.slice(0, 12).map((e) => (
-              <Badge key={e} variant="outline" className="text-xs font-normal">
+              <Badge
+                key={e}
+                className="bg-teal-50 text-teal-800 text-xs font-medium dark:bg-teal-950 dark:text-teal-300"
+              >
                 {e}
               </Badge>
             ))}
@@ -370,17 +373,20 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
       </div>
 
       <div>
-        <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
-          Structure ({brief.sections.length} sections)
-        </h4>
-        <ol className="space-y-2 text-sm">
+        <SectionHeading tone="article" count={brief.sections.length}>
+          Structure
+        </SectionHeading>
+        <ol className="space-y-2.5 text-sm">
           {brief.sections.map((s, i) => (
-            <li key={i} className="border-l-2 border-primary/30 pl-3">
-              <p className="font-medium">{s.h2}</p>
+            <li key={i} className="border-l-2 border-sky-400 pl-3">
+              <p className="font-semibold text-foreground">{s.h2}</p>
               {s.h3s.length > 0 && (
-                <ul className="text-xs text-muted-foreground list-disc list-inside mt-1">
+                <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
                   {s.h3s.map((h3, j) => (
-                    <li key={j}>{h3}</li>
+                    <li key={j} className="flex gap-1.5">
+                      <span className="text-sky-400">›</span>
+                      {h3}
+                    </li>
                   ))}
                 </ul>
               )}
@@ -391,12 +397,15 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
 
       {brief.faq_questions.length > 0 && (
         <div>
-          <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
+          <SectionHeading tone="faq" count={brief.faq_questions.length}>
             FAQ suggérée
-          </h4>
-          <ul className="list-disc list-inside space-y-1 text-sm">
+          </SectionHeading>
+          <ul className="space-y-1.5 text-sm">
             {brief.faq_questions.map((q, i) => (
-              <li key={i}>{q}</li>
+              <li key={i} className="flex gap-2">
+                <span className="font-semibold text-rose-500">?</span>
+                {q}
+              </li>
             ))}
           </ul>
         </div>
@@ -408,10 +417,10 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
 
       {brief.editorial_notes && (
         <div>
-          <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">
-            Notes éditoriales
-          </h4>
-          <p className="text-sm whitespace-pre-wrap">{brief.editorial_notes}</p>
+          <SectionHeading tone="neutral">Notes éditoriales</SectionHeading>
+          <p className="text-sm whitespace-pre-wrap leading-relaxed rounded-lg border bg-muted/40 p-3">
+            {brief.editorial_notes}
+          </p>
         </div>
       )}
     </div>
