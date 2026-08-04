@@ -17,6 +17,24 @@ class GenerationMode(str, Enum):
     FULL = "full"
 
 
+class InterCoconPolicy(str, Enum):
+    """Gouverne les liens entre cocons différents.
+
+    L'étanchéité entre silos est le principe central de la méthode : une page
+    du cocon A ne lie pas vers une page du cocon B, sous peine de rupture
+    sémantique. Les cocons sont déjà reliés par le haut de l'arbre (accueil →
+    page cible de chaque cocon), les relier latéralement est redondant.
+
+    STRICT       — aucun lien inter-cocon (défaut, conforme à la méthode)
+    MOTHERS_ONLY — mère ↔ mère uniquement, jamais les filles
+    LIBRE        — pas de contrainte, on garde ce que le LLM a proposé
+    """
+
+    STRICT = "strict"
+    MOTHERS_ONLY = "mothers_only"
+    LIBRE = "libre"
+
+
 class ExperienceElement(BaseModel):
     """Élément d'expérience uploadé par le client (obligatoire en mode FULL)."""
 
