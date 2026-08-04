@@ -224,7 +224,13 @@ async def run_pipeline(
         )
     )
     bl_analyzer = BacklinkAnalyzer(anthropic, dataforseo)
-    backlink_reports = await bl_analyzer.analyze_all(form, cocoons)
+    backlink_reports = await _checkpointed(
+        store,
+        "backlinks",
+        produce=lambda: bl_analyzer.analyze_all(form, cocoons),
+        dump=lambda v: [r.model_dump(mode="json") for r in v],
+        load=lambda d: [BacklinkReport.model_validate(r) for r in d],
+    )
     logger.info("[6/6] Rapports backlinks: %d", len(backlink_reports))
 
     # ============ Result ============
