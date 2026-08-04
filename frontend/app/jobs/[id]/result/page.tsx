@@ -10,6 +10,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchJobStatus } from "@/lib/api";
+import { GroupHeading, SectionHeading, TONE, type Tone } from "@/components/result/section";
+import { Markdown } from "@/components/result/markdown";
+import { cn } from "@/lib/utils";
 import type {
   ArticleBrief,
   BacklinkReport,
