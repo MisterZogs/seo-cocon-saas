@@ -6,9 +6,9 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { jobStreamUrl } from "@/lib/api";
+import { jobStreamUrl, retryJob } from "@/lib/api";
 import type { JobProgress, PipelineStep } from "@/lib/types";
 
 const STEP_LABELS: Record<PipelineStep, string> = {
