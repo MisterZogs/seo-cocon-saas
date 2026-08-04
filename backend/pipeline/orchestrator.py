@@ -157,7 +157,15 @@ async def run_pipeline(
         )
     )
     serp_analyzer = SerpAnalyzer(anthropic, dataforseo)
-    serp_analyses = await serp_analyzer.analyze_all(all_stubs, form.language)
+    serp_analyses = await _checkpointed(
+        store,
+        "serp_analysis",
+        produce=lambda: serp_analyzer.analyze_all(all_stubs, form.language),
+        dump=lambda v: {slug: a.model_dump(mode="json") for slug, a in v.items()},
+        load=lambda d: {
+            slug: SerpAnalysis.model_validate(a) for slug, a in d.items()
+        },
+    )
     logger.info("[3/6] SERP analyses: %d/%d", len(serp_analyses), len(all_stubs))
 
     # ============ 4. Article Generation ============
