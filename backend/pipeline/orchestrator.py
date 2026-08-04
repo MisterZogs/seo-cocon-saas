@@ -43,11 +43,6 @@ async def _no_op(_: JobProgress) -> None:
     return None
 
 
-async def _as_awaitable(value: Any) -> Any:
-    """Enrobe un résultat synchrone pour le passer à `_checkpointed`."""
-    return value
-
-
 async def _checkpointed(
     store: CheckpointStore,
     key: str,
