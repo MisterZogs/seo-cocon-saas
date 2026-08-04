@@ -195,7 +195,9 @@ async def run_pipeline(
                 message=f"Rédaction complète de {len(all_stubs)} articles...",
             )
         )
-        articles = await generator.generate_all_articles(form, cocoons, serp_analyses)
+        articles = await generator.generate_all_articles(
+            form, cocoons, serp_analyses, store=store
+        )
         logger.info("[4/6] Articles générés: %d", len(articles))
 
     # ============ 5. Maillage Assembly ============
