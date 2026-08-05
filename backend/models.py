@@ -81,6 +81,11 @@ class ClientForm(BaseModel):
         description="Étanchéité entre cocons — strict par défaut (méthode Bourrelly)",
     )
     experience_elements: list[ExperienceElement] = Field(default_factory=list)
+    style_samples: list[StyleSample] = Field(
+        default_factory=list,
+        max_length=5,
+        description="Articles existants du client — few-shot pour caler la voix",
+    )
     agency_id: str | None = None
     client_project_name: str | None = None
 
