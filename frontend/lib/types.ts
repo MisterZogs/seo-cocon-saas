@@ -42,6 +42,16 @@ export interface ExperienceElement {
   source?: string | null;
 }
 
+/**
+ * Article existant du client, injecté en few-shot pour caler la voix.
+ * Optionnel, mais c'est le levier le plus fort dont on dispose sur le rendu.
+ */
+export interface StyleSample {
+  title?: string | null;
+  content: string;
+  source?: string | null;
+}
+
 export interface ClientForm {
   product: string;
   description: string;
