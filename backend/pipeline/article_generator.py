@@ -660,6 +660,18 @@ class ArticleGenerator:
         external_links = _parse_external_links(parsed.get("external_links", []))
         eeat = _parse_eeat(parsed.get("eeat_score"))
 
+        markdown, used_experience, _ = inject_experience_blocks(
+            parsed.get("content_markdown", ""), form.experience_elements
+        )
+        if form.experience_elements:
+            logger.info(
+                "%s : %d/%d élément(s) d'expérience intégré(s) verbatim",
+                stub.slug,
+                len(used_experience),
+                len(form.experience_elements),
+            )
+        eeat = _cap_experience_score(eeat, used_experience)
+
         return GeneratedArticle(
             stub=stub,
             serp_analysis=analysis,
@@ -669,9 +681,10 @@ class ArticleGenerator:
             external_links=external_links,
             eeat_score=eeat,
             schema_jsonld=parsed.get("schema_jsonld", {}),
-            content_markdown=parsed.get("content_markdown", ""),
-            word_count=int(parsed.get("word_count", 0))
-            or len(parsed.get("content_markdown", "").split()),
+            content_markdown=markdown,
+            experience_used=used_experience,
+            # Recompté après injection : les blocs verbatim changent le total.
+            word_count=len(markdown.split()),
         )
 
 
