@@ -347,13 +347,16 @@ def _stub_block(stub: ArticleStub, cocon: CoconStructure) -> str:
 
 
 def _build_brief_prompt(
-    stub: ArticleStub, cocon: CoconStructure, analysis: SerpAnalysis
+    stub: ArticleStub,
+    cocon: CoconStructure,
+    analysis: SerpAnalysis,
+    policy: InterCoconPolicy,
 ) -> str:
     return f"""{_stub_block(stub, cocon)}
 
 {_serp_analysis_block(analysis)}
 
-{_MAILLAGE_RULES}
+{_maillage_rules(policy)}
 
 TASK — Produce an editorial brief in JSON:
 {{
