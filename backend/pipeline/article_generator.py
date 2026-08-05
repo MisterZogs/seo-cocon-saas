@@ -476,7 +476,7 @@ TASK — Produce a publish-ready article as JSON:
   }},
   "content_markdown": "# H1\\n\\nIntro (100 words, answer directly)...\\n\\n## H2 Section 1\\n\\nBody...\\n\\n### H3\\n\\n...\\n\\n[[INTERNAL_LINK:slug|anchor]] in sentences where relevant.\\n\\n## FAQ\\n\\n### Question ?\\n\\nAnswer.\\n",
   "eeat_score": {{
-    "experience": 0-100,          // Higher if experience_elements integrated
+    "experience": 0-100,          // ONLY from [[EXPERIENCE:...]] markers actually placed
     "expertise": 0-100,           // Higher if technical accuracy demonstrated
     "authoritativeness": 0-100,   // Higher if external sources cited
     "trustworthiness": 0-100,     // Higher if disclaimers/transparency present
