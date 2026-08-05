@@ -539,7 +539,7 @@ class ArticleGenerator:
                     continue
 
                 brief = await self._generate_brief_one(
-                    stub, cocon, analysis, cocoons, cached_context
+                    stub, cocon, analysis, cocoons, cached_context, form.inter_cocon_policy
                 )
                 briefs.append(brief)
                 await _checkpoint_one(store, f"brief:{stub.slug}", brief)
