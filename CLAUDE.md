@@ -463,7 +463,13 @@ seo/
 - [x] Code métier pipeline (6 modules + orchestrateur + worker + API)
 - [x] Déploiement prod (VPS gringo, https://cocon.178.104.70.16.sslip.io)
 - [x] Persistance des runs + reprise sur checkpoint après échec
+- [x] Position tranchée sur la détection IA (humanizer abandonné, voir section dédiée)
+- [x] Voix de marque few-shot (`style_samples`) + injection verbatim des éléments
+      d'expérience + plafond E-E-A-T honnête
 - [ ] Test end-to-end avec DataForSEO réel (credentials à obtenir)
+- [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
+      gratuit de Gaetan est épuisé)
+- [ ] Rapport de détection dans le livrable + argumentaire client
 - [ ] Auth multi-agences
 
 ---
