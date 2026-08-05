@@ -149,6 +149,19 @@ def _build_experience_context(form: ClientForm) -> str:
     return "\n".join(lines)
 
 
+def _build_cached_context(form: ClientForm, cocoons: list[CoconStructure]) -> str:
+    """Préfixe partagé par toutes les générations de la run — mis en cache.
+
+    Les échantillons de style sont volumineux et identiques d'un article à
+    l'autre : sans le caching ils seraient refacturés plein tarif 12 fois.
+    """
+    blocks = [_build_brand_context(form), _build_cocon_reference(cocoons)]
+    style = _build_style_context(form)
+    if style:
+        blocks.insert(0, style)
+    return "\n\n".join(blocks)
+
+
 def _build_style_context(form: ClientForm) -> str:
     """Few-shot sur les écrits existants du client — cale la voix de marque.
 
