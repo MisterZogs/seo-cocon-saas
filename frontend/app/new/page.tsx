@@ -141,6 +141,12 @@ export default function NewGenerationPage() {
             messages.push(`Élément ${idx + 1} — contenu : ${item.content.message}`);
         });
       }
+      if (errs.style_samples && Array.isArray(errs.style_samples)) {
+        errs.style_samples.forEach((item, idx) => {
+          if (item?.content?.message)
+            messages.push(`Échantillon ${idx + 1} : ${item.content.message}`);
+        });
+      }
       toast.error(messages[0] || "Corrige les champs signalés avant de continuer.", {
         description: messages.slice(1).join(" · ") || undefined,
       });
