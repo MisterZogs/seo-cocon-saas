@@ -468,6 +468,66 @@ export default function NewGenerationPage() {
                     )}
                   </div>
                 )}
+
+                <div className="space-y-3 pt-2 border-t">
+                  <div className="flex items-center gap-2">
+                    <Label>Voix de marque — articles de référence</Label>
+                    <Badge variant="secondary">Optionnel</Badge>
+                  </div>
+                  <Alert>
+                    <AlertDescription className="text-xs">
+                      Collez 2 à 5 articles déjà publiés par le client (ou son
+                      rédacteur). L&apos;IA écrira dans cette voix plutôt que dans
+                      un style générique. C&apos;est le réglage qui pèse le plus
+                      sur le rendu final : conditionner sur des textes réels fait
+                      chuter d&apos;un ordre de grandeur les marqueurs d&apos;écriture
+                      machine, là où un « humanizer » appliqué après coup n&apos;a
+                      aucun effet mesurable.
+                    </AlertDescription>
+                  </Alert>
+                  <div className="space-y-3">
+                    {styleArray.fields.map((field, index) => (
+                      <div key={field.id} className="border rounded-md p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <Input
+                            placeholder="Titre de l'article (optionnel)"
+                            {...form.register(`style_samples.${index}.title` as const)}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => styleArray.remove(index)}
+                          >
+                            Supprimer
+                          </Button>
+                        </div>
+                        <Textarea
+                          rows={5}
+                          placeholder="Collez le texte de l'article (min 200 caractères). Plus l'extrait est long et représentatif, mieux la voix est captée."
+                          {...form.register(`style_samples.${index}.content` as const)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {(values.style_samples?.[index]?.content ?? "").length} caractères
+                        </p>
+                      </div>
+                    ))}
+                    {styleArray.fields.length < 5 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => styleArray.append({ title: "", content: "" })}
+                      >
+                        + Ajouter un article de référence
+                      </Button>
+                    )}
+                  </div>
+                  {form.formState.errors.style_samples?.message && (
+                    <p className="text-sm text-destructive">
+                      {form.formState.errors.style_samples.message}
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           )}
