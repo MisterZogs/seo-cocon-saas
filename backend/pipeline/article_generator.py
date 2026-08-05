@@ -243,12 +243,35 @@ def inject_experience_blocks(
 # ============================================================
 
 
-_MAILLAGE_RULES = """MAILLAGE RULES (Bourrelly hybrid method, 2026):
+_CROSS_COCON_RULE = {
+    InterCoconPolicy.STRICT: (
+        "- CROSS-COCON: FORBIDDEN. Silos are watertight — a page of cocon A never "
+        "links to a page of cocon B. The cocoons are already joined at the TOP of "
+        "the tree (homepage → each cocon's target page); linking them laterally "
+        "breaks the semantic silo."
+    ),
+    InterCoconPolicy.MOTHERS_ONLY: (
+        "- CROSS-COCON: mother → mother ONLY, and only where the themes genuinely "
+        "meet. Daughters never link outside their own cocon."
+    ),
+    InterCoconPolicy.LIBRE: (
+        "- CROSS-COCON: allowed where it genuinely helps the reader. Keep it rare."
+    ),
+}
+
+
+def _maillage_rules(policy: InterCoconPolicy) -> str:
+    return f"""MAILLAGE RULES (Bourrelly cocon sémantique method — applied strictly):
 - DAUGHTER → MOTHER: MANDATORY, anchor on the mother's target KW (or close variant)
 - MOTHER → all its DAUGHTERS: MANDATORY, one link per daughter with contextual anchor
-- DAUGHTER ↔ SISTER: only if it genuinely helps the reader continue their journey
-- CROSS-COCON: 1 link per article to a related article in another cocon IS RECOMMENDED (signal of site depth). No strict siloing.
-- Anchor text: prioritize reader clarity, then keyword optimization. Avoid over-optimized exact-match anchors.
+- SISTER ↔ SISTER: MANDATORY and RECIPROCAL — every daughter links to EVERY other
+  daughter of its own cocon. Transversal meshing is part of the method, not an
+  option reserved for "justified" cases. In a cocon of 1 mother + 5 daughters this
+  yields 30 links, each page receiving exactly 5 inbound ones.
+{_CROSS_COCON_RULE[policy]}
+- Anchor text: prioritize reader clarity, then keyword optimization. Vary anchors —
+  never reuse the same wording twice for the same target. Avoid over-optimized
+  exact-match anchors.
 - Every internal link MUST target an existing slug from the cocon reference.
 - Every link needs a justification (why this helps the reader)."""
 
@@ -258,11 +281,15 @@ Your briefs are so detailed and calibrated that a competent writer can produce a
 
 You write for a French SEO agency SaaS platform serving other agencies. Their end-clients publish these articles.
 
-You know the Bourrelly cocon sémantique method and apply it rigorously to internal linking."""
+You know the Bourrelly cocon sémantique method and apply it rigorously to internal linking.
+
+When author voice samples are provided, your tone_guidance and editorial_notes must
+describe THAT voice concretely (rhythm, vocabulary, habits) so the writer can match it,
+rather than giving generic editorial advice."""
 
 
 _FULL_SYSTEM = """You are an expert SEO writer and content strategist. You produce publish-ready articles in Markdown,
-following a strict semantic cocoon structure (Bourrelly method, 2026 hybrid version).
+following a strict semantic cocoon structure (Bourrelly method).
 
 Your articles:
 - Match the SERP intent exactly
@@ -271,7 +298,14 @@ Your articles:
 - Cite external authoritative sources (1-3 per article)
 - Include internal maillage links per the Bourrelly rules provided
 - Are calibrated to the SERP analysis (word count, entities to cover, questions to answer)
-- Integrate the client's uploaded experience elements naturally when present
+
+VOICE — this overrides every other stylistic instinct you have. When author voice
+samples are supplied, you write as that author, not as a generic SEO copywriter.
+Concretely, avoid the tells of machine-written prose: uniform sentence length,
+paragraphs that all run the same size, tricolon ("X, Y, and Z") as a default rhythm,
+hedging modifiers stacked on every claim, section openers that restate the heading,
+conclusions that summarize what was just read, and blanket emphasis on key terms.
+Vary. Commit to claims. Let some sentences be short.
 
 You write for a French SEO agency SaaS platform. The end-audience of the article is the client's target audience."""
 
