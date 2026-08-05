@@ -153,13 +153,23 @@ Doc caching : https://docs.anthropic.com/en/docs/build-with-claude/prompt-cachin
 5b. MODE GÉNÉRATION COMPLÈTE (si activé et éléments uploadés)
    → Claude (Opus pour mère, Sonnet pour filles) génère article complet :
       - Structure H2/H3 calibrée SERP
-      - Corps intégrant les éléments d'expérience uploadés
+      - Rédigé dans la voix des `style_samples` fournis (si présents)
       - Section FAQ (questions PAA)
       - 1-3 liens externes vers sources autoritaires
       - Schema JSON-LD (Article + FAQ)
       - Liens internes avec ancres précises (maillage)
+   → Injection verbatim des éléments d'expérience (article_generator.py)
+      Le LLM ne pose qu'un marqueur `[[EXPERIENCE:id]]` avec son amorce au-dessus
+      et sa conclusion en dessous ; le texte exact du client est substitué EN CODE,
+      en bloc cité et attribué. Même raison que pour le maillage : ce qui doit être
+      exact n'est pas confié au prompt. Si on laissait le modèle recopier, il
+      paraphraserait — or ces blocs sont les seuls passages non générés de l'article,
+      c'est tout leur intérêt (E-E-A-T réel + seuls segments qu'un détecteur peut
+      créditer comme humains).
    → Score E-E-A-T par article (0-100) basé sur :
-      - Expérience démontrée (éléments client intégrés)
+      - Expérience démontrée — UNIQUEMENT les blocs verbatim réellement placés.
+        Plafonné à 40 en code sinon (le modèle se notait 70-80 sur des articles
+        écrits intégralement à partir de sources publiques).
       - Sources externes citées
       - Données originales présentes
       - Unicité vs top 10 SERP
