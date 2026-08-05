@@ -63,7 +63,8 @@ def test_marqueurs_invalides() -> bool:
     )
     ok = _check("[[EXPERIENCE" not in out, "marqueurs retirés du markdown")
     ok &= _check(len(used) == 1, "élément compté une seule fois malgré la double référence")
-    ok &= _check(out.count("6 bars") == 1, "bloc non dupliqué")
+    # Sur le corps, pas sur le titre — celui-ci est repris dans l'attribution.
+    ok &= _check(out.count("avec une bombe du commerce") == 1, "bloc non dupliqué")
     return ok
 
 
