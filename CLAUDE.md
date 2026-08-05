@@ -260,9 +260,54 @@ Points intégrés dans le design du pipeline :
 - **Maillage strict** : étanchéité des silos par défaut, maillage transversal complet
   entre sœurs, mise en conformité déterministe en code (voir étape 6 du pipeline)
 
-**Sur le mythe de l'humanizer :** un humanizer passe les détecteurs IA mais ne modifie AUCUN signal Google (information gain, first-hand experience, engagement, backlinks organiques). Ne PAS marketer l'humanizer comme shield anti-Google. Peut être proposé en option finale sans en faire un argument.
-
 Cas de deindex documentés : HouseFresh (-91%), RetroDodo, Giant Freakin Robot, majorité affiliate AI sites en 2024-2025.
+
+---
+
+## Détection IA — position tranchée (août 2026)
+
+**L'humanizer ne sert à rien. Position antérieure corrigée.** La doc affirmait qu'« un
+humanizer passe les détecteurs IA mais ne modifie aucun signal Google ». La seconde
+moitié tient ; **la première est démentie**. Donc l'option ne vaut ni comme bouclier
+Google ni comme bouclier détecteur, et la proposer commercialement reviendrait à
+facturer un service sans effet mesurable. **Ne pas la réintroduire.**
+
+Mesuré sur pangram.com : sortie brute du pipeline (article mère, 1428 mots) → 100 % IA,
+confiance High. Le même texte repassé au skill `humanizer` → 100 % IA également.
+Cohérent avec Pangram 4 (juillet 2026), entraîné spécifiquement contre les humanizers :
+97,67 % de détection du texte humanizé, classifieur dédié à 91,5-99,4 % selon l'outil,
+FPR 0,0041 %. Confirmé par trois évaluations indépendantes (VU Bruxelles, UChicago BFI,
+UMD). Les articles « tel humanizer bat Pangram » proviennent des vendeurs d'humanizers.
+
+**Ce qui marche à la place — conditionner à la génération, pas retoucher après.**
+Donnée Epoch AI 2026, même modèle et même détecteur, seul le prompt change :
+
+| Condition | FNR Pangram | FNR Originality |
+|---|---|---|
+| Prompt basique | ≤ 1 % | ≤ 1 % |
+| Imitation de style, ~5 passages d'auteur | **10,1 %** | 17,85 % |
+| Idem, rédaction technique | **~25 %** | ~29 % |
+
+Un ordre de grandeur au-dessus de n'importe quel post-traitement, sans dégrader le
+texte. D'où `style_samples` dans le formulaire. Les attaques par RL (StealthRL,
+AuthorMist) atteignent 99,8 % d'évasion mais uniquement contre des détecteurs
+open-source — ni Pangram ni Originality testés — et pour un coût qualité rédhibitoire
+(LLM-judge 2,51/5 contre 3,78/5). Inutilisable sur un livrable facturé.
+
+**Le verbatim vise « Mixed », pas « humain ».** Pangram 4 rend des verdicts mixtes
+(55-66 % de rappel sur l'identification des passages d'auteurs distincts, 92 % de
+précision token-level). Les blocs d'expérience cités ne feront donc pas basculer
+l'article en « humain », mais ressortiront comme segments humains identifiés — ce qui
+change entièrement la conversation avec le client final.
+
+**Cadrage commercial.** Google ne pénalise pas le contenu IA en tant que tel et le
+score de détection n'est pas un facteur de ranking ; ce qui est sanctionné, c'est le
+*scaled content abuse*. Le problème de détection est donc un problème de **perception
+client**, pas de SEO — mais bien réel pour la cible : des agences rapportent des
+clients qui passent les livrables à Originality.ai avant de payer, litiges de
+facturation à la clé. **Ne jamais promettre « indétectable »** (infalsifiable, et
+c'est un tapis roulant contre une boîte financée dont c'est le seul métier). Livrer à
+la place un rapport de détection + l'argumentaire à opposer au client.
 
 ---
 
