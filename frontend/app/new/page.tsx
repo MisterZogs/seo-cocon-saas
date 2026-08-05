@@ -172,6 +172,10 @@ export default function NewGenerationPage() {
         num_cocoons: Number(data.num_cocoons),
         mode: data.mode,
         experience_elements: data.experience_elements,
+        style_samples: data.style_samples.map((s) => ({
+          title: s.title.trim() || null,
+          content: s.content,
+        })),
       };
       const { job_id } = await createGeneration(payload);
       toast.success("Génération lancée");
