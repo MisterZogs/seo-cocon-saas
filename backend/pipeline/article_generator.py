@@ -509,9 +509,7 @@ class ArticleGenerator:
         *,
         store: CheckpointStore | None = None,
     ) -> list[ArticleBrief]:
-        cocon_ref = _build_cocon_reference(cocoons)
-        brand = _build_brand_context(form)
-        cached_context = f"{brand}\n\n{cocon_ref}"
+        cached_context = _build_cached_context(form, cocoons)
 
         briefs: list[ArticleBrief] = []
         for cocon in cocoons:
@@ -587,9 +585,7 @@ class ArticleGenerator:
         *,
         store: CheckpointStore | None = None,
     ) -> list[GeneratedArticle]:
-        cocon_ref = _build_cocon_reference(cocoons)
-        brand = _build_brand_context(form)
-        cached_context = f"{brand}\n\n{cocon_ref}"
+        cached_context = _build_cached_context(form, cocoons)
 
         articles: list[GeneratedArticle] = []
         for cocon in cocoons:
