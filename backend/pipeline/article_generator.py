@@ -405,13 +405,16 @@ Constraints:
 
 
 def _build_full_prompt(
-    stub: ArticleStub, cocon: CoconStructure, analysis: SerpAnalysis
+    stub: ArticleStub,
+    cocon: CoconStructure,
+    analysis: SerpAnalysis,
+    policy: InterCoconPolicy,
 ) -> str:
     return f"""{_stub_block(stub, cocon)}
 
 {_serp_analysis_block(analysis)}
 
-{_MAILLAGE_RULES}
+{_maillage_rules(policy)}
 
 TASK — Produce a publish-ready article as JSON:
 {{
