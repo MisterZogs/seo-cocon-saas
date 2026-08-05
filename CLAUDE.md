@@ -243,7 +243,14 @@ Raisons : marketplace = contre CGU Google, risque légal/réputationnel, meilleu
 
 Points intégrés dans le design du pipeline :
 
-- **E-E-A-T** : Mode 2 exige upload d'expérience, score E-E-A-T par article
+- **E-E-A-T** : Mode 2 exige upload d'expérience, score E-E-A-T par article.
+  Les éléments d'expérience sont repris **verbatim** (bloc cité + attribué), jamais
+  paraphrasés — voir « Détection IA » ci-dessous. Le score `experience` est plafonné
+  à 40 en code si aucun bloc verbatim n'a été placé : ce score est l'argument
+  anti-deindex vendu aux agences, le laisser mentir viderait la feature de son sens.
+- **Voix de marque (few-shot)** : l'agence peut fournir jusqu'à 5 articles existants
+  du client. Ils sont injectés dans le contexte caché partagé (`style_samples`) et
+  conditionnent la génération. C'est le levier le plus fort sur le rendu final.
 - **AI Overviews (SGE)** : prompts optimisés pour réponse directe premiers 100 mots + structure liste/tableau
 - **Helpful Content** : information gain calculé vs top 10 SERP
 - **Schema markup** : Article + FAQ auto-générés
