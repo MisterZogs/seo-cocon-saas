@@ -49,6 +49,16 @@ const formSchema = z
         content: z.string().min(20),
       }),
     ),
+    style_samples: z
+      .array(
+        z.object({
+          title: z.string(),
+          // 200 caractères : en dessous, l'échantillon ne porte pas assez de
+          // signal stylistique pour infléchir la génération.
+          content: z.string().min(200, "Échantillon trop court (min 200 caractères)"),
+        }),
+      )
+      .max(5, "5 échantillons maximum"),
   })
   .superRefine((data, ctx) => {
     if (data.mode === "full" && data.experience_elements.length === 0) {
