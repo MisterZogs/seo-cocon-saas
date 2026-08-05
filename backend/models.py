@@ -36,11 +36,33 @@ class InterCoconPolicy(str, Enum):
 
 
 class ExperienceElement(BaseModel):
-    """Élément d'expérience uploadé par le client (obligatoire en mode FULL)."""
+    """Élément d'expérience uploadé par le client (obligatoire en mode FULL).
 
+    `content` est repris **verbatim** dans l'article, en bloc cité et attribué —
+    jamais paraphrasé par le modèle. C'est ce qui produit de vrais passages non
+    générés (signal E-E-A-T réel, et seuls segments qu'un détecteur peut créditer
+    comme humains). L'injection est faite en code, voir article_generator.py.
+    """
+
+    id: str = Field(default_factory=lambda: uuid4().hex[:8])
     type: Literal["case_study", "data", "screenshot", "insight", "quote"]
     title: str
     content: str
+    source: str | None = None
+
+
+class StyleSample(BaseModel):
+    """Échantillon d'écriture existant du client, injecté en few-shot.
+
+    Sert à caler la voix de marque au moment de la génération. Effet secondaire
+    mesuré (Epoch AI, 2026) : conditionner sur ~5 passages d'auteur fait passer
+    le taux de faux négatifs des détecteurs de ≤1 % à ~10 % (~25 % en rédaction
+    technique) — un ordre de grandeur de plus que n'importe quel humanizer
+    post-hoc, sans dégrader le texte.
+    """
+
+    title: str | None = None
+    content: str = Field(..., min_length=200)
     source: str | None = None
 
 
