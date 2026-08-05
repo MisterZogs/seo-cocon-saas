@@ -631,6 +631,7 @@ class ArticleGenerator:
         analysis: SerpAnalysis,
         all_cocoons: list[CoconStructure],
         cached_context: str,
+        form: ClientForm,
     ) -> GeneratedArticle:
         # Opus pour mère (qualité max), Sonnet pour filles
         model: ModelTier = "opus" if stub.article_type == ArticleType.MOTHER else "sonnet"
@@ -638,7 +639,7 @@ class ArticleGenerator:
         parsed, meta = await self.anthropic.complete_json(
             model=model,
             system=_FULL_SYSTEM,
-            user_prompt=_build_full_prompt(stub, cocon, analysis),
+            user_prompt=_build_full_prompt(stub, cocon, analysis, form.inter_cocon_policy),
             cached_context=cached_context,
             max_tokens=16000,
         )
