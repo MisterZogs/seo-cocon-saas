@@ -477,10 +477,17 @@ CRITICAL:
 - content_markdown must be COMPLETE and PUBLISH-READY (not a draft or outline)
 - Internal links in the markdown must use the format [[INTERNAL_LINK:slug|anchor text]] — they will be resolved to real HTML links by the export step
 - Every link in `internal_links` list must correspond to a [[INTERNAL_LINK:...]] in the markdown
+- Experience elements: place [[EXPERIENCE:<id>]] alone on its own line where the
+  client's material belongs, with your lead-in above and your takeaway below. Never
+  write out that material yourself — the exact text is substituted afterwards.
 - FAQ section must appear at the end of content_markdown as H2 "FAQ" with each Q as H3
 - Answer the target keyword's question in the first 100 words (AI Overviews optimization)
 - Target word count: ~{analysis.recommended_word_count}
-- Language: same as the H1 title"""
+- Language: same as the H1 title
+- eeat_score.experience must reflect ONLY genuine first-hand material actually placed
+  via [[EXPERIENCE:...]] markers. Absent any such marker, it cannot exceed 40 — a
+  well-researched article written from public sources demonstrates expertise, not
+  experience. Say so in `warnings` rather than inflating the number."""
 
 
 # ============================================================
