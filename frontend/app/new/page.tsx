@@ -121,7 +121,7 @@ export default function NewGenerationPage() {
     const fieldsPerStep: Record<number, (keyof FormValues)[]> = {
       1: ["product", "description", "niche", "audience"],
       2: ["seed_keywords_text"],
-      3: ["num_cocoons", "mode", "experience_elements"],
+      3: ["num_cocoons", "mode", "experience_elements", "style_samples"],
     };
     const ok = await form.trigger(fieldsPerStep[step] ?? []);
     if (!ok) {
