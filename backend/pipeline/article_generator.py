@@ -618,7 +618,7 @@ class ArticleGenerator:
                     continue
 
                 article = await self._generate_full_one(
-                    stub, cocon, analysis, cocoons, cached_context
+                    stub, cocon, analysis, cocoons, cached_context, form
                 )
                 articles.append(article)
                 await _checkpoint_one(store, f"article:{stub.slug}", article)
