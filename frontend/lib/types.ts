@@ -64,6 +64,8 @@ export interface ClientForm {
   /** Omis = `strict` côté backend. */
   inter_cocon_policy?: InterCoconPolicy;
   experience_elements: ExperienceElement[];
+  /** Max 5 côté backend. */
+  style_samples?: StyleSample[];
   agency_id?: string | null;
   client_project_name?: string | null;
 }
