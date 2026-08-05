@@ -290,6 +290,10 @@ class GeneratedArticle(BaseModel):
     eeat_score: EEATScore | None = None
     schema_jsonld: dict = Field(..., description="Schema.org JSON-LD Article + FAQ")
     content_markdown: str = Field(..., description="Article complet en Markdown")
+    experience_used: list[str] = Field(
+        default_factory=list,
+        description="IDs des ExperienceElement repris verbatim dans cet article",
+    )
     word_count: int
 
 
