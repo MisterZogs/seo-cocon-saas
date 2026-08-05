@@ -27,6 +27,7 @@ from models import (
     ClientForm,
     CoconStructure,
     EEATScore,
+    InterCoconPolicy,
     ExperienceElement,
     ExternalLink,
     FAQItem,
