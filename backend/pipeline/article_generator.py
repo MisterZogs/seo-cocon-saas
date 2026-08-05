@@ -14,6 +14,7 @@ est mis en cache car réutilisé pour chaque génération d'article de la run.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import date
 
 from clients.anthropic_client import AnthropicClient, ModelTier
@@ -26,6 +27,7 @@ from models import (
     ClientForm,
     CoconStructure,
     EEATScore,
+    ExperienceElement,
     ExternalLink,
     FAQItem,
     GeneratedArticle,
