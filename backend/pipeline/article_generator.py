@@ -745,6 +745,37 @@ def _parse_external_links(raw: list[dict]) -> list[ExternalLink]:
     return result
 
 
+_NO_EXPERIENCE_CAP = 40
+
+
+def _cap_experience_score(eeat: EEATScore | None, used_experience: list[str]) -> EEATScore | None:
+    """Plafonne le score « expérience » quand aucun matériau client n'a été placé.
+
+    Le prompt le demande déjà, mais le modèle se note complaisamment : sur les
+    runs mesurés il attribuait 70-80 en « expérience » à des articles écrits
+    intégralement à partir de sources publiques. Or ce score est précisément
+    l'argument anti-deindex vendu aux agences — le laisser mentir vide la
+    fonctionnalité de son sens. Donc plafond appliqué en code.
+    """
+    if eeat is None or used_experience or eeat.experience <= _NO_EXPERIENCE_CAP:
+        return eeat
+
+    logger.info("Score expérience %d → %d (aucun bloc verbatim)", eeat.experience, _NO_EXPERIENCE_CAP)
+    others = [eeat.expertise, eeat.authoritativeness, eeat.trustworthiness]
+    return eeat.model_copy(
+        update={
+            "experience": _NO_EXPERIENCE_CAP,
+            "overall": round((_NO_EXPERIENCE_CAP + sum(others)) / 4),
+            "warnings": [
+                "Aucun élément d'expérience first-hand intégré : l'article s'appuie "
+                "uniquement sur des sources publiques. Faire relire et enrichir par "
+                "le client avant publication.",
+                *eeat.warnings,
+            ],
+        }
+    )
+
+
 def _parse_eeat(raw: dict | None) -> EEATScore | None:
     if not raw:
         return None
