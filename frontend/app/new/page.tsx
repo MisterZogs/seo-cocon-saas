@@ -97,12 +97,18 @@ export default function NewGenerationPage() {
           content: "j'ai été appelé par un particulier ayant une petite maison avec un nid de frelons à détruire. J'ai passé de l'insecticide sous pression à 6 bars et les frelons ont été tués.",
         },
       ],
+      style_samples: [],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "experience_elements",
+  });
+
+  const styleArray = useFieldArray({
+    control: form.control,
+    name: "style_samples",
   });
 
   const mode = form.watch("mode");
