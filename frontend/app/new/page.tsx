@@ -557,6 +557,14 @@ export default function NewGenerationPage() {
                     value={`${values.experience_elements.length}`}
                   />
                 )}
+                <Row
+                  label="Voix de marque"
+                  value={
+                    values.style_samples?.length
+                      ? `${values.style_samples.length} article(s) de référence`
+                      : "Aucun échantillon — style générique"
+                  }
+                />}
                 <p className="text-xs text-muted-foreground pt-3 border-t">
                   Le job va prendre environ 3 à 10 minutes selon le mode et le
                   nombre de cocons. Tu pourras suivre la progression en temps
