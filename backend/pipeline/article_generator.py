@@ -96,12 +96,6 @@ def _build_cocon_reference(cocoons: list[CoconStructure]) -> str:
 
 
 def _build_brand_context(form: ClientForm) -> str:
-    exp_block = ""
-    if form.experience_elements:
-        lines = ["\nEXPERIENCE ELEMENTS UPLOADED BY CLIENT (integrate these when generating):"]
-        for e in form.experience_elements:
-            lines.append(f"- [{e.type}] {e.title}: {e.content[:400]}")
-        exp_block = "\n".join(lines)
     return (
         f"# CLIENT CONTEXT\n"
         f"Product/Service: {form.product}\n"
@@ -110,8 +104,136 @@ def _build_brand_context(form: ClientForm) -> str:
         f"Target audience: {form.audience}\n"
         f"Niche: {form.niche}\n"
         f"Current year: {date.today().year}"
-        f"{exp_block}"
+        f"{_build_experience_context(form)}"
     )
+
+
+def _build_experience_context(form: ClientForm) -> str:
+    """Catalogue des éléments d'expérience, avec la règle du verbatim.
+
+    Le modèle voit le contenu intégral pour pouvoir écrire une amorce cohérente,
+    mais il ne doit jamais le recopier ni le reformuler : il pose un marqueur,
+    et `inject_experience_blocks()` substitue le texte exact du client.
+    """
+    if not form.experience_elements:
+        return ""
+
+    lines = [
+        "\n\n# EXPERIENCE ELEMENTS (first-hand material provided by the client)",
+        "",
+        "These are the ONLY parts of the article that carry genuine first-hand",
+        "experience. They must reach the reader in the client's own words.",
+        "",
+        "RULES — non-negotiable:",
+        "1. NEVER paraphrase, summarize, rewrite, translate or quote this material.",
+        "2. Where an element belongs, emit a marker ALONE on its own line:",
+        "     [[EXPERIENCE:<id>]]",
+        "   The exact client text is substituted there afterwards, as an attributed",
+        "   block quote. Anything you write yourself would destroy its value.",
+        "3. Write a lead-in sentence BEFORE the marker that sets up what follows,",
+        "   and a takeaway sentence AFTER it that draws the lesson. Those are yours.",
+        "4. Use each element AT MOST ONCE across the whole article, only where it",
+        "   genuinely supports the point. A forced placement is worse than none.",
+        "5. Count the block's words in your word_count target.",
+        "",
+        "Available elements:",
+    ]
+    for e in form.experience_elements:
+        source = f" | source: {e.source}" if e.source else ""
+        lines.append(f'\n- id=`{e.id}` | type={e.type} | title="{e.title}"{source}')
+        lines.append(f"  content (DO NOT REPRODUCE — reference by marker only):")
+        lines.append(f"  «{e.content[:2000]}»")
+    return "\n".join(lines)
+
+
+def _build_style_context(form: ClientForm) -> str:
+    """Few-shot sur les écrits existants du client — cale la voix de marque.
+
+    Le contexte est mis en cache et partagé par tous les articles de la run, donc
+    les échantillons ne sont facturés plein tarif qu'une fois.
+    """
+    if not form.style_samples:
+        return ""
+
+    lines = [
+        "# AUTHOR VOICE — reference samples",
+        "",
+        "The passages below were written by the client's own team. They define the",
+        "voice you must write in. Study them for:",
+        "- sentence rhythm and length variation (including deliberately short ones)",
+        "- vocabulary level, jargon tolerance, and recurring turns of phrase",
+        "- how the author opens, transitions, and closes",
+        "- degree of directness, use of first person, humour, rhetorical questions",
+        "- formatting habits: paragraph length, list frequency, emphasis density",
+        "",
+        "Match this voice. Do NOT copy their sentences, topics or examples — only",
+        "their manner of writing. If the samples conflict with generic 'good SEO",
+        "writing' habits, the samples win.",
+    ]
+    for i, s in enumerate(form.style_samples, 1):
+        header = f'\n## Sample {i}' + (f' — "{s.title}"' if s.title else "")
+        lines.append(header)
+        lines.append(f"\n{s.content[:6000]}")
+    return "\n".join(lines)
+
+
+# ============================================================
+# INJECTION VERBATIM DES ÉLÉMENTS D'EXPÉRIENCE
+# ============================================================
+#
+# Même principe que la normalisation du maillage : ce qui doit être exact est
+# fait en code, pas confié au prompt. Le modèle place un marqueur, on substitue
+# le texte du client au caractère près. C'est la seule façon de garantir que
+# l'article contient de vrais passages non générés.
+
+_EXPERIENCE_MARKER = re.compile(r"^[ \t]*\[\[EXPERIENCE:([^\]]+)\]\][ \t]*$", re.MULTILINE)
+
+_TYPE_LABELS = {
+    "case_study": "Cas client",
+    "data": "Données propriétaires",
+    "screenshot": "Capture",
+    "insight": "Retour de terrain",
+    "quote": "Verbatim",
+}
+
+
+def _format_experience_block(element: ExperienceElement) -> str:
+    """Bloc cité et attribué — visuellement distinct du corps rédigé."""
+    label = _TYPE_LABELS.get(element.type, element.type)
+    quoted = "\n".join(f"> {line}" if line.strip() else ">" for line in element.content.splitlines())
+    attribution = f"> — {label} : {element.title}"
+    if element.source:
+        attribution += f" ({element.source})"
+    return f"{quoted}\n>\n{attribution}"
+
+
+def inject_experience_blocks(
+    markdown: str, elements: list[ExperienceElement]
+) -> tuple[str, list[str], list[str]]:
+    """Remplace les marqueurs par le contenu client verbatim.
+
+    Retourne (markdown, ids utilisés, ids jamais placés). Un marqueur qui pointe
+    vers un id inconnu est retiré — laisser un `[[EXPERIENCE:xxx]]` dans le
+    livrable serait pire que de perdre le bloc.
+    """
+    by_id = {e.id: e for e in elements}
+    used: list[str] = []
+
+    def _replace(match: re.Match) -> str:
+        element_id = match.group(1).strip()
+        element = by_id.get(element_id)
+        if element is None:
+            logger.warning("Marqueur d'expérience inconnu, retiré : %s", element_id)
+            return ""
+        if element_id in used:
+            logger.warning("Élément d'expérience %s référencé 2×, 2e occurrence retirée", element_id)
+            return ""
+        used.append(element_id)
+        return _format_experience_block(element)
+
+    result = _EXPERIENCE_MARKER.sub(_replace, markdown)
+    unused = [e.id for e in elements if e.id not in used]
+    return result, used, unused
 
 
 # ============================================================
