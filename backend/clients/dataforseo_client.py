@@ -131,7 +131,7 @@ class DataForSEOClient:
     # ============================================================
 
     @retry(
-        retry=retry_if_exception_type((httpx.HTTPError, httpx.TimeoutException)),
+        retry=retry_if_exception(_is_retryable),
         wait=wait_exponential(multiplier=2, min=1, max=15),
         stop=stop_after_attempt(3),
         reraise=True,
@@ -143,8 +143,29 @@ class DataForSEOClient:
                 auth=(self._login, self._password),  # type: ignore[arg-type]
                 json=payload,
             )
+            if response.status_code >= 400:
+                # DataForSEO explique la cause dans le corps ; `raise_for_status`
+                # seul ne renvoie que « 403 Forbidden », inexploitable en support.
+                logger.error(
+                    "DataForSEO %s → HTTP %d : %s",
+                    path,
+                    response.status_code,
+                    response.text[:300],
+                )
             response.raise_for_status()
-            return response.json()
+
+            data = response.json()
+            # Une réponse 200 peut porter une erreur applicative (quota, paramètre
+            # invalide). Sans ce log, les parsers renvoient une liste vide et le
+            # pipeline continue silencieusement sur des données absentes.
+            if data.get("status_code") != 20000:
+                logger.error(
+                    "DataForSEO %s → status %s : %s",
+                    path,
+                    data.get("status_code"),
+                    data.get("status_message"),
+                )
+            return data
 
     # ============================================================
     # Parsers réponses réelles DataForSEO
