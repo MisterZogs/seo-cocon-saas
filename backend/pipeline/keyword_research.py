@@ -262,10 +262,18 @@ class KeywordResearcher:
         anthropic: AnthropicClient,
         dataforseo: DataForSEOClient,
         top_serp_analysis: int = 15,
+        max_keyword_ideas: int = 200,
+        min_viable_keywords: int = 20,
     ) -> None:
         self.anthropic = anthropic
         self.dataforseo = dataforseo
         self.top_serp_analysis = top_serp_analysis
+        # 200 : assez pour donner du choix au LLM, assez peu pour tenir dans le
+        # prompt. L'API peut en renvoyer 20 000.
+        self.max_keyword_ideas = max_keyword_ideas
+        # En dessous de ce nombre de mots-clés à volume non nul, on considère que
+        # Google n'a pas assez de matière et on complète par l'expansion LLM.
+        self.min_viable_keywords = min_viable_keywords
 
     async def research(
         self, form: ClientForm
