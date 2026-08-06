@@ -55,6 +55,23 @@ MODELS: dict[ModelTier, str] = {
 }
 
 
+class ResponseTruncated(ValueError):
+    """La réponse a été coupée par max_tokens : le JSON est syntaxiquement incomplet.
+
+    Type dédié pour que l'appelant puisse réessayer avec un budget plus large, au
+    lieu de distinguer ce cas d'une vraie erreur de parsing en cherchant une chaîne
+    dans le message.
+    """
+
+    def __init__(self, output_tokens: int, max_tokens: int) -> None:
+        self.output_tokens = output_tokens
+        self.max_tokens = max_tokens
+        super().__init__(
+            f"Réponse coupée à {output_tokens} tokens (plafond {max_tokens}) : "
+            f"le JSON est incomplet."
+        )
+
+
 class CompletionResult(BaseModel):
     text: str
     model: str
