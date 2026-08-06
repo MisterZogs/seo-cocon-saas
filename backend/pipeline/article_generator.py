@@ -304,6 +304,20 @@ def _maillage_rules(policy: InterCoconPolicy) -> str:
 - Every link needs a justification (why this helps the reader)."""
 
 
+# Ajouté au prompt uniquement lors du rattrapage après troncature. Vise la
+# verbosité (prose des key_points, justifications à rallonge), pas la couverture :
+# le brief doit rester complet, seulement moins bavard.
+_BRIEF_CONCISION_SUFFIX = """
+
+LENGTH LIMIT — your previous answer was cut off because it was too long.
+Produce the SAME structure, with the SAME coverage, but write tersely:
+- key_points: max 5 per section, one short line each (not sentences with clauses)
+- justification / context / reason: max 12 words each
+- editorial_notes: max 120 words total
+- do not restate the SERP analysis back to me
+Completing the JSON matters more than any single field being detailed."""
+
+
 _BRIEF_SYSTEM = """You are an expert SEO content strategist producing detailed editorial briefs for human writers.
 Your briefs are so detailed and calibrated that a competent writer can produce a top-ranking article from them.
 
