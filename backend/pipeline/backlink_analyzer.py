@@ -131,15 +131,23 @@ class BacklinkAnalyzer:
     async def analyze_cocon(
         self, form: ClientForm, cocon: CoconStructure
     ) -> BacklinkReport:
-        # 1. Récupère les top compétiteurs sur le KW de la mère
-        serp = await self.dataforseo.get_serp(cocon.main_keyword, depth=self.top_competitors)
-        competitor_urls = [
-            r["url"] for r in serp.get("organic_results", [])[: self.top_competitors]
-        ]
+        # 1. Récupère les top compétiteurs sur le KW de la mère.
+        #    depth=10 puis déduplication : plusieurs résultats du top 10 peuvent
+        #    appartenir au même domaine, et interroger `depth=top_competitors`
+        #    ne laissait que 3 concurrents distincts sur les 5 attendus.
+        serp = await self.dataforseo.get_serp(cocon.main_keyword, depth=10)
+        competitor_domains = _unique_domains(
+            [r["url"] for r in serp.get("organic_results", []) if r.get("url")],
+            limit=self.top_competitors,
+        )
+        logger.info(
+            "Cocon %s : %d domaines concurrents retenus — %s",
+            cocon.id, len(competitor_domains), ", ".join(competitor_domains),
+        )
 
         # 2. Fetch backlink summary + referring domains pour chaque concurrent (parallèle)
         competitors_data = await asyncio.gather(
-            *(self._fetch_competitor(url) for url in competitor_urls),
+            *(self._fetch_competitor(d) for d in competitor_domains),
             return_exceptions=True,
         )
         competitors_data = [c for c in competitors_data if not isinstance(c, Exception)]
