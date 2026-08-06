@@ -89,6 +89,23 @@ class ClientForm(BaseModel):
     agency_id: str | None = None
     client_project_name: str | None = None
 
+    def experience_coverage(self) -> "ExperienceCoverage":
+        """Combien d'articles auront un vrai bloc first-hand, et combien seront plafonnés.
+
+        Un `experience_element` n'est placé que dans **un seul** article de la run
+        (unicité appliquée dans article_generator). Fournir 1 élément pour un cocon
+        de 6 donne donc 1 article crédité et 5 plafonnés à 40 — comportement correct,
+        mais qu'il faut annoncer AVANT la génération et pas laisser découvrir dans les
+        scores, une fois les tokens dépensés.
+        """
+        expected = self.num_cocoons * TYPICAL_ARTICLES_PER_COCON
+        available = len(self.experience_elements)
+        return ExperienceCoverage(
+            expected_articles=expected,
+            elements_provided=available,
+            articles_capped=max(0, expected - available),
+        )
+
 
 # ============================================================
 # KEYWORD RESEARCH
