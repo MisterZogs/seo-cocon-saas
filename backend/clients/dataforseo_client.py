@@ -281,7 +281,7 @@ class DataForSEOClient:
         tasks = data.get("tasks", [])
         if not tasks or not tasks[0].get("result"):
             return []
-        items = tasks[0]["result"][0].get("items", [])
+        items = tasks[0]["result"][0].get("items") or []  # cf. _parse_serp : peut être null
         return [
             {
                 "domain": item.get("domain"),
