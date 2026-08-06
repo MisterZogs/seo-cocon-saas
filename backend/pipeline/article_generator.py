@@ -717,7 +717,7 @@ class ArticleGenerator:
             eeat_score=eeat,
             schema_jsonld=parsed.get("schema_jsonld", {}),
             content_markdown=markdown,
-            experience_used=used_experience,
+            experience_used=placed,
             # Recompté après injection : les blocs verbatim changent le total.
             word_count=len(markdown.split()),
         )
