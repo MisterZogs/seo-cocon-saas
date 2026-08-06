@@ -19,7 +19,7 @@ from typing import Any
 import httpx
 from tenacity import (
     retry,
-    retry_if_exception_type,
+    retry_if_exception,
     stop_after_attempt,
     wait_exponential,
 )
@@ -27,6 +27,24 @@ from tenacity import (
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://api.dataforseo.com"
+
+
+def _is_retryable(exc: BaseException) -> bool:
+    """Ne rejoue que ce qui a une chance d'aboutir au 2e essai.
+
+    `httpx.HTTPError` est la classe parente de `HTTPStatusError` : l'utiliser
+    comme prédicat fait rejouer 3 fois les erreurs définitives. Constaté en réel
+    sur un compte non vérifié — chaque appel produisait 3 requêtes 403 et 15 s
+    de backoff pour rien. Même bug que celui corrigé sur le client Anthropic.
+
+    401/403 (credentials, compte non vérifié) et 402 (solde épuisé) ne se
+    résolvent pas en réessayant : il faut une action de l'agence.
+    """
+    if isinstance(exc, httpx.HTTPStatusError):
+        status = exc.response.status_code
+        return status == 429 or status >= 500
+    # Timeouts, coupures réseau, DNS : transitoires par nature.
+    return isinstance(exc, httpx.TransportError)
 
 
 class DataForSEOClient:
