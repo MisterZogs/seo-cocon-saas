@@ -118,7 +118,11 @@ class DataForSEOClient:
         if self._mock:
             return _mock_backlinks_summary(target_url)
 
-        payload = [{"target": target_url, "internal_list_limit": 10}]
+        # `rank_scale` : sans ce paramètre, DataForSEO renvoie son rank sur 0-1000
+        # (rentokil.com sortait à 440). Les agences lisent un DR sur 0-100 — un
+        # « DR 440 » dans le livrable passe pour un bug. L'échelle étant
+        # logarithmique, on ne peut pas diviser par 10 : c'est l'API qui convertit.
+        payload = [{"target": target_url, "internal_list_limit": 10, "rank_scale": "one_hundred"}]
         data = await self._post("/v3/backlinks/summary/live", payload)
         return self._parse_backlinks_summary(data)
 
