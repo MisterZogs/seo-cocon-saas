@@ -195,8 +195,12 @@ class DataForSEOClient:
             results.append(
                 {
                     "keyword": item.get("keyword"),
-                    "monthly_volume": item.get("search_volume") or 0,
-                    "cpc": item.get("cpc") or 0.0,
+                    # `null` (Google n'a pas de donnée) et `0` (mesuré, personne
+                    # ne cherche) doivent rester distincts : le second est une
+                    # information forte pour écarter un mot-clé, le premier non.
+                    # Le `or 0` d'origine les confondait.
+                    "monthly_volume": item.get("search_volume"),
+                    "cpc": item.get("cpc"),
                     "competition_score": item.get("competition_index", 0) / 100
                     if item.get("competition_index") is not None
                     else None,
