@@ -90,6 +90,37 @@ class DataForSEOClient:
         )
         return self._parse_search_volume(data)
 
+    async def get_keyword_ideas(
+        self, seeds: list[str], limit: int = 200
+    ) -> list[dict[str, Any]]:
+        """Mots-clés réels associés aux seeds, avec leurs volumes Google Ads.
+
+        Remplace l'invention de mots-clés par un LLM. Sur un run réel, l'expansion
+        par Claude produisait 24 mots-clés à zéro recherche sur 30 : le modèle
+        invente des tournures plausibles mais que personne ne tape. Ici Google
+        fournit les mots-clés que les gens cherchent vraiment, et le LLM se
+        contente de les regrouper — ce qu'il fait bien.
+
+        Trié par volume décroissant et tronqué à `limit` : l'API peut en renvoyer
+        jusqu'à 20 000, impossible à passer dans un prompt.
+        """
+        if self._mock:
+            return _mock_keyword_ideas(seeds, limit)
+
+        payload = [
+            {
+                "keywords": [s.strip().lower() for s in seeds[:20]],  # 20 seeds max
+                "location_code": self.location_code,
+                "language_code": self.language_code,
+                "sort_by": "search_volume",
+                "include_adult_keywords": False,
+            }
+        ]
+        data = await self._post(
+            "/v3/keywords_data/google_ads/keywords_for_keywords/live", payload
+        )
+        return self._parse_search_volume(data)[:limit]
+
     async def get_serp(self, keyword: str, depth: int = 10) -> dict[str, Any]:
         """Retourne la SERP (top N URLs + features + PAA)."""
         if self._mock:
