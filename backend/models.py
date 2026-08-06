@@ -67,6 +67,26 @@ class StyleSample(BaseModel):
     source: str | None = None
 
 
+# Le nombre de filles est décidé par le modèle au design du cocon (3 à 8, voir
+# Cocon.daughters), donc le total exact n'est pas connu au moment du formulaire.
+# 1 mère + 5 filles est le cas nominal : sert d'estimation pour prévenir l'agence.
+TYPICAL_ARTICLES_PER_COCON = 6
+
+
+class ExperienceCoverage(BaseModel):
+    """Estimation de la couverture first-hand d'une run, calculée avant génération."""
+
+    expected_articles: int
+    elements_provided: int
+    articles_capped: int = Field(
+        ..., description="Articles qui n'auront aucun bloc verbatim → E-E-A-T plafonné à 40"
+    )
+
+    @property
+    def is_short(self) -> bool:
+        return self.articles_capped > 0
+
+
 class ClientForm(BaseModel):
     product: str = Field(..., description="Nom du produit ou service du client final")
     description: str = Field(..., description="Description détaillée du produit/service")
