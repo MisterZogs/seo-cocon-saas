@@ -412,11 +412,32 @@ export default function NewGenerationPage() {
                     <Label>Éléments d&apos;expérience client (obligatoire pour Full)</Label>
                     <Alert>
                       <AlertDescription className="text-xs">
-                        Google pénalise le contenu IA générique. Uploadez au moins
-                        1 case study, data propre ou insight terrain pour que
-                        l&apos;IA l&apos;intègre naturellement dans les articles.
+                        Chaque élément est repris <strong>mot pour mot</strong> dans un
+                        article, en bloc cité et attribué — et un élément donné n&apos;est
+                        placé que dans <strong>un seul</strong> article. Comptez donc
+                        idéalement un élément par article, soit{" "}
+                        {Number(values.num_cocoons || 1) * TYPICAL_ARTICLES_PER_COCON} pour{" "}
+                        {values.num_cocoons || 1} cocon
+                        {Number(values.num_cocoons || 1) > 1 ? "s" : ""}.
                       </AlertDescription>
                     </Alert>
+                    {(() => {
+                      const expected =
+                        Number(values.num_cocoons || 1) * TYPICAL_ARTICLES_PER_COCON;
+                      const provided = values.experience_elements?.length ?? 0;
+                      const capped = Math.max(0, expected - provided);
+                      if (capped === 0) return null;
+                      return (
+                        <p className="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                          {provided} élément{provided > 1 ? "s" : ""} pour ~{expected}{" "}
+                          articles : <strong>{capped} article{capped > 1 ? "s" : ""}</strong>{" "}
+                          n&apos;auront aucun passage first-hand et verront leur score
+                          E-E-A-T « expérience » plafonné à 40. La génération reste
+                          possible, mais ces articles seront rédigés uniquement à partir
+                          de sources publiques.
+                        </p>
+                      );
+                    })()}
                     <div className="space-y-3">
                       {fields.map((field, index) => (
                         <div key={field.id} className="border rounded-md p-3 space-y-2">
