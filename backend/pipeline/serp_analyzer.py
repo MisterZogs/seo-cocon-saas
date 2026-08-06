@@ -31,6 +31,22 @@ SCRAPE_USER_AGENT = (
     "(KHTML, like Gecko) Version/17.5 Safari/605.1.15"
 )
 
+# Un User-Agent seul ne suffit pas : les filtres anti-bot regardent aussi l'absence
+# d'Accept / Accept-Language, signature classique d'un client scripté. Ça ne passera
+# pas Cloudflare en mode challenge, mais ça récupère les rejets les plus simples.
+SCRAPE_HEADERS = {
+    "User-Agent": SCRAPE_USER_AGENT,
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,*/*;q=0.8"
+    ),
+    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+    "Sec-Fetch-Dest": "document",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "none",
+    "Upgrade-Insecure-Requests": "1",
+}
+
 SCRAPE_TIMEOUT = 12.0
 SCRAPE_MAX_CONCURRENT = 5
 SCRAPE_MAX_BYTES = 500_000  # 500KB par page suffit pour extraire la structure
