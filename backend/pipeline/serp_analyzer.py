@@ -228,12 +228,16 @@ class SerpAnalyzer:
             ),
             top_result_format=parsed.get("top_result_format", "guide long"),
         )
-        logger.info(
-            "SERP analysé: %s (pages=%d, wc_avg=%d, wc_reco=%d)",
+        log = logger.warning if analysis.low_sample else logger.info
+        log(
+            "SERP analysé: %s (référence=%d/%d URLs, rejets=%s, wc_avg=%d, wc_reco=%d)%s",
             keyword,
             len(scraped_pages),
+            len(urls),
+            dict(rejected) or "aucun",
             avg_wc,
             analysis.recommended_word_count,
+            " — ÉCHANTILLON FAIBLE" if analysis.low_sample else "",
         )
         return analysis
 
