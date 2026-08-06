@@ -34,6 +34,25 @@ SCRAPE_TIMEOUT = 12.0
 SCRAPE_MAX_CONCURRENT = 5
 SCRAPE_MAX_BYTES = 500_000  # 500KB par page suffit pour extraire la structure
 
+# `depth` est compté par DataForSEO sur TOUS les types d'items de la SERP
+# (organic, paa, video, local_pack, related_searches…), pas sur les seuls organic.
+# Mesuré sur 6 requêtes crypto FR avec depth=10 : 8 à 9 URLs organiques seulement,
+# jamais 10. On demande donc large et on tronque nous-mêmes côté organic.
+SERP_DEPTH = 30
+
+# Une page qui répond 200 mais ne rend son contenu qu'en JS (binance.com, youtube,
+# reddit, etoro…) renvoie un word_count de 0 à 20. Elle passait auparavant pour une
+# page de référence valide : comptée dans scraped_pages_count, moyennée dans les
+# H2/H3 et envoyée à Claude comme exemple à imiter. Mesuré sur « copytrade binance » :
+# 8 pages « scrapées » dont 5 vides, soit un brief calibré sur 3 pages réelles alors
+# qu'il en annonçait 8.
+MIN_REFERENCE_WORDS = 250
+
+# En dessous de ce nombre de pages de référence, le brief reste produit mais il est
+# marqué `low_sample` : la calibration (longueur cible, nb de H2, entités) repose sur
+# un échantillon trop mince pour être opposée telle quelle à un client.
+LOW_SAMPLE_THRESHOLD = 4
+
 
 # ============================================================
 # PROMPTS
