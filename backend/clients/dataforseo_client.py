@@ -103,7 +103,14 @@ class DataForSEOClient:
                 "depth": depth,
             }
         ]
-        data = await self._post("/v3/serp/google/organic/live/regular", payload)
+        # `advanced` et non `regular` : au MÊME prix ($0.002), `regular` ne renvoie
+        # que les items `organic`, tandis qu'`advanced` remonte aussi people_also_ask,
+        # featured_snippet, video, local_pack… Mesuré sur « destruction nid de frelons » :
+        # regular → 9 organic et rien d'autre ; advanced → les mêmes 9 organic + 4
+        # questions PAA + local_pack + video + related_searches. Avec `regular`, les
+        # champs `paa` et `features` du parser restaient vides en permanence, donc les
+        # FAQ perdaient leur source de questions réelles.
+        data = await self._post("/v3/serp/google/organic/live/advanced", payload)
         return self._parse_serp(data)
 
     async def get_backlinks_summary(self, target_url: str) -> dict[str, Any]:
