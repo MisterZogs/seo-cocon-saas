@@ -50,11 +50,11 @@ def _unique_domains(urls: list[str], limit: int) -> list[str]:
     """
     out: list[str] = []
     for url in urls:
+        if len(out) >= limit:  # testé AVANT d'ajouter, sinon limit=0 ne coupe rien
+            break
         d = _domain_of(url)
         if d and d not in out:
             out.append(d)
-            if len(out) == limit:
-                break
     return out
 
 
