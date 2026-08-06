@@ -559,7 +559,11 @@ class ArticleGenerator:
             system=_BRIEF_SYSTEM,
             user_prompt=_build_brief_prompt(stub, cocon, analysis, policy),
             cached_context=cached_context,
-            max_tokens=4096,
+            # 4096 débordait dès le premier run sur SERP réelles : un brief complet
+            # (sections détaillées + FAQ + 5 liens de maillage + notes éditoriales)
+            # dépasse ce plafond quand l'analyse SERP remonte 15 entités et 10
+            # questions, là où les mocks en produisaient une poignée.
+            max_tokens=8192,
         )
 
         sections = [
