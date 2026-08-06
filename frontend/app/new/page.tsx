@@ -26,6 +26,11 @@ const STEPS = [
   { id: 4, label: "Récapitulatif" },
 ] as const;
 
+// 1 mère + 5 filles. Le nombre de filles est arrêté par le modèle au design du
+// cocon (3 à 8), donc c'est une estimation — miroir de TYPICAL_ARTICLES_PER_COCON
+// côté backend (models.py), qui reste la source de vérité.
+const TYPICAL_ARTICLES_PER_COCON = 6;
+
 const formSchema = z
   .object({
     product: z.string().min(2, "Nom du produit requis (min 2 caractères)"),
