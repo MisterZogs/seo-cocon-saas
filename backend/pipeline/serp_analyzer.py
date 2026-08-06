@@ -158,20 +158,26 @@ class SerpAnalyzer:
         keyword = stub.target_keyword
 
         # 1. Récupère SERP
-        serp = await self.dataforseo.get_serp(keyword, depth=self.max_pages_to_scrape)
+        serp = await self.dataforseo.get_serp(keyword, depth=SERP_DEPTH)
         organic_results = serp.get("organic_results", [])
         paa = serp.get("paa", [])
         features = serp.get("features", {})
 
         # 2. Scrape les pages (avec sémaphore + gestion erreurs douces)
-        urls = [r["url"] for r in organic_results if r.get("url")]
-        scraped_pages = await self._scrape_pages(urls)
+        urls = [r["url"] for r in organic_results if r.get("url")][
+            : self.max_pages_to_scrape
+        ]
+        scraped_pages, rejected = await self._scrape_pages(urls)
 
-        # 3. Analyse statistique
+        # 3. Analyse statistique — uniquement sur les pages de référence retenues.
+        #    `mean()` lève StatisticsError sur une séquence vide, elle ne renvoie pas
+        #    de valeur fausse : le `or 1500` d'origine ne pouvait donc jamais servir de
+        #    repli, il plantait. L'exception remontait dans analyze_all qui abandonnait
+        #    silencieusement le brief de l'article.
         if scraped_pages:
-            avg_wc = int(mean(p.word_count for p in scraped_pages if p.word_count > 100) or 1500)
-            avg_h2 = int(mean(len(p.h2s) for p in scraped_pages) or 6)
-            avg_h3 = int(mean(len(p.h3s) for p in scraped_pages) or 4)
+            avg_wc = int(mean(p.word_count for p in scraped_pages))
+            avg_h2 = int(mean(len(p.h2s) for p in scraped_pages)) or 6
+            avg_h3 = int(mean(len(p.h3s) for p in scraped_pages)) or 4
         else:
             avg_wc, avg_h2, avg_h3 = 1500, 6, 4
 
