@@ -350,10 +350,28 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
       <div>
         <SectionHeading
           tone="serp"
-          hint={`${brief.serp_analysis.scraped_pages_count} pages analysées`}
+          hint={`${brief.serp_analysis.scraped_pages_count} pages de référence sur ${brief.serp_analysis.serp_urls_count} résultats`}
         >
           Analyse SERP
         </SectionHeading>
+        {brief.serp_analysis.low_sample && (
+          <p className="mb-2 rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
+            Calibration peu fiable : seulement {brief.serp_analysis.scraped_pages_count} page
+            {brief.serp_analysis.scraped_pages_count > 1 ? "s" : ""} exploitable
+            {brief.serp_analysis.scraped_pages_count > 1 ? "s" : ""} dans le top 10.
+            {Object.keys(brief.serp_analysis.rejected_pages ?? {}).length > 0 && (
+              <>
+                {" "}
+                Écartées :{" "}
+                {Object.entries(brief.serp_analysis.rejected_pages)
+                  .map(([motif, n]) => `${n} × ${motif}`)
+                  .join(", ")}
+                .
+              </>
+            )}{" "}
+            Longueur cible et nombre de H2 à vérifier manuellement.
+          </p>
+        )}
         <div className="flex flex-wrap gap-2 text-xs">
           <Metric label="Longueur cible" value={`${brief.serp_analysis.recommended_word_count} mots`} />
           <Metric label="H2" value={String(brief.serp_analysis.recommended_h2_count)} />
