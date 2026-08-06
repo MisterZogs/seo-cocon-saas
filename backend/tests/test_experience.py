@@ -99,7 +99,7 @@ def test_unicite_sur_la_run() -> bool:
 
 def test_plafond_eeat() -> bool:
     """Sans matériau first-hand, le score « expérience » ne doit pas mentir."""
-    print("\n[4] Plafond E-E-A-T quand aucun bloc verbatim n'est placé")
+    print("\n[5] Plafond E-E-A-T quand aucun bloc verbatim n'est placé")
     inflated = EEATScore(
         experience=80, expertise=80, authoritativeness=60, trustworthiness=60,
         overall=70, warnings=[],
@@ -124,7 +124,7 @@ def test_plafond_eeat() -> bool:
 
 def test_contexte_cache() -> bool:
     """Style + expérience doivent finir dans le préfixe cacheable, pas par article."""
-    print("\n[5] Contexte partagé (mis en cache)")
+    print("\n[6] Contexte partagé (mis en cache)")
     form = ClientForm(
         product="Désinsectisation", description="Traitement nids de frelons",
         seed_keywords=["nid de frelons"], audience="particuliers", niche="services",
@@ -155,6 +155,7 @@ def main() -> int:
         test_verbatim_preserved(),
         test_marqueurs_invalides(),
         test_element_non_place(),
+        test_unicite_sur_la_run(),
         test_plafond_eeat(),
         test_contexte_cache(),
     ]
