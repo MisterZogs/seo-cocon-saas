@@ -245,11 +245,14 @@ class SerpAnalyzer:
     # Scraping
     # ------------------------------------------------------------
 
-    async def _scrape_pages(self, urls: list[str]) -> list[ScrapedPage]:
+    async def _scrape_pages(
+        self, urls: list[str]
+    ) -> tuple[list[ScrapedPage], dict[str, int]]:
+        """Retourne (pages de référence retenues, motif de rejet -> nb d'URLs)."""
         async with httpx.AsyncClient(
             follow_redirects=True,
             timeout=SCRAPE_TIMEOUT,
-            headers={"User-Agent": SCRAPE_USER_AGENT},
+            headers=SCRAPE_HEADERS,
         ) as client:
             results = await asyncio.gather(
                 *(self._scrape_one(client, url) for url in urls),
@@ -257,32 +260,38 @@ class SerpAnalyzer:
             )
 
         pages: list[ScrapedPage] = []
-        for r in results:
-            if isinstance(r, ScrapedPage):
+        rejected: Counter[str] = Counter()
+        for url, r in zip(urls, results):
+            if isinstance(r, Exception):
+                rejected[f"exception {type(r).__name__}"] += 1
+                logger.info("Scrape rejeté %s: %s", url, r)
+            elif isinstance(r, ScrapedPage):
                 pages.append(r)
-            elif isinstance(r, Exception):
-                logger.debug("Scrape skip: %s", r)
-        return pages
+            else:  # (None, motif)
+                _, reason = r
+                rejected[reason] += 1
+                logger.info("Scrape rejeté %s: %s", url, reason)
+        return pages, dict(rejected)
 
     async def _scrape_one(
         self, client: httpx.AsyncClient, url: str
-    ) -> ScrapedPage | None:
+    ) -> ScrapedPage | tuple[None, str]:
         async with self._semaphore:
             try:
                 response = await client.get(url)
                 if response.status_code >= 400:
-                    return None
+                    return None, f"HTTP {response.status_code}"
                 # Limite bytes pour éviter les pages énormes
                 content = response.text[:SCRAPE_MAX_BYTES]
-            except (httpx.HTTPError, httpx.TimeoutException) as e:
-                logger.debug("Fetch fail %s: %s", url, e)
-                return None
+            except httpx.TimeoutException:
+                return None, "timeout"
+            except httpx.HTTPError as e:
+                return None, f"réseau {type(e).__name__}"
 
         try:
             soup = BeautifulSoup(content, "lxml")
         except Exception as e:
-            logger.debug("Parse fail %s: %s", url, e)
-            return None
+            return None, f"parse {type(e).__name__}"
 
         # Retire scripts/styles/nav/footer pour word count propre
         for tag in soup(["script", "style", "nav", "footer", "aside", "noscript"]):
