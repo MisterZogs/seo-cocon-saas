@@ -203,7 +203,20 @@ class SerpAnalysis(BaseModel):
     """Brief calibré pour un article, basé sur analyse top 10 SERP."""
 
     keyword: str
-    scraped_pages_count: int
+    scraped_pages_count: int = Field(
+        ..., description="Pages retenues comme référence (HTTP 200 ET contenu substantiel)"
+    )
+    serp_urls_count: int = Field(
+        default=0, description="URLs organiques renvoyées par la SERP"
+    )
+    rejected_pages: dict[str, int] = Field(
+        default_factory=dict,
+        description="Motif de rejet -> nb d'URLs (ex: {'HTTP 403': 5, 'contenu vide (JS)': 2})",
+    )
+    low_sample: bool = Field(
+        default=False,
+        description="True si le brief est calibré sur trop peu de pages pour être fiable",
+    )
     avg_word_count: int
     recommended_word_count: int
     avg_h2_count: int
