@@ -664,6 +664,7 @@ class ArticleGenerator:
         all_cocoons: list[CoconStructure],
         cached_context: str,
         form: ClientForm,
+        used_experience: set[str] | None = None,
     ) -> GeneratedArticle:
         # Opus pour mère (qualité max), Sonnet pour filles
         model: ModelTier = "opus" if stub.article_type == ArticleType.MOTHER else "sonnet"
