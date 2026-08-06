@@ -269,7 +269,8 @@ class DataForSEOClient:
             "target": r.get("target"),
             "total_backlinks": r.get("backlinks", 0),
             "referring_domains": r.get("referring_domains", 0),
-            "domain_rating": r.get("rank"),  # DataForSEO 0-100
+            # 0-100 garanti par `rank_scale: one_hundred` dans la requête.
+            "domain_rating": r.get("rank"),
         }
 
     @staticmethod
