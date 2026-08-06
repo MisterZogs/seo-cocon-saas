@@ -212,7 +212,10 @@ class DataForSEOClient:
             return {"organic_results": [], "features": {}, "paa": []}
 
         result = tasks[0]["result"][0]
-        items = result.get("items", [])
+        # `or []` et non `get(..., [])` : DataForSEO renvoie la clé avec la valeur
+        # `null` sur les cibles sans données, donc le défaut ne s'applique jamais
+        # et l'itération plante sur NoneType.
+        items = result.get("items") or []
 
         organic_results = []
         paa = []
