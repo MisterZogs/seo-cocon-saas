@@ -104,6 +104,9 @@ export interface KeywordWithData {
 export interface SerpAnalysis {
   keyword: string;
   scraped_pages_count: number;
+  serp_urls_count: number;
+  rejected_pages: Record<string, number>;
+  low_sample: boolean;
   avg_word_count: number;
   recommended_word_count: number;
   avg_h2_count: number;
