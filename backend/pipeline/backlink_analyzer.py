@@ -29,6 +29,35 @@ logger = logging.getLogger(__name__)
 TOP_COMPETITORS_PER_COCON = 5
 
 
+def _domain_of(url: str) -> str | None:
+    """Domaine nu d'une URL : « https://www.binance.com/fr/x » → « binance.com »."""
+    try:
+        netloc = urlparse(url if "//" in url else f"https://{url}").netloc.lower()
+    except ValueError:
+        return None
+    netloc = netloc.split("@")[-1].split(":")[0]  # retire auth et port
+    if netloc.startswith("www."):
+        netloc = netloc[4:]
+    return netloc or None
+
+
+def _unique_domains(urls: list[str], limit: int) -> list[str]:
+    """Domaines distincts, dans l'ordre des positions SERP.
+
+    Le top 10 contient souvent plusieurs pages d'un même site : sans
+    déduplication on paie deux fois la même requête backlinks et on présente
+    deux fois le même concurrent à l'agence.
+    """
+    out: list[str] = []
+    for url in urls:
+        d = _domain_of(url)
+        if d and d not in out:
+            out.append(d)
+            if len(out) == limit:
+                break
+    return out
+
+
 _ANALYSIS_SYSTEM = """You are an SEO backlink strategist. Given competitor backlink data, you produce a white-hat \
 link-building strategy: what types of sites to target, what anchor ratio to maintain, and outreach templates.
 
