@@ -99,6 +99,17 @@ Rules for cocoon composition:
 - Avoid mixing intents wildly (a mother "guide" + all "product review" daughters is bad)
 - Prefer medium-difficulty keywords with decent volume over impossible head terms
 
+VOLUME IS A HARD CONSTRAINT, NOT A TIEBREAKER. The agency is paid for traffic:
+- The MOTHER must have a measured volume. Never pick a mother marked
+  "0 — AUCUNE RECHERCHE MESURÉE" or "inconnu".
+- At most 2 of the 5 daughters may lack measured volume, and only when they cover a
+  genuinely necessary sub-topic. Everything else must have real volume.
+- A semantically elegant cocoon built on dead keywords is worthless. If the best
+  available cluster has no volume, pick a different cluster — even a less tidy one.
+- "0 — AUCUNE RECHERCHE MESURÉE" means Google measured it and nobody searches it.
+  That is a reason to reject the keyword, not a missing data point.
+- Prefer building the cocoon around the highest-volume viable cluster in the list.
+
 Return your selection as JSON."""
 
 
