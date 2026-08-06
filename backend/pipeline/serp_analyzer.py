@@ -211,6 +211,9 @@ class SerpAnalyzer:
         analysis = SerpAnalysis(
             keyword=keyword,
             scraped_pages_count=len(scraped_pages),
+            serp_urls_count=len(urls),
+            rejected_pages=rejected,
+            low_sample=len(scraped_pages) < LOW_SAMPLE_THRESHOLD,
             avg_word_count=avg_wc,
             recommended_word_count=int(parsed.get("recommended_word_count", avg_wc + 300)),
             avg_h2_count=avg_h2,
