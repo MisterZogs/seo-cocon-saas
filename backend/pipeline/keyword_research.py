@@ -221,11 +221,42 @@ class KeywordResearcher:
 
         La construction des `CoconStructure` finaux se fait dans cocon_builder.py.
         """
-        candidates = await self._expand_seeds(form)
-        enriched = await self._enrich_with_volume(candidates)
+        enriched = await self._gather_keywords(form)
         with_serp = await self._add_serp_features(enriched)
         cocoon_proposals = await self._select_cocoons(form, with_serp)
         return with_serp, cocoon_proposals
+
+    async def _gather_keywords(self, form: ClientForm) -> list[KeywordWithData]:
+        """Mots-clés réels via Google Ads, repli sur l'expansion LLM si vide.
+
+        L'ordre compte : on demande d'abord à Google ce que les gens cherchent
+        vraiment. L'expansion par LLM ne sert plus que de filet — elle produisait
+        24 mots-clés morts sur 30 quand elle pilotait l'étape.
+        """
+        try:
+            ideas = await self.dataforseo.get_keyword_ideas(
+                form.seed_keywords, limit=self.max_keyword_ideas
+            )
+        except Exception as e:
+            logger.warning("keywords_for_keywords indisponible (%s) — repli LLM.", e)
+            ideas = []
+
+        viable = [i for i in ideas if (i.get("monthly_volume") or 0) > 0]
+        if len(viable) < self.min_viable_keywords:
+            logger.warning(
+                "Seulement %d mot(s)-clé(s) avec volume via Google Ads — "
+                "complément par expansion LLM.",
+                len(viable),
+            )
+            candidates = await self._expand_seeds(form)
+            known = {i["keyword"] for i in ideas}
+            extra = [c for c in candidates if c.keyword not in known]
+            return ideas_to_models(ideas) + await self._enrich_with_volume(extra)
+
+        logger.info(
+            "%d mots-clés réels récupérés (%d avec volume mesuré)", len(ideas), len(viable)
+        )
+        return ideas_to_models(ideas)
 
     # ------------------------------------------------------------
 
