@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from urllib.parse import urlparse
 
 from clients.anthropic_client import AnthropicClient
 from clients.dataforseo_client import DataForSEOClient
