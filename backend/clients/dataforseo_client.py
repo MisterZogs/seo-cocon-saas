@@ -339,12 +339,30 @@ def _seeded_random(seed_str: str) -> random.Random:
 
 
 def _mock_kw_data(keyword: str) -> dict[str, Any]:
+    """Mock volontairement ingrat.
+
+    L'ancien mock donnait un volume confortable à TOUT mot-clé. Résultat : la
+    sélection de cocons paraissait irréprochable en test et produisait un cocon
+    à 0 recherche/mois au premier run réel, où 24 mots-clés sur 30 sortaient à
+    zéro. Un mock doit reproduire les cas pénibles du réel, pas les lisser :
+    ici 40 % de zéros et 10 % de volumes inconnus, comme Google.
+    """
     rng = _seeded_random(keyword)
-    # Volume basé sur longueur (long tail = moins de volume)
-    base = max(50, 5000 - len(keyword) * 100)
-    volume = int(base * rng.uniform(0.3, 2.0))
-    cpc = round(rng.uniform(0.2, 4.5), 2)
+    draw = rng.random()
+
+    if draw < 0.10:  # Google n'a pas de donnée
+        return {"keyword": keyword, "monthly_volume": None, "cpc": None,
+                "competition_score": None, "difficulty": None}
+
     competition = round(rng.uniform(0.1, 0.9), 2)
+    if draw < 0.50:  # mesuré, personne ne cherche
+        volume = 0
+        cpc = 0.0
+    else:
+        base = max(50, 5000 - len(keyword) * 100)
+        volume = int(base * rng.uniform(0.3, 2.0))
+        cpc = round(rng.uniform(0.2, 4.5), 2)
+
     return {
         "keyword": keyword,
         "monthly_volume": volume,
@@ -352,6 +370,27 @@ def _mock_kw_data(keyword: str) -> dict[str, Any]:
         "competition_score": competition,
         "difficulty": int(competition * 100),
     }
+
+
+def _mock_keyword_ideas(seeds: list[str], limit: int) -> list[dict[str, Any]]:
+    """Suggestions simulées : quelques déclinaisons par seed, triées par volume."""
+    modifiers = [
+        "", " gratuit", " debutant", " avis", " comment faire", " 2026",
+        " pour les nuls", " tutoriel", " meilleur", " prix", " guide",
+        " strategie", " en ligne", " automatique", " facile",
+    ]
+    ideas: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for seed in seeds[:20]:
+        for mod in modifiers:
+            kw = f"{seed}{mod}".strip().lower()
+            if kw in seen:
+                continue
+            seen.add(kw)
+            ideas.append(_mock_kw_data(kw))
+
+    ideas.sort(key=lambda k: k["monthly_volume"] or 0, reverse=True)
+    return ideas[:limit]
 
 
 def _mock_serp(keyword: str, depth: int) -> dict[str, Any]:
