@@ -307,6 +307,11 @@ class SerpAnalyzer:
         text = soup.get_text(separator=" ", strip=True)
         word_count = len(text.split())
 
+        # Page rendue côté client : 200 OK mais aucun contenu dans le HTML servi.
+        # Inutilisable comme référence — et surtout trompeuse si on la compte.
+        if word_count < MIN_REFERENCE_WORDS:
+            return None, "contenu vide ou JS-only"
+
         meta_desc_tag = soup.find("meta", attrs={"name": "description"})
         meta_desc = (
             meta_desc_tag.get("content", "").strip() if meta_desc_tag else None
