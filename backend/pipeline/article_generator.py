@@ -620,6 +620,9 @@ class ArticleGenerator:
         cached_context = _build_cached_context(form, cocoons)
 
         articles: list[GeneratedArticle] = []
+        # Un élément d'expérience ne doit être placé que dans UN article de la run.
+        used_experience: set[str] = set()
+
         for cocon in cocoons:
             all_stubs = [cocon.mother, *cocon.daughters]
             for stub in all_stubs:
@@ -632,14 +635,25 @@ class ArticleGenerator:
                     store, f"article:{stub.slug}", GeneratedArticle
                 )
                 if resumed is not None:
+                    # Sinon une reprise sur checkpoint réinjecterait des éléments
+                    # déjà placés dans les articles repris.
+                    used_experience.update(resumed.experience_used)
                     articles.append(resumed)
                     continue
 
                 article = await self._generate_full_one(
-                    stub, cocon, analysis, cocoons, cached_context, form
+                    stub, cocon, analysis, cocoons, cached_context, form, used_experience
                 )
+                used_experience.update(article.experience_used)
                 articles.append(article)
                 await _checkpoint_one(store, f"article:{stub.slug}", article)
+
+        if form.experience_elements:
+            unplaced = [e.id for e in form.experience_elements if e.id not in used_experience]
+            if unplaced:
+                logger.warning(
+                    "%d élément(s) d'expérience jamais placé(s) : %s", len(unplaced), unplaced
+                )
         return articles
 
     async def _generate_full_one(
