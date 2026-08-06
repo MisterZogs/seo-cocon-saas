@@ -580,7 +580,15 @@ export default function NewGenerationPage() {
                 {values.mode === "full" && (
                   <Row
                     label="Éléments d'expérience"
-                    value={`${values.experience_elements.length}`}
+                    value={(() => {
+                      const expected =
+                        Number(values.num_cocoons || 1) * TYPICAL_ARTICLES_PER_COCON;
+                      const provided = values.experience_elements.length;
+                      const capped = Math.max(0, expected - provided);
+                      return capped > 0
+                        ? `${provided} — ${capped} article(s) sans passage first-hand`
+                        : `${provided}`;
+                    })()}
                   />
                 )}
                 <Row
