@@ -224,15 +224,24 @@ def _format_experience_block(element: ExperienceElement) -> str:
 
 
 def inject_experience_blocks(
-    markdown: str, elements: list[ExperienceElement]
+    markdown: str,
+    elements: list[ExperienceElement],
+    already_used: set[str] | None = None,
 ) -> tuple[str, list[str], list[str]]:
     """Remplace les marqueurs par le contenu client verbatim.
 
     Retourne (markdown, ids utilisés, ids jamais placés). Un marqueur qui pointe
     vers un id inconnu est retiré — laisser un `[[EXPERIENCE:xxx]]` dans le
     livrable serait pire que de perdre le bloc.
+
+    `already_used` porte les ids déjà consommés par les articles précédents de la
+    run. Sans ce garde-fou le modèle place le même élément dans TOUS les articles :
+    mesuré sur un run réel, un unique bloc se retrouvait dans les 6 articles du
+    cocon, soit du contenu dupliqué à l'intérieur du silo. Un élément d'expérience
+    est unique par nature, il n'a de valeur qu'à un seul endroit.
     """
     by_id = {e.id: e for e in elements}
+    consumed = set(already_used or ())
     used: list[str] = []
 
     def _replace(match: re.Match) -> str:
@@ -240,6 +249,11 @@ def inject_experience_blocks(
         element = by_id.get(element_id)
         if element is None:
             logger.warning("Marqueur d'expérience inconnu, retiré : %s", element_id)
+            return ""
+        if element_id in consumed:
+            logger.info(
+                "Élément %s déjà placé dans un article précédent — marqueur retiré", element_id
+            )
             return ""
         if element_id in used:
             logger.warning("Élément d'expérience %s référencé 2×, 2e occurrence retirée", element_id)
