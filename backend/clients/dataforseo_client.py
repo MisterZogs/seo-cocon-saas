@@ -133,7 +133,10 @@ class DataForSEOClient:
         if self._mock:
             return _mock_referring_domains(target_url, limit)
 
-        payload = [{"target": target_url, "limit": limit, "order_by": ["rank,desc"]}]
+        payload = [
+            {"target": target_url, "limit": limit, "order_by": ["rank,desc"],
+             "rank_scale": "one_hundred"}  # voir get_backlinks_summary
+        ]
         data = await self._post("/v3/backlinks/referring_domains/live", payload)
         return self._parse_referring_domains(data)
 
