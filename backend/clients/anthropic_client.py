@@ -200,10 +200,7 @@ class AnthropicClient:
         # bien plus d'entités et de questions que les mocks, donc des briefs plus
         # longs, qui débordaient les 4096 tokens.
         if result.stop_reason == "max_tokens":
-            raise ValueError(
-                f"Réponse coupée à {result.output_tokens} tokens (max_tokens atteint) : "
-                f"le JSON est incomplet. Augmenter max_tokens pour cet appel."
-            )
+            raise ResponseTruncated(result.output_tokens, max_tokens)
 
         parsed = _extract_json(result.text)
         return parsed, result
