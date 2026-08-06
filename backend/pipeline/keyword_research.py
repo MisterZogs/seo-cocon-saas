@@ -199,6 +199,59 @@ Return JSON:
 
 
 # ============================================================
+# CONVERSION DES SUGGESTIONS GOOGLE ADS
+# ============================================================
+
+# Marqueurs d'intention en français. Google Ads ne renvoie pas d'intent : le
+# déduire de la formulation évite un appel LLM pour une information qui ne sert
+# qu'à éclairer la sélection (l'intent définitif vient de l'étape cocon).
+_INTENT_MARKERS: list[tuple[SearchIntent, tuple[str, ...]]] = [
+    (SearchIntent.TRANSACTIONAL,
+     ("acheter", "achat", "prix", "tarif", "commander", "devis", "pas cher",
+      "promo", "abonnement", "souscrire", "ouvrir un compte")),
+    (SearchIntent.COMMERCIAL,
+     ("meilleur", "meilleure", "comparatif", "comparaison", "avis", "test",
+      "alternative", "vs", "classement", "top ", "gratuit")),
+    (SearchIntent.NAVIGATIONAL,
+     ("connexion", "login", "se connecter", "site officiel", "application")),
+]
+
+
+def _guess_intent(keyword: str) -> SearchIntent:
+    kw = keyword.lower()
+    for intent, markers in _INTENT_MARKERS:
+        if any(m in kw for m in markers):
+            return intent
+    return SearchIntent.INFORMATIONAL
+
+
+def ideas_to_models(ideas: list[dict]) -> list[KeywordWithData]:
+    """Suggestions Google Ads → KeywordWithData.
+
+    `cluster` reste vide : le regroupement sémantique est fait par le LLM à
+    l'étape de sélection, c'est précisément la répartition des rôles voulue —
+    Google fournit les mots-clés réels, le modèle les organise.
+    """
+    out: list[KeywordWithData] = []
+    for i in ideas:
+        kw = i.get("keyword")
+        if not kw:
+            continue
+        out.append(
+            KeywordWithData(
+                keyword=kw,
+                intent=_guess_intent(kw),
+                cluster="",
+                monthly_volume=i.get("monthly_volume"),
+                cpc=i.get("cpc"),
+                competition_score=i.get("competition_score"),
+                difficulty=i.get("difficulty"),
+            )
+        )
+    return out
+
+
+# ============================================================
 # ORCHESTRATION
 # ============================================================
 
