@@ -568,17 +568,39 @@ class ArticleGenerator:
         cached_context: str,
         policy: InterCoconPolicy,
     ) -> ArticleBrief:
-        parsed, _ = await self.anthropic.complete_json(
-            model="sonnet",
-            system=_BRIEF_SYSTEM,
-            user_prompt=_build_brief_prompt(stub, cocon, analysis, policy),
-            cached_context=cached_context,
+        prompt = _build_brief_prompt(stub, cocon, analysis, policy)
+        try:
             # 4096 débordait dès le premier run sur SERP réelles : un brief complet
             # (sections détaillées + FAQ + 5 liens de maillage + notes éditoriales)
             # dépasse ce plafond quand l'analyse SERP remonte 15 entités et 10
             # questions, là où les mocks en produisaient une poignée.
-            max_tokens=8192,
-        )
+            parsed, _ = await self.anthropic.complete_json(
+                model="sonnet",
+                system=_BRIEF_SYSTEM,
+                user_prompt=prompt,
+                cached_context=cached_context,
+                max_tokens=8192,
+            )
+        except ResponseTruncated as e:
+            # Relever le plafond à chaque débordement est un jeu sans fin : il est
+            # déjà passé de 4096 à 8192 et a redébordé sur la niche « frelons ».
+            # Le débordement vient de la verbosité du modèle, pas d'un besoin réel —
+            # on réessaie donc UNE fois en demandant explicitement de la concision,
+            # avec un plafond plus large en filet. Sans ce rattrapage, un seul brief
+            # bavard fait perdre toute la run : recherche KW, design du cocon et les
+            # 6 analyses SERP déjà payées.
+            logger.warning(
+                "Brief %s tronqué à %d tokens — nouvelle tentative en mode concis",
+                stub.slug,
+                e.output_tokens,
+            )
+            parsed, _ = await self.anthropic.complete_json(
+                model="sonnet",
+                system=_BRIEF_SYSTEM,
+                user_prompt=prompt + _BRIEF_CONCISION_SUFFIX,
+                cached_context=cached_context,
+                max_tokens=16384,
+            )
 
         sections = [
             ArticleSection(
