@@ -118,10 +118,20 @@ def _build_selection_prompt(
                 hints.append("video")
             if hints:
                 serp_hint = f" | serp: {', '.join(hints)}"
+        # `or 'N/A'` masquait les volumes à 0 : le modèle lisait « donnée
+        # indisponible » là où Google dit « personne ne cherche ça ». Sur un run
+        # réel il a composé un cocon dont 5 des 6 mots-clés faisaient 0/mois.
+        if k.monthly_volume is None:
+            volume = "inconnu"
+        elif k.monthly_volume == 0:
+            volume = "0 — AUCUNE RECHERCHE MESURÉE"
+        else:
+            volume = str(k.monthly_volume)
         kw_lines.append(
             f"- {k.keyword} | intent={k.intent.value} | cluster={k.cluster} | "
-            f"volume={k.monthly_volume or 'N/A'} | cpc={k.cpc or 'N/A'} | "
-            f"competition={k.competition_score or 'N/A'}{serp_hint}"
+            f"volume={volume} | cpc={k.cpc if k.cpc is not None else 'inconnu'} | "
+            f"competition={k.competition_score if k.competition_score is not None else 'inconnu'}"
+            f"{serp_hint}"
         )
     kw_list = "\n".join(kw_lines)
 
