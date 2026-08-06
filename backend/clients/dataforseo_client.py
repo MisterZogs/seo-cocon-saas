@@ -243,7 +243,7 @@ class DataForSEOClient:
                     }
                 )
             elif item_type == "people_also_ask":
-                for expanded in item.get("items", []):
+                for expanded in item.get("items") or []:
                     paa.append(expanded.get("title", ""))
             elif item_type == "featured_snippet":
                 features["featured_snippet"] = True
