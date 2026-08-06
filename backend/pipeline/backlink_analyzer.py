@@ -195,15 +195,22 @@ class BacklinkAnalyzer:
         )
         return report
 
-    async def _fetch_competitor(self, url: str) -> dict:
+    async def _fetch_competitor(self, domain: str) -> dict:
+        """Profil de backlinks d'un concurrent, au niveau DOMAINE.
+
+        Passer l'URL complète faisait répondre l'API au niveau page : sur un run
+        réel, `binance.com/fr/copy-trading` ressortait à DR=0 avec 2 domaines
+        référents. Ce qui intéresse l'agence, c'est l'autorité du concurrent, pas
+        celle d'une de ses pages.
+        """
         try:
             summary, refs = await asyncio.gather(
-                self.dataforseo.get_backlinks_summary(url),
-                self.dataforseo.get_referring_domains(url, limit=30),
+                self.dataforseo.get_backlinks_summary(domain),
+                self.dataforseo.get_referring_domains(domain, limit=30),
             )
             return {"summary": summary, "referring_domains": refs}
         except Exception as e:
-            logger.warning("Backlink fetch failed for %s: %s", url, e)
+            logger.warning("Backlink fetch failed for %s: %s", domain, e)
             return {"summary": {}, "referring_domains": []}
 
 
