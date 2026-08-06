@@ -76,6 +76,27 @@ def test_element_non_place() -> bool:
     return ok
 
 
+def test_unicite_sur_la_run() -> bool:
+    """Un élément placé dans un article ne doit pas réapparaître dans le suivant.
+
+    Sans ce garde-fou, un run réel plaçait le même bloc dans les 6 articles du
+    cocon — du contenu dupliqué à l'intérieur du silo.
+    """
+    print("\n[4] Unicité de l'élément sur toute la run")
+    md = f"Intro.\n\n[[EXPERIENCE:{ELEMENT.id}]]\n\nSuite."
+
+    premier, used1, _ = inject_experience_blocks(md, [ELEMENT], already_used=set())
+    ok = _check(used1 == [ELEMENT.id], "1er article : élément placé")
+    ok &= _check("6 bars" in premier, "bloc présent dans le 1er article")
+
+    second, used2, unused2 = inject_experience_blocks(md, [ELEMENT], already_used=set(used1))
+    ok &= _check(used2 == [], "2e article : élément refusé")
+    ok &= _check("6 bars" not in second, "bloc absent du 2e article")
+    ok &= _check("[[EXPERIENCE" not in second, "marqueur retiré proprement")
+    ok &= _check(unused2 == [ELEMENT.id], "signalé comme non placé ici")
+    return ok
+
+
 def test_plafond_eeat() -> bool:
     """Sans matériau first-hand, le score « expérience » ne doit pas mentir."""
     print("\n[4] Plafond E-E-A-T quand aucun bloc verbatim n'est placé")
