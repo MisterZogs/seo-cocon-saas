@@ -225,7 +225,11 @@ class DataForSEOClient:
                         "url": item.get("url"),
                         "title": item.get("title"),
                         "description": item.get("description"),
-                        "position": item.get("rank_absolute"),
+                        # `rank_group` = rang parmi les résultats organiques (1,2,3…).
+                        # `rank_absolute` compte TOUS les éléments de la SERP : le 1er
+                        # organique y ressortait en position 3 dès qu'un local_pack le
+                        # précédait. C'est la position organique qui intéresse l'agence.
+                        "position": item.get("rank_group"),
                     }
                 )
             elif item_type == "people_also_ask":
