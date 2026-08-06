@@ -176,6 +176,18 @@ class AnthropicClient:
             cached_context=cached_context,
             max_tokens=max_tokens,
         )
+        # Une réponse coupée par max_tokens produit du JSON tronqué : inutile
+        # d'essayer de le parser, et le ValueError qui en résultait pointait vers
+        # « JSON invalide » alors que le JSON était bon, seulement incomplet.
+        # Constaté au premier run sur données réelles : les SERP réelles remontent
+        # bien plus d'entités et de questions que les mocks, donc des briefs plus
+        # longs, qui débordaient les 4096 tokens.
+        if result.stop_reason == "max_tokens":
+            raise ValueError(
+                f"Réponse coupée à {result.output_tokens} tokens (max_tokens atteint) : "
+                f"le JSON est incomplet. Augmenter max_tokens pour cet appel."
+            )
+
         parsed = _extract_json(result.text)
         return parsed, result
 
