@@ -221,4 +221,7 @@ def _extract_json(text: str) -> dict | list:
             except json.JSONDecodeError:
                 continue
 
-    raise ValueError(f"Impossible d'extraire du JSON valide de : {text[:200]}...")
+    raise ValueError(
+        f"Impossible d'extraire du JSON valide de : {text[:200]}..."
+        f" (longueur totale {len(text)} caractères)"
+    )
