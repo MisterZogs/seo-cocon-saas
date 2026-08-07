@@ -63,14 +63,14 @@ def _analysis(avg_h2: int, avg_h3: int, reco_h2: int) -> SerpAnalysis:
     )
 
 
-def _stub() -> ArticleStub:
+def _stub(slug: str = "nid-de-frelons", kind: ArticleType = ArticleType.MOTHER) -> ArticleStub:
     return ArticleStub(
         cocon_id="cocon_1",
-        article_type=ArticleType.MOTHER,
-        target_keyword="nid de frelons",
-        h1_title="Nid de frelons",
-        slug="nid-de-frelons",
-        meta_title="Nid de frelons",
+        article_type=kind,
+        target_keyword=slug.replace("-", " "),
+        h1_title=f"H1 {slug}",
+        slug=slug,
+        meta_title=f"Meta {slug}",
         meta_description="desc",
         intent=SearchIntent.INFORMATIONAL,
         secondary_keywords=[],
@@ -84,7 +84,9 @@ def _cocon(stub: ArticleStub) -> CoconStructure:
         main_keyword="nid de frelons",
         rationale="r",
         mother=stub,
-        daughters=[],
+        daughters=[
+            _stub(f"fille-{i}", ArticleType.DAUGHTER) for i in range(1, 6)
+        ],
     )
 
 
