@@ -98,6 +98,10 @@ class UsageTotals(BaseModel):
         self.cache_read_tokens += result.cache_read_tokens
         self.cost_usd = round(self.cost_usd + cost, 6)
         self.by_tier[tier] = round(self.by_tier.get(tier, 0.0) + cost, 6)
+        if result.cache_read_tokens:
+            self.cache_read_by_tier[tier] = (
+                self.cache_read_by_tier.get(tier, 0) + result.cache_read_tokens
+            )
 
     cache_read_by_tier: dict[str, int] = Field(default_factory=dict)
 
