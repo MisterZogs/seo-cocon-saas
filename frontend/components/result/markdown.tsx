@@ -265,12 +265,13 @@ export function Markdown({ content }: { content: string }) {
     }
 
     // Paragraphe : on accumule jusqu'à la ligne vide ou le prochain bloc
+    const start = i;
     const para: string[] = [];
     while (
       i < lines.length &&
       lines[i].trim() &&
       !/^(#{1,6})\s/.test(lines[i]) &&
-      !lines[i].trim().startsWith("|") &&
+      !startsTable(i) &&
       !lines[i].trim().startsWith(">") &&
       !/^\s*[-*]\s+/.test(lines[i]) &&
       !/^\s*\d+\.\s+/.test(lines[i])
@@ -278,6 +279,10 @@ export function Markdown({ content }: { content: string }) {
       para.push(lines[i]);
       i++;
     }
+    // Filet de sécurité : si aucune branche n'a consommé de ligne, la boucle
+    // externe tourne à l'infini et fige l'onglet — thread principal bloqué,
+    // sans exception JS, donc invisible en console. C'est arrivé en prod.
+    if (i === start) i++;
     if (para.length) {
       blocks.push(
         <p key={key++} className="my-3 text-sm leading-relaxed text-foreground/90">
