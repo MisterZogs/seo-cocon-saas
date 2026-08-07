@@ -558,7 +558,8 @@ CRITICAL:
 - Experience elements: place [[EXPERIENCE:<id>]] alone on its own line where the
   client's material belongs, with your lead-in above and your takeaway below. Never
   write out that material yourself — the exact text is substituted afterwards.
-- FAQ section must appear at the end of content_markdown as H2 "FAQ" with each Q as H3
+- FAQ section must appear at the end of content_markdown as H2 "FAQ" with each Q as H3.
+  It is the ONLY place where a H3 per question is allowed — never in the body.
 - Answer the target keyword's question in the first 100 words (AI Overviews optimization)
 - Target word count: ~{analysis.recommended_word_count}
 - Language: same as the H1 title
