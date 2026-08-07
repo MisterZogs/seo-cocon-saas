@@ -99,6 +99,8 @@ class UsageTotals(BaseModel):
         self.cost_usd = round(self.cost_usd + cost, 6)
         self.by_tier[tier] = round(self.by_tier.get(tier, 0.0) + cost, 6)
 
+    cache_read_by_tier: dict[str, int] = Field(default_factory=dict)
+
     @property
     def cache_savings_usd(self) -> float:
         """Ce que les lectures de cache ont économisé face au plein tarif d'entrée.
@@ -106,15 +108,11 @@ class UsageTotals(BaseModel):
         Sert à vérifier que le prompt caching sert réellement à quelque chose :
         sur un cocon, le contexte partagé fait ~20k tokens relus 5 fois.
         """
-        total = 0.0
-        for tier, p in PRICING_USD_PER_MTOK.items():
-            share = self.by_tier.get(tier)
-            if share is None:
-                continue
-            total += 0.0  # renseigné par tier ci-dessous si on affine un jour
         return round(
-            self.cache_read_tokens
-            * (PRICING_USD_PER_MTOK["sonnet"]["input"] - PRICING_USD_PER_MTOK["sonnet"]["cache_read"])
+            sum(
+                toks * (PRICING_USD_PER_MTOK[tier]["input"] - PRICING_USD_PER_MTOK[tier]["cache_read"])  # type: ignore[index]
+                for tier, toks in self.cache_read_by_tier.items()
+            )
             / 1_000_000,
             6,
         )
