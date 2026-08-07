@@ -62,6 +62,9 @@ class DataForSEOClient:
         self.location_code = location_code
         self.language_code = language_code
         self._mock = not (self._login and self._password)
+        # Cumul du coût facturé sur la durée de vie du client (un par run).
+        # Reste à 0 en mode mock, ce qui est correct : aucun appel n'est facturé.
+        self.cost_usd: float = 0.0
         if self._mock:
             logger.warning("DataForSEO en MODE MOCK (credentials manquants).")
 
