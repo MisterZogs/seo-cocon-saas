@@ -250,6 +250,28 @@ async def run_pipeline(
             message="Pipeline terminé.",
         )
     )
+    u = anthropic.usage
+    usage = RunUsage(
+        claude_calls=u.calls,
+        input_tokens=u.input_tokens,
+        output_tokens=u.output_tokens,
+        cache_creation_tokens=u.cache_creation_tokens,
+        cache_read_tokens=u.cache_read_tokens,
+        claude_cost_usd=u.cost_usd,
+        claude_cost_by_tier=u.by_tier,
+        cache_savings_usd=u.cache_savings_usd,
+        dataforseo_cost_usd=dataforseo.cost_usd,
+    )
+    logger.info(
+        "Coût de la run : $%.4f (Claude $%.4f sur %d appels, DataForSEO $%.4f) "
+        "— caching économisé $%.4f",
+        usage.total_cost_usd,
+        usage.claude_cost_usd,
+        usage.claude_calls,
+        usage.dataforseo_cost_usd,
+        usage.cache_savings_usd,
+    )
+
     return PipelineResult(
         form=form,
         keywords_researched=keywords,
@@ -258,4 +280,5 @@ async def run_pipeline(
         articles=articles,
         maillage_map=maillage_map,
         backlink_reports=backlink_reports,
+        usage=usage,
     )
