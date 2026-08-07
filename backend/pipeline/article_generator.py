@@ -428,6 +428,8 @@ def _build_brief_prompt(
 
 {_serp_analysis_block(analysis)}
 
+{_structure_rules(analysis)}
+
 {_maillage_rules(policy)}
 
 TASK — Produce an editorial brief in JSON:
@@ -435,7 +437,7 @@ TASK — Produce an editorial brief in JSON:
   "sections": [
     {{
       "h2": "Section title",
-      "h3s": ["Subsection 1", "Subsection 2"],
+      "h3s": [],   // usually empty — see STRUCTURE; only for a genuine parallel split
       "key_points": ["Point 1 to cover", "Point 2", "Point 3"],
       "word_count_target": 350
     }}
