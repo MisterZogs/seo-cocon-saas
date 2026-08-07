@@ -113,6 +113,24 @@ function ResultView({ result, jobId }: { result: PipelineResult; jobId: string }
             <Badge variant={mode === "brief" ? "secondary" : "default"}>
               {mode === "brief" ? "Mode Brief" : "Mode Full"}
             </Badge>
+            {result.usage && (
+              // Coût réel de CETTE run, pas une fourchette générique : c'est ce
+              // que l'agence refacture, elle doit pouvoir le lire sans nous.
+              <Badge
+                variant="outline"
+                title={
+                  `${result.usage.claude_calls} appels Claude · ` +
+                  `${result.usage.output_tokens.toLocaleString("fr-FR")} tokens de sortie · ` +
+                  `DataForSEO $${result.usage.dataforseo_cost_usd.toFixed(2)} · ` +
+                  `caching économisé $${result.usage.cache_savings_usd.toFixed(2)}`
+                }
+              >
+                $
+                {(
+                  result.usage.claude_cost_usd + result.usage.dataforseo_cost_usd
+                ).toFixed(2)}
+              </Badge>
+            )}
             <Button size="sm" variant="outline" onClick={downloadJson}>
               Export JSON
             </Button>
