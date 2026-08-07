@@ -101,6 +101,18 @@ export interface KeywordWithData {
   difficulty: number | null;
 }
 
+export interface RunUsage {
+  claude_calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  cache_creation_tokens: number;
+  cache_read_tokens: number;
+  claude_cost_usd: number;
+  claude_cost_by_tier: Record<string, number>;
+  cache_savings_usd: number;
+  dataforseo_cost_usd: number;
+}
+
 export interface SerpAnalysis {
   keyword: string;
   scraped_pages_count: number;
