@@ -200,6 +200,9 @@ class DataForSEOClient:
             response.raise_for_status()
 
             data = response.json()
+            # DataForSEO facture à la requête et renvoie le montant exact ; on le
+            # cumule pour que le coût de la run soit mesuré et non estimé.
+            self.cost_usd = round(self.cost_usd + float(data.get("cost") or 0.0), 6)
             # Une réponse 200 peut porter une erreur applicative (quota, paramètre
             # invalide). Sans ce log, les parsers renvoient une liste vide et le
             # pipeline continue silencieusement sur des données absentes.
