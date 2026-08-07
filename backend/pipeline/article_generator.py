@@ -468,6 +468,7 @@ TASK — Produce an editorial brief in JSON:
 
 Constraints:
 - Number of H2 sections must match SERP recommendation (~{analysis.recommended_h2_count})
+- Total h3s across ALL sections must not exceed {_h3_budget(analysis)}; most sections have none
 - Sum of word_count_target across sections should approximate {analysis.recommended_word_count}
 - Internal links: enforce Bourrelly maillage rules
 - FAQ questions must come from PAA + common_questions
