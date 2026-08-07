@@ -357,12 +357,43 @@ You write for a French SEO agency SaaS platform. The end-audience of the article
 # ============================================================
 
 
+def _h3_budget(analysis: SerpAnalysis) -> int:
+    """Plafond de H3 pour l'article entier, calé sur le top 10.
+
+    Les concurrents tiennent environ un H3 par H2 (mesuré sur le run frelons :
+    5,8 H3 pour 6,2 H2). Le modèle laissé sans contrainte en produisait 28 par
+    article, soit un titre tous les 80 mots : le corps finissait par se lire
+    comme une FAQ plutôt que comme un article.
+
+    Le plancher à 3 évite d'interdire toute sous-section quand le scrape est
+    pauvre et fait tomber la moyenne concurrente à 0 ou 1.
+    """
+    return max(analysis.avg_h3_count, 3)
+
+
+def _structure_rules(analysis: SerpAnalysis) -> str:
+    budget = _h3_budget(analysis)
+    return f"""STRUCTURE — calibrate on the top 10, never out-fragment it:
+- H2 sections: ~{analysis.recommended_h2_count} (top 10 average: {analysis.avg_h2_count})
+- H3 subheadings: {budget} MAXIMUM for the entire article (top 10 average:
+  {analysis.avg_h3_count}). This is a ceiling, not a target — most articles need fewer.
+- A H2 earns H3s only when it genuinely splits into parallel, comparable parts.
+  Most H2 sections have none: the body runs as prose beneath the H2.
+- Never open a H3 for a single question, a single tip, a definition, or a
+  two-sentence answer. That is precisely what makes an article read like a FAQ
+  instead of an article. Keep those inside the flow of the section.
+- When a section carries a sequence of steps or cases, use a list or numbered
+  paragraphs within the prose — not a heading per item.
+- The closing FAQ block is the one exception and does not count against the budget."""
+
+
 def _serp_analysis_block(analysis: SerpAnalysis) -> str:
     return f"""SERP ANALYSIS (Surfer-like brief):
 - Target keyword: {analysis.keyword}
 - Top result format: {analysis.top_result_format}
 - Recommended word count: {analysis.recommended_word_count} (avg top 10: {analysis.avg_word_count})
-- Recommended H2 count: {analysis.recommended_h2_count}
+- Recommended H2 count: {analysis.recommended_h2_count} (avg top 10: {analysis.avg_h2_count})
+- Avg H3 count in top 10: {analysis.avg_h3_count}
 - Competitive angle to take: {analysis.competitive_angle}
 - Key entities to cover: {', '.join(analysis.key_entities[:15])}
 - Key sub-topics: {', '.join(analysis.key_topics[:10])}
