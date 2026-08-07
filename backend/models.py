@@ -441,6 +441,9 @@ class PipelineResult(BaseModel):
     )
     maillage_map: MaillageMap
     backlink_reports: list[BacklinkReport]
+    usage: RunUsage | None = Field(
+        default=None, description="Consommation et coût réels de la run"
+    )
     generated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
