@@ -55,6 +55,71 @@ MODELS: dict[ModelTier, str] = {
 }
 
 
+# Tarifs Anthropic en USD par million de tokens, au 2026-08-07.
+# `cache_write` = 1,25 × input (TTL 5 min, le défaut de `{"type": "ephemeral"}`).
+# `cache_read`  = 0,1 × input.
+# À revérifier à chaque changement de modèle dans MODELS ci-dessus.
+PRICING_USD_PER_MTOK: dict[ModelTier, dict[str, float]] = {
+    "opus": {"input": 5.00, "output": 25.00, "cache_write": 6.25, "cache_read": 0.50},
+    "sonnet": {"input": 3.00, "output": 15.00, "cache_write": 3.75, "cache_read": 0.30},
+    "haiku": {"input": 1.00, "output": 5.00, "cache_write": 1.25, "cache_read": 0.10},
+}
+
+
+class UsageTotals(BaseModel):
+    """Consommation cumulée d'une run, par palier de modèle et en coût.
+
+    Le coût d'une génération était jusqu'ici une chaîne codée en dur dans le
+    formulaire (« ~€15-25 par cocon »), inventée et jamais mesurée : le relevé
+    réel sur un cocon de 6 articles donne ~$2-3. Une agence qui revend ces cocons
+    a besoin du coût réel par run, donc on l'agrège ici plutôt que de l'estimer.
+    """
+
+    calls: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cache_creation_tokens: int = 0
+    cache_read_tokens: int = 0
+    cost_usd: float = 0.0
+    by_tier: dict[str, float] = Field(default_factory=dict)
+
+    def add(self, tier: ModelTier, result: "CompletionResult") -> None:
+        p = PRICING_USD_PER_MTOK[tier]
+        cost = (
+            result.input_tokens * p["input"]
+            + result.output_tokens * p["output"]
+            + result.cache_creation_tokens * p["cache_write"]
+            + result.cache_read_tokens * p["cache_read"]
+        ) / 1_000_000
+        self.calls += 1
+        self.input_tokens += result.input_tokens
+        self.output_tokens += result.output_tokens
+        self.cache_creation_tokens += result.cache_creation_tokens
+        self.cache_read_tokens += result.cache_read_tokens
+        self.cost_usd = round(self.cost_usd + cost, 6)
+        self.by_tier[tier] = round(self.by_tier.get(tier, 0.0) + cost, 6)
+
+    @property
+    def cache_savings_usd(self) -> float:
+        """Ce que les lectures de cache ont économisé face au plein tarif d'entrée.
+
+        Sert à vérifier que le prompt caching sert réellement à quelque chose :
+        sur un cocon, le contexte partagé fait ~20k tokens relus 5 fois.
+        """
+        total = 0.0
+        for tier, p in PRICING_USD_PER_MTOK.items():
+            share = self.by_tier.get(tier)
+            if share is None:
+                continue
+            total += 0.0  # renseigné par tier ci-dessous si on affine un jour
+        return round(
+            self.cache_read_tokens
+            * (PRICING_USD_PER_MTOK["sonnet"]["input"] - PRICING_USD_PER_MTOK["sonnet"]["cache_read"])
+            / 1_000_000,
+            6,
+        )
+
+
 class ResponseTruncated(ValueError):
     """La réponse a été coupée par max_tokens : le JSON est syntaxiquement incomplet.
 
