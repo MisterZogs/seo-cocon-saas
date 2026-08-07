@@ -493,6 +493,60 @@ function EeatBadge({ score }: { score: number }) {
   );
 }
 
+/**
+ * Copie le markdown source — y compris depuis la « Vue lisible ». C'est le
+ * livrable que l'agence colle dans son CMS ; copier le rendu perdrait les
+ * titres, les tableaux et les marqueurs de maillage.
+ */
+function CopyButton({ text }: { text: string }) {
+  const [state, setState] = useState<"idle" | "ok" | "error">("idle");
+
+  useEffect(() => {
+    if (state === "idle") return;
+    const t = setTimeout(() => setState("idle"), 2000);
+    return () => clearTimeout(t);
+  }, [state]);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setState("ok");
+    } catch {
+      // Clipboard refusée (contexte non sécurisé, permission) : on le dit au
+      // lieu de laisser croire que la copie a marché.
+      setState("error");
+    }
+  }
+
+  return (
+    <Button
+      size="sm"
+      variant="ghost"
+      className="text-xs h-7"
+      onClick={copy}
+      aria-live="polite"
+      title="Copier le markdown de l'article"
+    >
+      {state === "ok" ? (
+        <>
+          <CheckIcon data-icon="inline-start" className="text-emerald-600" />
+          Copié
+        </>
+      ) : state === "error" ? (
+        <>
+          <TriangleAlertIcon data-icon="inline-start" className="text-amber-600" />
+          Échec
+        </>
+      ) : (
+        <>
+          <CopyIcon data-icon="inline-start" />
+          Copier
+        </>
+      )}
+    </Button>
+  );
+}
+
 function ArticleContent({ article }: { article: GeneratedArticle }) {
   const [raw, setRaw] = useState(false);
 
