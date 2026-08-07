@@ -155,10 +155,12 @@ export function Markdown({ content }: { content: string }) {
     }
 
     // Tableaux — très présents dans les articles SEO
-    if (line.trim().startsWith("|") && isTableSeparator(lines[i + 1] ?? "")) {
+    if (startsTable(i)) {
       const header = splitRow(line);
+      const glued = separatorRest(lines[i + 1]);
       i += 2;
       const rows: string[][] = [];
+      if (glued) rows.push(splitRow(glued));
       while (i < lines.length && lines[i].trim().startsWith("|")) {
         rows.push(splitRow(lines[i]));
         i++;
