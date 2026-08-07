@@ -119,8 +119,14 @@ export default function NewGenerationPage() {
   const mode = form.watch("mode");
   const values = form.watch();
 
-  // €EUR pour marchés FR/ES/DE, $USD pour EN
-  const currency = values.language === "en" ? "$" : "€";
+  // Les coûts affichés plus bas sont en USD parce que c'est la devise de
+  // facturation d'Anthropic et de DataForSEO — les convertir en euros donnerait
+  // une fausse précision. Ils sont MESURÉS, pas estimés : ~$1/cocon en Brief
+  // (37 724 tokens de sortie sur un cocon de 6) et ~$3/cocon en Génération
+  // complète (72 006 tokens, dont la mère en Opus), DataForSEO ~$0,38 inclus.
+  // Les valeurs affichées auparavant (€5-10 et €15-25) étaient inventées et
+  // surestimaient d'un facteur 5 à 8. Le coût réel de chaque run est désormais
+  // remonté dans `result.usage` — voir RunUsage côté backend.
 
   async function goNext() {
     const fieldsPerStep: Record<number, (keyof FormValues)[]> = {
