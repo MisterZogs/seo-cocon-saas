@@ -95,7 +95,23 @@ function splitRow(line: string): string[] {
     .map((c) => c.trim());
 }
 
-const isTableSeparator = (line: string) => /^\|?[\s:-]*-[\s|:-]*$/.test(line.trim());
+/**
+ * Reconnaît un séparateur de tableau (`|---|---|`) et renvoie ce qui le suit
+ * sur la même ligne — `""` quand il est propre, `null` quand la ligne n'est pas
+ * un séparateur.
+ *
+ * Le modèle colle parfois la première ligne de données au séparateur en
+ * émettant un `n` littéral au lieu d'un retour à la ligne (constaté en prod sur
+ * `|---|---|---|n| Taille | ... |`). On récupère la ligne au lieu de perdre le
+ * tableau entier.
+ */
+function separatorRest(line: string): string | null {
+  const m = /^\s*\|?(?:\s*:?-+:?\s*\|)+/.exec(line);
+  if (!m) return null;
+  const rest = line.slice(m[0].length);
+  const pipe = rest.indexOf("|");
+  return pipe === -1 ? "" : rest.slice(pipe);
+}
 
 export function Markdown({ content }: { content: string }) {
   const lines = content.split("\n");
