@@ -71,6 +71,22 @@ MIN_REFERENCE_WORDS = 250
 LOW_SAMPLE_THRESHOLD = 4
 
 
+def _clamp_h2(recommended: int, avg_h2: int) -> int:
+    """Borne le nombre de H2 recommandé sur ce que font réellement les concurrents.
+
+    Le nombre de titres est une donnée observable, pas une appréciation — donc
+    il se borne en code, comme le maillage et le plafond E-E-A-T. Claude
+    renvoyait 9 ou 10 quel que soit le SERP : mesuré sur le run frelons, il
+    recommandait 9 H2 aussi bien face à des concurrents qui en font 3 que face
+    à ceux qui en font 9. La recommandation ne suivait donc plus rien.
+
+    On garde une marge au-dessus de la moyenne (couvrir plus que le top 10 est
+    la promesse de l'outil), mais proportionnée au SERP observé.
+    """
+    ceiling = avg_h2 + max(2, avg_h2 // 2)
+    return max(avg_h2, min(recommended, ceiling))
+
+
 # ============================================================
 # PROMPTS
 # ============================================================
