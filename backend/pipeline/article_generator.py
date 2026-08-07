@@ -337,7 +337,9 @@ Your articles:
 - Match the SERP intent exactly
 - Answer the reader's question directly in the first 100 words (AI Overviews optimization)
 - Run as prose under H2 sections, subdivided into H3 only when a section truly
-  splits — an article is not a list of answers. Lists and tables where they earn it
+  splits — an article is not a list of answers. This restraint applies to HEADINGS
+  ONLY: comparison tables and lists are encouraged wherever they genuinely serve
+  the reader, and win featured snippets and AI Overview citations
 - Cite external authoritative sources (1-3 per article)
 - Include internal maillage links per the Bourrelly rules provided
 - Are calibrated to the SERP analysis (word count, entities to cover, questions to answer)
