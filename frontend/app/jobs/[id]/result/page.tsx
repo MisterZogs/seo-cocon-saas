@@ -526,14 +526,17 @@ function ArticleContent({ article }: { article: GeneratedArticle }) {
           <SectionHeading tone="article" className="mb-0">
             Article rédigé
           </SectionHeading>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-xs h-7"
-            onClick={() => setRaw((r) => !r)}
-          >
-            {raw ? "Vue lisible" : "Markdown brut"}
-          </Button>
+          <div className="flex items-center gap-1">
+            <CopyButton text={article.content_markdown} />
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs h-7"
+              onClick={() => setRaw((r) => !r)}
+            >
+              {raw ? "Vue lisible" : "Markdown brut"}
+            </Button>
+          </div>
         </div>
         <ScrollArea className="mt-2 h-[32rem] rounded-lg border bg-card px-5 py-3">
           {raw ? (
