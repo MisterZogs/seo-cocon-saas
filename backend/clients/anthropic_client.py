@@ -233,6 +233,9 @@ class AnthropicClient:
             cache_read_tokens=getattr(usage, "cache_read_input_tokens", 0) or 0,
             stop_reason=response.stop_reason,
         )
+        # Cumulé ici et non chez l'appelant : tous les appels passent par complete(),
+        # y compris les rattrapages après troncature, qui coûtent aussi.
+        self.usage.add(model, result)
 
         logger.info(
             "claude.call",
