@@ -489,12 +489,14 @@ def _build_full_prompt(
 
 {_serp_analysis_block(analysis)}
 
+{_structure_rules(analysis)}
+
 {_maillage_rules(policy)}
 
 TASK — Produce a publish-ready article as JSON:
 {{
   "sections": [
-    {{"h2": "...", "h3s": ["..."], "key_points": ["..."], "word_count_target": 350}}
+    {{"h2": "...", "h3s": [], "key_points": ["..."], "word_count_target": 350}}
   ],
   "faq": [
     {{"question": "...", "answer": "..."}}   // 4-6 items, answers 2-4 sentences each
