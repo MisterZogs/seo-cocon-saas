@@ -23,6 +23,7 @@ from models import (
     KeywordWithData,
     PipelineResult,
     PipelineStep,
+    RunUsage,
     SerpAnalysis,
 )
 from pipeline.article_generator import ArticleGenerator
