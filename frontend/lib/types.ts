@@ -249,6 +249,7 @@ export interface PipelineResult {
   articles: GeneratedArticle[];
   maillage_map: MaillageMap;
   backlink_reports: BacklinkReport[];
+  usage?: RunUsage | null;
   generated_at: string;
 }
 
