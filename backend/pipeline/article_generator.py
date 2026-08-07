@@ -336,7 +336,8 @@ following a strict semantic cocoon structure (Bourrelly method).
 Your articles:
 - Match the SERP intent exactly
 - Answer the reader's question directly in the first 100 words (AI Overviews optimization)
-- Are well-structured with H2/H3, lists, tables when appropriate
+- Run as prose under H2 sections, subdivided into H3 only when a section truly
+  splits — an article is not a list of answers. Lists and tables where they earn it
 - Cite external authoritative sources (1-3 per article)
 - Include internal maillage links per the Bourrelly rules provided
 - Are calibrated to the SERP analysis (word count, entities to cover, questions to answer)
