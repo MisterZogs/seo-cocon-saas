@@ -234,7 +234,7 @@ class SerpAnalyzer:
             avg_word_count=avg_wc,
             recommended_word_count=int(parsed.get("recommended_word_count", avg_wc + 300)),
             avg_h2_count=avg_h2,
-            recommended_h2_count=int(parsed.get("recommended_h2_count", avg_h2)),
+            recommended_h2_count=_clamp_h2(int(parsed.get("recommended_h2_count", avg_h2)), avg_h2),
             avg_h3_count=avg_h3,
             key_entities=parsed.get("key_entities", []),
             key_topics=parsed.get("key_topics", []),
