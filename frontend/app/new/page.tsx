@@ -417,10 +417,13 @@ export default function NewGenerationPage() {
                     <Label>Éléments d&apos;expérience client (obligatoire pour Full)</Label>
                     <Alert>
                       <AlertDescription className="text-xs">
-                        Chaque élément est repris <strong>mot pour mot</strong> dans un
-                        article, en bloc cité et attribué — et un élément donné n&apos;est
-                        placé que dans <strong>un seul</strong> article. Comptez donc
-                        idéalement un élément par article, soit{" "}
+                        {/* {" "} explicite après chaque </strong> : le compilateur JSX
+                            supprime l'espace qui suit une balise fermante en début de
+                            nœud texte, ce qui collait « mot pour mot » à « dans ». */}
+                        Chaque élément est repris <strong>mot pour mot</strong>{" "}
+                        dans un article, en bloc cité et attribué — et un élément donné
+                        n&apos;est placé que dans <strong>un seul</strong>{" "}
+                        article. Comptez donc idéalement un élément par article, soit{" "}
                         {Number(values.num_cocoons || 1) * TYPICAL_ARTICLES_PER_COCON} pour{" "}
                         {values.num_cocoons || 1} cocon
                         {Number(values.num_cocoons || 1) > 1 ? "s" : ""}.
