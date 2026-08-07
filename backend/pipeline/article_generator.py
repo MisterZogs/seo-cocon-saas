@@ -387,7 +387,10 @@ def _structure_rules(analysis: SerpAnalysis) -> str:
   instead of an article. Keep those inside the flow of the section.
 - When a section carries a sequence of steps or cases, use a list or numbered
   paragraphs within the prose — not a heading per item.
-- The closing FAQ block is the one exception and does not count against the budget."""
+- The closing FAQ block is the one exception and does not count against the budget.
+- This budget caps HEADINGS, nothing else. Comparison tables in particular stay
+  welcome — a table is the format Google promotes into featured snippets and AI
+  Overviews. Do not drop one to look more restrained."""
 
 
 def _serp_analysis_block(analysis: SerpAnalysis) -> str:
