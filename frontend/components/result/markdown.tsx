@@ -119,6 +119,12 @@ export function Markdown({ content }: { content: string }) {
   let i = 0;
   let key = 0;
 
+  // Un `|` en début de ligne ne suffit pas : sans séparateur en dessous ce
+  // n'est pas un tableau, et la ligne doit rester du texte ordinaire.
+  const startsTable = (idx: number) =>
+    (lines[idx]?.trim().startsWith("|") ?? false) &&
+    separatorRest(lines[idx + 1] ?? "") !== null;
+
   while (i < lines.length) {
     const line = lines[i];
 
