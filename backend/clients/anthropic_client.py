@@ -16,7 +16,7 @@ from anthropic import (
     RateLimitError,
 )
 from anthropic.types import Message
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from tenacity import (
     retry,
     retry_if_exception,
@@ -161,6 +161,9 @@ class AnthropicClient:
         if not key:
             raise RuntimeError("ANTHROPIC_API_KEY manquant (env ou paramètre).")
         self._client = AsyncAnthropic(api_key=key)
+        # Un client par run (l'orchestrateur en instancie un), donc ce cumul est
+        # bien le total de la run et pas un compteur global de process.
+        self.usage = UsageTotals()
 
     @retry(
         retry=_is_retryable,
