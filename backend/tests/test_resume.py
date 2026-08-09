@@ -18,6 +18,7 @@ import sys
 from typing import Any
 
 from clients.anthropic_client import MODELS, CompletionResult, ModelTier, UsageTotals
+from clients.dataforseo_client import _mock_keyword_ideas, _mock_kw_data
 from db.checkpoints import CheckpointStore
 from models import ClientForm, GenerationMode
 from pipeline.article_generator import _BRIEF_SYSTEM, _FULL_SYSTEM
