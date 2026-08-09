@@ -50,6 +50,36 @@ def _check(condition: bool, label: str) -> bool:
     return condition
 
 
+def _element(n: int) -> ExperienceElement:
+    return ExperienceElement(type="insight", title=f"Retour {n}", content=f"Vécu numéro {n}.")
+
+
+def _stub(slug: str, article_type: ArticleType) -> ArticleStub:
+    return ArticleStub(
+        cocon_id="c",
+        article_type=article_type,
+        target_keyword=slug,
+        h1_title=slug,
+        meta_title=slug,
+        meta_description=slug,
+        slug=slug,
+        intent="informational",
+    )
+
+
+def _cocon(prefix: str, n_daughters: int = 5) -> CoconStructure:
+    return CoconStructure(
+        id=prefix,
+        theme="t",
+        main_keyword="k",
+        mother=_stub(f"{prefix}-mere", ArticleType.MOTHER),
+        daughters=[
+            _stub(f"{prefix}-fille{i}", ArticleType.DAUGHTER) for i in range(1, n_daughters + 1)
+        ],
+        rationale="r",
+    )
+
+
 def test_verbatim_preserved() -> bool:
     print("\n[1] Le contenu client est repris au caractère près")
     markdown = f"Intro.\n\n## Terrain\n\nCe qu'on a vu :\n\n[[EXPERIENCE:{ELEMENT.id}]]\n\nLa leçon.\n"
