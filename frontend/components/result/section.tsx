@@ -3,12 +3,13 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Le thème shadcn du projet est intégralement en niveaux de gris (toutes les
- * variables sont en `oklch(x 0 0)`). Sans accent, chaque titre de section
- * rendait le même gris pâle et la page se lisait comme un mur uniforme.
+ * Une couleur par NATURE d'information, toujours la même d'un écran à l'autre :
+ * le lecteur apprend le code une fois. Sans ça, chaque titre de section rendait
+ * pareil et la page se lisait comme un mur uniforme.
  *
- * On introduit donc une couleur par NATURE d'information, toujours la même
- * d'un écran à l'autre : le lecteur apprend le code une fois.
+ * Les six teintes sont définies dans `globals.css` (`--tone-*`) : désaturées et
+ * ramenées vers le chaud pour tenir dans la palette crème/terracotta. Ne pas
+ * revenir à des couleurs Tailwind brutes, elles trouent le fond.
  */
 export type Tone =
   | "cocon"
