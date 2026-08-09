@@ -584,9 +584,10 @@ Constraints:
 - Sum of word_count_target across sections should approximate {analysis.recommended_word_count}
 - Internal links: enforce Bourrelly maillage rules
 - FAQ questions must come from PAA + common_questions
-- If experience elements are available, `editorial_notes` must tell the writer which
-  one to place, in which section, and that it goes in VERBATIM as an attributed block
-  quote — never reworded. Name the element by its title.
+- If experience elements were assigned above, `editorial_notes` must tell the writer
+  which one to place, in which section, and that it goes in VERBATIM as an attributed
+  block quote — never reworded. Name the element by its title. Elements assigned to
+  other articles are not shown to you and must not be invented.
 - `tone_guidance` must be actionable: if voice samples were supplied, describe their
   actual rhythm and habits, not adjectives like "professional yet accessible"."""
 
