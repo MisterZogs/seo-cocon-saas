@@ -194,6 +194,114 @@ class KeywordWithData(BaseModel):
 
 
 # ============================================================
+# VALIDATION HUMAINE DE LA SÉLECTION
+# ============================================================
+#
+# Le pipeline s'arrête entre la recherche de mots-clés et la génération pour
+# soumettre la sélection du modèle à l'agence. Elle voit ce que Claude a retenu
+# et pourquoi, décoche ce qui ne va pas, et pioche dans le reste du pool.
+
+# 1 mère + 5 filles. Le plafond est ici et pas seulement dans le prompt : le
+# modèle rendait parfois 6 ou 7 filles, et un cocon large dilue le maillage
+# (chaque page reçoit autant de liens entrants qu'il y a de sœurs).
+MAX_ARTICLES_PER_COCON = 6
+MIN_ARTICLES_PER_COCON = 4  # 1 mère + 3 filles, le plancher de CoconStructure
+
+
+class KeywordPick(BaseModel):
+    """Un mot-clé retenu par le modèle, avec sa justification.
+
+    `reason` est ce que l'agence lit pour arbitrer : sans elle, décocher une
+    proposition revient à jouer à pile ou face.
+    """
+
+    keyword: str
+    role: ArticleRole
+    reason: str = Field(default="", description="Pourquoi ce KW, et pourquoi ce rôle")
+    monthly_volume: int | None = None
+    cpc: float | None = None
+    competition_score: float | None = None
+    difficulty: int | None = None
+    intent: SearchIntent = SearchIntent.INFORMATIONAL
+
+
+class CoconProposal(BaseModel):
+    """Un cocon proposé par le modèle, avant validation humaine."""
+
+    index: int = Field(..., ge=0, description="Position dans la liste des propositions")
+    theme: str
+    main_keyword: str
+    rationale: str = ""
+    picks: list[KeywordPick] = Field(default_factory=list)
+
+    @property
+    def mother(self) -> KeywordPick | None:
+        return next((p for p in self.picks if p.role == ArticleRole.MOTHER), None)
+
+
+class ValidationSnapshot(BaseModel):
+    """Ce que le front affiche sur l'écran de validation."""
+
+    run_id: str
+    proposals: list[CoconProposal]
+    pool: list[KeywordWithData] = Field(
+        default_factory=list,
+        description="Tous les KW enrichis disponibles, propositions comprises",
+    )
+    max_per_cocon: int = MAX_ARTICLES_PER_COCON
+    min_per_cocon: int = MIN_ARTICLES_PER_COCON
+
+
+class ValidatedCocon(BaseModel):
+    """Un cocon tel que l'agence l'a arrêté."""
+
+    index: int = Field(..., ge=0)
+    theme: str | None = None
+    mother_keyword: str
+    daughter_keywords: list[str] = Field(..., min_length=3)
+
+    @model_validator(mode="after")
+    def _check_size(self) -> "ValidatedCocon":
+        total = 1 + len(self.daughter_keywords)
+        if total > MAX_ARTICLES_PER_COCON:
+            raise ValueError(
+                f"Cocon {self.index} : {total} articles demandés, maximum "
+                f"{MAX_ARTICLES_PER_COCON} (1 mère + "
+                f"{MAX_ARTICLES_PER_COCON - 1} filles)."
+            )
+        seen = [k.strip().lower() for k in [self.mother_keyword, *self.daughter_keywords]]
+        if len(set(seen)) != len(seen):
+            raise ValueError(f"Cocon {self.index} : un mot-clé est présent deux fois.")
+        return self
+
+
+class ValidationDecision(BaseModel):
+    """Le corps du POST de validation."""
+
+    cocoons: list[ValidatedCocon] = Field(..., min_length=1)
+
+    @model_validator(mode="after")
+    def _check_unique_across_cocoons(self) -> "ValidationDecision":
+        """Un même mot-clé dans deux cocons casse l'étanchéité des silos.
+
+        Deux articles ciblant le même KW se cannibalisent, et le maillage
+        strict interdit précisément qu'un cocon renvoie vers l'autre : la
+        duplication n'a alors aucune issue.
+        """
+        seen: dict[str, int] = {}
+        for c in self.cocoons:
+            for kw in [c.mother_keyword, *c.daughter_keywords]:
+                key = kw.strip().lower()
+                if key in seen:
+                    raise ValueError(
+                        f"« {kw} » est utilisé dans les cocons {seen[key]} et "
+                        f"{c.index} — un mot-clé ne peut appartenir qu'à un seul silo."
+                    )
+                seen[key] = c.index
+        return self
+
+
+# ============================================================
 # COCON STRUCTURE
 # ============================================================
 
