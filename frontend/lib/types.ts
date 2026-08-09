@@ -72,6 +72,11 @@ export interface ClientForm {
   niche: string;
   num_cocoons: number;
   mode: GenerationMode;
+  /**
+   * Suspend le run après la recherche de mots-clés, le temps que l'agence
+   * valide la sélection. Omis = `true` côté backend.
+   */
+  validate_keywords?: boolean;
   /** Omis = `strict` côté backend. */
   inter_cocon_policy?: InterCoconPolicy;
   experience_elements: ExperienceElement[];
