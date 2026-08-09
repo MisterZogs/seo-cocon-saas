@@ -38,6 +38,22 @@ logger = logging.getLogger(__name__)
 ProgressCallback = Callable[[JobProgress], Awaitable[None]] | None
 
 
+class AwaitingValidation(Exception):
+    """Le run est suspendu : l'agence doit valider la sélection de mots-clés.
+
+    Ce n'est pas une erreur, c'est une pause. Le worker l'attrape et termine le
+    job proprement plutôt que de le marquer en échec — un job « failed » serait
+    proposé à la reprise automatique, ce qu'on ne veut surtout pas ici.
+
+    Porter le snapshot dans l'exception évite de le recalculer côté API : le
+    worker le persiste et l'écran de validation le relit tel quel.
+    """
+
+    def __init__(self, snapshot: ValidationSnapshot) -> None:
+        super().__init__("Validation de la sélection de mots-clés requise.")
+        self.snapshot = snapshot
+
+
 async def _no_op(_: JobProgress) -> None:
     return None
 
