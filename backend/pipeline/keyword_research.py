@@ -197,10 +197,11 @@ Return JSON:
         "meta_description": "...",
         "slug": "...",
         "intent": "informational",
-        "secondary_keywords": ["...", "..."]
+        "secondary_keywords": ["...", "..."],
+        "reason": "..."
       }},
       "daughters": [
-        {{"target_keyword": "...", "h1_title": "...", "meta_title": "...", "meta_description": "...", "slug": "...", "intent": "informational", "secondary_keywords": ["..."]}}
+        {{"target_keyword": "...", "h1_title": "...", "meta_title": "...", "meta_description": "...", "slug": "...", "intent": "informational", "secondary_keywords": ["..."], "reason": "..."}}
       ]
     }}
   ]
