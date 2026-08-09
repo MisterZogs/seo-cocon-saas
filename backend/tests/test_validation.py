@@ -172,6 +172,7 @@ async def test_pause() -> bool:
     store = InMemoryStore()
     client = RecordingAnthropic()
 
+    snapshot = None
     try:
         await run_pipeline(
             FORM, anthropic=client, dataforseo=FakeDataForSEO(),
@@ -179,13 +180,15 @@ async def test_pause() -> bool:
         )
         return _check(False, "le pipeline aurait dû suspendre")
     except AwaitingValidation as pause:
+        # `pause` est effacé à la sortie du bloc except : on retient le snapshot.
+        snapshot = pause.snapshot
         ok = _check(True, "AwaitingValidation levée")
 
     ok &= _check("article" not in client.calls, "aucun article généré avant validation")
     ok &= _check("serp" not in client.calls, "aucune analyse SERP payée avant validation")
     ok &= _check("keyword_research" in store.data, "recherche de mots-clés checkpointée")
     ok &= _check("cocon_design" not in store.data, "design des cocons pas encore figé")
-    ok &= _check(len(pause.snapshot.proposals) >= 1, "snapshot porté par l'exception")
+    ok &= _check(len(snapshot.proposals) >= 1, "snapshot porté par l'exception")
 
     # Sans la case cochée, aucun arrêt.
     libre = FORM.model_copy(update={"validate_keywords": False})
