@@ -669,9 +669,12 @@ CRITICAL:
 - content_markdown must be COMPLETE and PUBLISH-READY (not a draft or outline)
 - Internal links in the markdown must use the format [[INTERNAL_LINK:slug|anchor text]] — they will be resolved to real HTML links by the export step
 - Every link in `internal_links` list must correspond to a [[INTERNAL_LINK:...]] in the markdown
-- Experience elements: place [[EXPERIENCE:<id>]] alone on its own line where the
-  client's material belongs, with your lead-in above and your takeaway below. Never
-  write out that material yourself — the exact text is substituted afterwards.
+- Experience elements: place [[EXPERIENCE:<id>]] alone on its own line, separated by a
+  blank line above and below, where the client's material belongs — with your lead-in
+  paragraph above and your takeaway paragraph below. Never write out that material
+  yourself: the exact text is substituted afterwards. Only the ids assigned to THIS
+  article exist; a marker pointing anywhere else is dropped along with its lead-in and
+  takeaway, which costs you a hole in the section.
 - FAQ section must appear at the end of content_markdown as H2 "FAQ" with each Q as H3.
   It is the ONLY place where a H3 per question is allowed — never in the body.
 - Answer the target keyword's question in the first 100 words (AI Overviews optimization)
