@@ -301,6 +301,8 @@ def main() -> int:
         test_marqueurs_invalides(),
         test_element_non_place(),
         test_unicite_sur_la_run(),
+        test_amorce_orpheline(),
+        test_repartition(),
         test_plafond_eeat(),
         test_contexte_cache(),
     ]
