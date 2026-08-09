@@ -206,7 +206,61 @@ def _build_style_context(form: ClientForm) -> str:
 # le texte du client au caractère près. C'est la seule façon de garantir que
 # l'article contient de vrais passages non générés.
 
-_EXPERIENCE_MARKER = re.compile(r"^[ \t]*\[\[EXPERIENCE:([^\]]+)\]\][ \t]*$", re.MULTILINE)
+def assign_experience_elements(
+    form: ClientForm, cocoons: list[CoconStructure]
+) -> dict[str, list[ExperienceElement]]:
+    """Attribue chaque élément d'expérience à UN article précis, avant génération.
+
+    Le premier arrivé premier servi laissait les filles sans aucun matériau : la
+    mère passe en premier, consomme ce qu'elle veut, et les cinq filles sortent
+    sans un mot non généré. Or c'est le seul levier dont l'effet sur la détection
+    soit mesuré (Pangram, 2026-08 : la réécriture de style ne déplace rien, le
+    bloc verbatim ressort en segment humain). Un article sans élément attribué
+    sera classé 100 % IA, quoi qu'on fasse sur le prompt.
+
+    Ordre de priorité : les mères d'abord (ce sont les piliers, générés par Opus),
+    puis les filles en alternant les cocons pour qu'aucun silo ne soit servi deux
+    fois avant qu'un autre le soit une. Au-delà d'un élément par article, on
+    boucle et un article peut en recevoir deux.
+    """
+    priority = [c.mother.slug for c in cocoons]
+    priority += [
+        d.slug
+        for rank in zip_longest(*(c.daughters for c in cocoons))
+        for d in rank
+        if d is not None
+    ]
+
+    assignment: dict[str, list[ExperienceElement]] = {slug: [] for slug in priority}
+    if not priority or not form.experience_elements:
+        return assignment
+
+    for i, element in enumerate(form.experience_elements):
+        assignment[priority[i % len(priority)]].append(element)
+
+    a_sec = [slug for slug, els in assignment.items() if not els]
+    if a_sec:
+        logger.warning(
+            "%d/%d article(s) sans élément d'expérience — ils sortiront sans aucun "
+            "passage non généré (100 %% IA aux détecteurs, score expérience plafonné "
+            "à %d) : %s",
+            len(a_sec),
+            len(priority),
+            _NO_EXPERIENCE_CAP,
+            ", ".join(a_sec),
+        )
+    return assignment
+
+
+_EXPERIENCE_MARKER = re.compile(r"\[\[EXPERIENCE:([^\]]+)\]\]")
+_MARKER_ALONE = re.compile(r"^\[\[EXPERIENCE:([^\]]+)\]\]$")
+_PARAGRAPH_SPLIT = re.compile(r"\n[ \t]*\n")
+
+# Une amorce/chute est de la prose courte. On ne touche ni aux titres, ni aux
+# listes, ni aux tableaux, ni aux citations : supprimer du contenu réel serait
+# pire que laisser une phrase un peu suspendue.
+_STRUCTURAL = re.compile(r"^[ \t]*(#{1,6} |[-*+] |\d+[.)] |> |\||```)")
+_FRAME_MAX_WORDS = 45
 
 _TYPE_LABELS = {
     "case_study": "Cas client",
