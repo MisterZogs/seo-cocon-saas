@@ -189,11 +189,13 @@ export default function ValidationPage({
     }
   }
 
-  if (loadError) {
+  const error = runId ? loadError : "Identifiant de run manquant dans l'URL.";
+
+  if (error) {
     return (
       <Shell jobId={jobId}>
         <Alert variant="destructive">
-          <AlertDescription>{loadError}</AlertDescription>
+          <AlertDescription>{error}</AlertDescription>
         </Alert>
         <Link href="/" className="text-sm underline mt-4 inline-block">
           Retour à l&apos;accueil
