@@ -18,8 +18,12 @@ create table if not exists runs (
     language      text  not null default 'fr',
 
     -- État
+    -- 'awaiting_validation' : le run est suspendu entre la recherche de mots-clés
+    -- et la génération, le temps que l'agence valide la sélection. Ce n'est ni un
+    -- échec ni une fin — le run reprendra sur le même id.
     status        text  not null default 'queued'
-                        check (status in ('queued', 'running', 'completed', 'failed')),
+                        check (status in ('queued', 'running', 'awaiting_validation',
+                                          'completed', 'failed')),
     progress      jsonb,
     error         text,
     error_traceback text,
