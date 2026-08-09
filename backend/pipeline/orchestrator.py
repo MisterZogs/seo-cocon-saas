@@ -25,6 +25,7 @@ from models import (
     PipelineStep,
     RunUsage,
     SerpAnalysis,
+    ValidationSnapshot,
 )
 from pipeline.article_generator import ArticleGenerator
 from pipeline.backlink_analyzer import BacklinkAnalyzer
