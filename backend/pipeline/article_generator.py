@@ -281,6 +281,18 @@ def _format_experience_block(element: ExperienceElement) -> str:
     return f"{quoted}\n>\n{attribution}"
 
 
+def _is_frame(block: str) -> bool:
+    """Vrai si ce bloc a toutes les allures d'une amorce ou d'une chute."""
+    if not block.strip() or _STRUCTURAL.match(block):
+        return False
+    return len(block.split()) <= _FRAME_MAX_WORDS
+
+
+def _excerpt(block: str, width: int = 60) -> str:
+    flat = " ".join(block.split())
+    return flat if len(flat) <= width else f"{flat[:width]}…"
+
+
 def inject_experience_blocks(
     markdown: str,
     elements: list[ExperienceElement],
@@ -292,6 +304,15 @@ def inject_experience_blocks(
     vers un id inconnu est retiré — laisser un `[[EXPERIENCE:xxx]]` dans le
     livrable serait pire que de perdre le bloc.
 
+    Quand un marqueur est retiré, l'amorce et la chute qui l'encadrent partent
+    avec lui. Le prompt demande au modèle d'écrire une phrase d'introduction
+    au-dessus et une phrase de conclusion en dessous ; en ne retirant que le
+    marqueur on laissait ces deux phrases pointer vers du vide. Cas réel :
+    « Voici comment se passe concrètement une intervention de ce type. » suivi
+    de rien, puis « Ce type d'intervention […] garantit que… ». On ne supprime
+    que de la prose courte, jamais un titre, une liste, un tableau ou une
+    citation.
+
     `already_used` porte les ids déjà consommés par les articles précédents de la
     run. Sans ce garde-fou le modèle place le même élément dans TOUS les articles :
     mesuré sur un run réel, un unique bloc se retrouvait dans les 6 articles du
@@ -302,24 +323,49 @@ def inject_experience_blocks(
     consumed = set(already_used or ())
     used: list[str] = []
 
-    def _replace(match: re.Match) -> str:
-        element_id = match.group(1).strip()
+    def _resolve(element_id: str) -> tuple[str | None, str]:
+        """(bloc formaté, "") si l'élément est placé, (None, raison) sinon."""
         element = by_id.get(element_id)
         if element is None:
-            logger.warning("Marqueur d'expérience inconnu, retiré : %s", element_id)
-            return ""
+            return None, f"id inconnu « {element_id} »"
         if element_id in consumed:
-            logger.info(
-                "Élément %s déjà placé dans un article précédent — marqueur retiré", element_id
-            )
-            return ""
+            return None, f"{element_id} déjà placé dans un article précédent"
         if element_id in used:
-            logger.warning("Élément d'expérience %s référencé 2×, 2e occurrence retirée", element_id)
-            return ""
+            return None, f"{element_id} référencé 2× dans le même article"
         used.append(element_id)
-        return _format_experience_block(element)
+        return _format_experience_block(element), ""
 
-    result = _EXPERIENCE_MARKER.sub(_replace, markdown)
+    blocks = _PARAGRAPH_SPLIT.split(markdown)
+    out: list[str] = []
+    i = 0
+    while i < len(blocks):
+        solo = _MARKER_ALONE.match(blocks[i].strip())
+        if solo is None:
+            out.append(blocks[i])
+            i += 1
+            continue
+
+        block, reason = _resolve(solo.group(1).strip())
+        i += 1
+        if block is not None:
+            out.append(block)
+            continue
+
+        logger.info("Marqueur d'expérience retiré : %s", reason)
+        if out and _is_frame(out[-1]):
+            logger.info("Amorce devenue orpheline, retirée : « %s »", _excerpt(out.pop()))
+        if i < len(blocks) and _is_frame(blocks[i]):
+            logger.info("Chute devenue orpheline, retirée : « %s »", _excerpt(blocks[i]))
+            i += 1
+
+    result = "\n\n".join(out)
+
+    # Filet : un marqueur que le modèle n'a pas isolé sur sa propre ligne échappe
+    # au découpage par blocs. On le résout quand même, sans nettoyage alentour —
+    # il n'y a alors pas d'amorce ni de chute identifiables.
+    if _EXPERIENCE_MARKER.search(result):
+        result = _EXPERIENCE_MARKER.sub(lambda m: _resolve(m.group(1).strip())[0] or "", result)
+
     unused = [e.id for e in elements if e.id not in used]
     return result, used, unused
 
