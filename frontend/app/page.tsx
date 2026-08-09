@@ -64,8 +64,10 @@ export default function Home() {
       {/* Hero */}
       <section className="mx-auto grid w-full max-w-6xl items-center gap-14 px-6 py-20 lg:grid-cols-[1.05fr_1fr] lg:py-28">
         <div>
-          <h1 className="font-serif text-4xl leading-[1.08] font-semibold sm:text-5xl lg:text-[3.4rem]">
-            Transformez un mot-clé en{" "}
+          {/* `mot-clé` doit rester insécable : le trait d'union offre sinon un
+              point de césure et la première ligne casse au milieu du mot. */}
+          <h1 className="font-serif text-4xl leading-[1.1] font-semibold text-balance sm:text-5xl lg:text-[3.1rem]">
+            Transformez un <span className="whitespace-nowrap">mot-clé</span> en{" "}
             <span className="accent-word-underline">cocon sémantique</span> qui
             se tient.
           </h1>
