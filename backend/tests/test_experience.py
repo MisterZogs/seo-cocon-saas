@@ -256,8 +256,15 @@ def test_plafond_eeat() -> bool:
 
 
 def test_contexte_cache() -> bool:
-    """Style + expérience doivent finir dans le préfixe cacheable, pas par article."""
-    print("\n[6] Contexte partagé (mis en cache)")
+    """Le style reste cacheable ; l'expérience passe par article.
+
+    Les échantillons de style sont identiques pour toute la run, donc ils vont
+    dans le préfixe mis en cache. Les éléments d'expérience, eux, sont désormais
+    attribués article par article : les mettre dans le préfixe partagé les
+    exposerait à tous les articles, ce qui est exactement le comportement qu'on
+    a supprimé.
+    """
+    print("\n[8] Contexte partagé (cache) vs contexte par article")
     form = ClientForm(
         product="Désinsectisation", description="Traitement nids de frelons",
         seed_keywords=["nid de frelons"], audience="particuliers", niche="services",
@@ -268,14 +275,19 @@ def test_contexte_cache() -> bool:
 
     ok = _check("AUTHOR VOICE" in context, "échantillons de style présents")
     ok &= _check("Un frelon, ça ne prévient pas." in context, "contenu du sample injecté")
-    ok &= _check(f"id=`{ELEMENT.id}`" in context, "id de l'élément exposé au modèle")
-    ok &= _check("NEVER paraphrase" in context, "règle du verbatim énoncée")
+    ok &= _check("EXPERIENCE ELEMENTS" not in context, "expérience hors du préfixe caché")
+    ok &= _check(ELEMENT.content not in context, "aucun matériau client dans le cache partagé")
+
+    par_article = _build_experience_context([ELEMENT])
+    ok &= _check(f"id=`{ELEMENT.id}`" in par_article, "id de l'élément exposé au modèle")
+    ok &= _check("NEVER paraphrase" in par_article, "règle du verbatim énoncée")
+    ok &= _check("assigned to THIS article" in par_article, "attribution explicite dans le prompt")
+    ok &= _check(_build_experience_context([]) == "", "rien à dire sans élément attribué")
 
     vide = _build_cached_context(
         ClientForm(product="x", description="y", seed_keywords=["z"], audience="a", niche="n"), []
     )
     ok &= _check("AUTHOR VOICE" not in vide, "aucun bloc parasite sans échantillon")
-    ok &= _check("EXPERIENCE ELEMENTS" not in vide, "aucun bloc parasite sans élément")
     return ok
 
 
