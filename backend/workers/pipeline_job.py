@@ -28,7 +28,12 @@ from rq import get_current_job
 from db.checkpoints import make_checkpoint_store
 from db.postgres import get_repository
 from models import ClientForm, JobProgress
-from pipeline.orchestrator import run_pipeline
+from pipeline.orchestrator import AwaitingValidation, run_pipeline
+
+# Clé du checkpoint où dort le snapshot de validation, relu par l'API pour
+# construire l'écran de sélection. Même durée de vie que les autres checkpoints
+# du run, donc rien de plus à purger.
+VALIDATION_CHECKPOINT = "validation_snapshot"
 
 logger = logging.getLogger(__name__)
 
