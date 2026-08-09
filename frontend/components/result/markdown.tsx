@@ -226,7 +226,7 @@ export function Markdown({ content }: { content: string }) {
         <ul key={key++} className="my-3 space-y-1.5 pl-1">
           {items.map((it, ii) => (
             <li key={ii} className="flex gap-2.5 text-sm leading-relaxed">
-              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-sky-400" />
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-primary/60" />
               <span>{renderInline(it, `li${key}-${ii}`)}</span>
             </li>
           ))}
