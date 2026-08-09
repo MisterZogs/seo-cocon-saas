@@ -96,6 +96,7 @@ export default function NewGenerationPage() {
       seed_keywords_text: "tuer frelons\nexterminer frelons\nse débarasser des frelons\ndétruire nid de frelons\nnid de frelons",
       num_cocoons: 2,
       mode: "full",
+      validate_keywords: true,
       experience_elements: [
         {
           type: "case_study",
