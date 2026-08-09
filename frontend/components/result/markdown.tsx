@@ -61,7 +61,7 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sky-700 underline underline-offset-2 hover:text-sky-900 dark:text-sky-300"
+          className="text-tone-article underline underline-offset-2 hover:text-primary"
         >
           {linkText}
         </a>,
