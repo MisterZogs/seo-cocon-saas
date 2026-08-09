@@ -43,7 +43,7 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
         <span
           key={key}
           title={`Lien interne → /${slug}`}
-          className="font-medium text-indigo-700 underline decoration-indigo-400 decoration-dotted underline-offset-2 dark:text-indigo-300 dark:decoration-indigo-600"
+          className="font-medium text-tone-maillage underline decoration-tone-maillage/50 decoration-dotted underline-offset-2"
         >
           {anchor}
         </span>,
