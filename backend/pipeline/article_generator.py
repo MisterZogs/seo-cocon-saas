@@ -143,9 +143,9 @@ def _build_experience_context(elements: list[ExperienceElement]) -> str:
         "   genuinely supports the point. A forced placement is worse than none.",
         "5. Count the block's words in your word_count target.",
         "",
-        "Available elements:",
+        "Elements assigned to THIS article (no other article may use them):",
     ]
-    for e in form.experience_elements:
+    for e in elements:
         source = f" | source: {e.source}" if e.source else ""
         lines.append(f'\n- id=`{e.id}` | type={e.type} | title="{e.title}"{source}')
         lines.append(f"  content (DO NOT REPRODUCE — reference by marker only):")
