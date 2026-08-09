@@ -908,18 +908,24 @@ class ArticleGenerator:
         external_links = _parse_external_links(parsed.get("external_links", []))
         eeat = _parse_eeat(parsed.get("eeat_score"))
 
-        markdown, placed, _ = inject_experience_blocks(
+        markdown, placed, unplaced = inject_experience_blocks(
             parsed.get("content_markdown", ""),
-            form.experience_elements,
+            experience,
             already_used=used_experience,
         )
-        if form.experience_elements:
+        if experience:
             logger.info(
-                "%s : %d/%d élément(s) d'expérience intégré(s) verbatim",
+                "%s : %d/%d élément(s) attribué(s) intégré(s) verbatim",
                 stub.slug,
                 len(placed),
-                len(form.experience_elements),
+                len(experience),
             )
+            if unplaced:
+                logger.warning(
+                    "%s : élément(s) attribué(s) mais non placé(s) par le modèle : %s",
+                    stub.slug,
+                    ", ".join(unplaced),
+                )
         eeat = _cap_experience_score(eeat, placed)
 
         return GeneratedArticle(
