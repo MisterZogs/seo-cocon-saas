@@ -108,18 +108,21 @@ def _build_brand_context(form: ClientForm) -> str:
         f"Target audience: {form.audience}\n"
         f"Niche: {form.niche}\n"
         f"Current year: {date.today().year}"
-        f"{_build_experience_context(form)}"
     )
 
 
-def _build_experience_context(form: ClientForm) -> str:
+def _build_experience_context(elements: list[ExperienceElement]) -> str:
     """Catalogue des éléments d'expérience, avec la règle du verbatim.
 
     Le modèle voit le contenu intégral pour pouvoir écrire une amorce cohérente,
     mais il ne doit jamais le recopier ni le reformuler : il pose un marqueur,
     et `inject_experience_blocks()` substitue le texte exact du client.
+
+    Prend les éléments ATTRIBUÉS à cet article, pas le catalogue complet de la
+    run — d'où sa place dans le prompt par article et non dans le préfixe caché.
+    Voir `assign_experience_elements()`.
     """
-    if not form.experience_elements:
+    if not elements:
         return ""
 
     lines = [
