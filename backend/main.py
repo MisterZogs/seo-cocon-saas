@@ -372,8 +372,18 @@ async def job_status(job_id: str) -> dict:
         "ended_at": job.ended_at.isoformat() if job.ended_at else None,
     }
 
+    # Le run_id est stable d'un job à l'autre (une reprise ou une validation
+    # crée un nouveau job sur le même run) : c'est lui qui adresse la validation.
+    payload["run_id"] = job.args[1] if len(job.args or ()) > 1 else None
+
     if job.is_finished:
-        payload["result"] = job.result
+        result = job.result
+        # Un run suspendu « finit » côté RQ sans être terminé côté métier.
+        if isinstance(result, dict) and result.get("awaiting_validation"):
+            payload["status"] = "awaiting_validation"
+            payload["run_id"] = result.get("run_id") or payload["run_id"]
+        else:
+            payload["result"] = result
     elif job.is_failed:
         message, traceback_raw = _friendly_error(job.exc_info)
         payload["error"] = message
