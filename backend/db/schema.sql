@@ -56,6 +56,13 @@ create table if not exists run_checkpoints (
     primary key (run_id, step)
 );
 
+-- Migration : `create table if not exists` ne touche pas une table existante,
+-- donc la contrainte de statut d'une base déjà déployée doit être remplacée
+-- explicitement. Rejouable sans effet de bord.
+alter table runs drop constraint if exists runs_status_check;
+alter table runs add constraint runs_status_check
+    check (status in ('queued', 'running', 'awaiting_validation', 'completed', 'failed'));
+
 -- updated_at auto
 create or replace function touch_updated_at()
 returns trigger language plpgsql as $$
