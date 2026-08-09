@@ -31,9 +31,18 @@ from rq.job import Job
 
 load_dotenv(Path(__file__).parent / ".env")
 
+from clients.anthropic_client import AnthropicClient  # noqa: E402
+from db.checkpoints import make_checkpoint_store  # noqa: E402
 from db.postgres import get_repository  # noqa: E402
-from models import ClientForm  # noqa: E402
-from workers.pipeline_job import run_pipeline_job  # noqa: E402
+from models import (  # noqa: E402
+    ClientForm,
+    KeywordWithData,
+    ValidationDecision,
+    ValidationSnapshot,
+)
+from pipeline.cocon_builder import CoconBuilder  # noqa: E402
+from pipeline.validation import apply_decision  # noqa: E402
+from workers.pipeline_job import VALIDATION_CHECKPOINT, run_pipeline_job  # noqa: E402
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
