@@ -817,9 +817,14 @@ class ArticleGenerator:
         store: CheckpointStore | None = None,
     ) -> list[GeneratedArticle]:
         cached_context = _build_cached_context(form, cocoons)
+        # Attribué en amont : sinon la mère consomme tout et les filles sortent
+        # sans le moindre passage non généré.
+        assigned = assign_experience_elements(form, cocoons)
 
         articles: list[GeneratedArticle] = []
-        # Un élément d'expérience ne doit être placé que dans UN article de la run.
+        # Filet de sécurité par-dessus l'attribution : un élément ne doit être
+        # placé que dans UN article de la run, y compris après reprise sur
+        # checkpoint où l'attribution est recalculée mais l'article déjà écrit.
         used_experience: set[str] = set()
 
         for cocon in cocoons:
