@@ -128,8 +128,8 @@ def main() -> int:
     ok &= _check("le motif FAQ est nommé et interdit", "read like a FAQ" in rules)
 
     for name, prompt in (
-        ("brief", _build_brief_prompt(stub, cocon, analysis, InterCoconPolicy.STRICT)),
-        ("full", _build_full_prompt(stub, cocon, analysis, InterCoconPolicy.STRICT)),
+        ("brief", _build_brief_prompt(stub, cocon, analysis, InterCoconPolicy.STRICT, [])),
+        ("full", _build_full_prompt(stub, cocon, analysis, InterCoconPolicy.STRICT, [])),
     ):
         ok &= _check(f"prompt {name} : bloc STRUCTURE présent", "STRUCTURE — calibrate" in prompt)
         ok &= _check(f"prompt {name} : moyenne H3 du top 10 exposée", "Avg H3 count in top 10" in prompt)
@@ -138,7 +138,7 @@ def main() -> int:
             '"h3s": ["..."]' not in prompt and '"h3s": ["Subsection 1", "Subsection 2"]' not in prompt,
         )
 
-    full = _build_full_prompt(stub, cocon, analysis, InterCoconPolicy.STRICT)
+    full = _build_full_prompt(stub, cocon, analysis, InterCoconPolicy.STRICT, [])
     ok &= _check(
         "squelette markdown : plus de ### dans le corps d'exemple",
         full.count("### H3") == 0,
