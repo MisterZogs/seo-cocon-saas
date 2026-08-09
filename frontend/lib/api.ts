@@ -1,4 +1,10 @@
-import type { ClientForm, JobStatusResponse, RunSummary } from "./types";
+import type {
+  ClientForm,
+  JobStatusResponse,
+  RunSummary,
+  ValidationDecision,
+  ValidationSnapshot,
+} from "./types";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
