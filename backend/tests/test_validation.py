@@ -291,10 +291,11 @@ async def test_reprise_apres_validation() -> bool:
     ok = _check(len(result.articles) == 5, "5 articles générés (1 mère + 4 filles)")
     ok &= _check("expansion" not in reprise.calls and "selection" not in reprise.calls,
                  "recherche de mots-clés non repayée")
-    ok &= _check(
-        result.cocoons[0].mother.target_keyword == "nid de frelons",
-        "la sélection validée est celle qui a été générée",
-    )
+    genere = [result.cocoons[0].mother.target_keyword] + [
+        d.target_keyword for d in result.cocoons[0].daughters
+    ]
+    attendu = [decision.cocoons[0].mother_keyword, *decision.cocoons[0].daughter_keywords]
+    ok &= _check(genere == attendu, "la sélection validée est exactement celle qui a été générée")
     ok &= _check(len(appels_avant) > 0, "la 1re passe avait bien travaillé avant de suspendre")
     ok &= _check(
         PipelineStep.AWAITING_VALIDATION.value == "awaiting_validation",
