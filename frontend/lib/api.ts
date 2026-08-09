@@ -51,6 +51,51 @@ export async function retryJob(
   return res.json();
 }
 
+/** Sélection proposée par Claude pour un run suspendu, avec le pool complet. */
+export async function fetchValidation(
+  runId: string,
+): Promise<ValidationSnapshot> {
+  const res = await fetch(`${API_URL}/runs/${runId}/validation`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    throw new Error(detail?.detail || `Sélection introuvable (${res.status})`);
+  }
+  return res.json();
+}
+
+/**
+ * Envoie la sélection arrêtée par l'agence. Le backend la fige en checkpoint
+ * `cocon_design` et relance le run : la recherche de mots-clés n'est pas repayée.
+ */
+export async function submitValidation(
+  runId: string,
+  decision: ValidationDecision,
+): Promise<{
+  job_id: string;
+  run_id: string;
+  status: string;
+  cocoons: number;
+  articles: number;
+}> {
+  const res = await fetch(`${API_URL}/runs/${runId}/validation`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(decision),
+  });
+  if (!res.ok) {
+    const detail = await res.json().catch(() => null);
+    const message =
+      typeof detail?.detail === "string"
+        ? detail.detail
+        : // FastAPI rend les erreurs de validation Pydantic sous forme de liste.
+          detail?.detail?.[0]?.msg || `Validation refusée (${res.status})`;
+    throw new Error(message);
+  }
+  return res.json();
+}
+
 export async function fetchRuns(): Promise<{
   enabled: boolean;
   runs: RunSummary[];
