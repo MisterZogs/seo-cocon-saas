@@ -184,6 +184,7 @@ export default function NewGenerationPage() {
         niche: data.niche,
         num_cocoons: Number(data.num_cocoons),
         mode: data.mode,
+        validate_keywords: data.validate_keywords,
         experience_elements: data.experience_elements,
         style_samples: data.style_samples.map((s) => ({
           title: s.title.trim() || null,
