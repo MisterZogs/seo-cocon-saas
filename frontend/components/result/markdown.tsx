@@ -246,7 +246,7 @@ export function Markdown({ content }: { content: string }) {
         <ol key={key++} className="my-3 space-y-1.5">
           {items.map((it, ii) => (
             <li key={ii} className="flex gap-2.5 text-sm leading-relaxed">
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-semibold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold text-primary">
                 {ii + 1}
               </span>
               <span>{renderInline(it, `oli${key}-${ii}`)}</span>
