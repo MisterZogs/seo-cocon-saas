@@ -73,6 +73,27 @@ export default function JobProgressPage({
       setTimeout(() => router.push(`/jobs/${jobId}/result`), 800);
     });
 
+    // Le run n'est pas fini : il attend un arbitrage humain sur la sélection
+    // de mots-clés. On envoie directement sur l'écran de validation.
+    es.addEventListener("awaiting_validation", (event) => {
+      es.close();
+      try {
+        const { run_id } = JSON.parse((event as MessageEvent).data);
+        if (run_id) {
+          router.push(`/jobs/${jobId}/validation?run=${run_id}`);
+          return;
+        }
+      } catch {
+        // se rabat sur l'état ci-dessous
+      }
+      setState({
+        kind: "error",
+        message:
+          "Le run attend une validation mais son identifiant est introuvable. " +
+          "Reprenez depuis l'historique.",
+      });
+    });
+
     es.addEventListener("error", (event) => {
       const raw = (event as MessageEvent).data;
       if (!raw) {
