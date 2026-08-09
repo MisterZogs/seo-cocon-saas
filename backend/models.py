@@ -96,6 +96,15 @@ class ClientForm(BaseModel):
     niche: str = Field(..., description="Secteur / niche du client")
     num_cocoons: int = Field(default=2, ge=1, le=4)
     mode: GenerationMode = Field(default=GenerationMode.BRIEF)
+    validate_keywords: bool = Field(
+        default=True,
+        description=(
+            "Arrête le run après la recherche de mots-clés et attend une validation "
+            "humaine avant de générer. Activé par défaut : une génération complète "
+            "coûte des dizaines de minutes et quelques dollars, autant trancher la "
+            "sélection avant de la payer."
+        ),
+    )
     inter_cocon_policy: InterCoconPolicy = Field(
         default=InterCoconPolicy.STRICT,
         description="Étanchéité entre cocons — strict par défaut (méthode Bourrelly)",
