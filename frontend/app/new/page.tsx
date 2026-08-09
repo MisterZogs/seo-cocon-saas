@@ -623,6 +623,14 @@ export default function NewGenerationPage() {
                   }
                 />
                 <Row label="Seeds" value={`${seedCount} mots-clés`} />
+                <Row
+                  label="Validation"
+                  value={
+                    values.validate_keywords
+                      ? "Pause après la recherche de mots-clés"
+                      : "Aucune — run d'un seul tenant"
+                  }
+                />
                 {values.mode === "full" && (
                   <Row
                     label="Éléments d'expérience"
