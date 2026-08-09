@@ -324,8 +324,27 @@ async def main() -> int:
         "un seul cocon : aucun lien inter-cocon ne devrait exister"
     )
 
+    # Le relevé de coût est ce qu'une agence refacture : il doit compter la
+    # passe de reprise seule, pas le cumul des deux tentatives. C'est aussi la
+    # ligne d'arrivée que le test n'atteignait jamais tant que les doublures
+    # n'exposaient ni `usage` ni `cost_usd`.
+    usage = result.usage
+    assert usage is not None, "aucun relevé de consommation en fin de run"
+    assert usage.claude_calls == len(pass2), (
+        f"{len(pass2)} appels sur la reprise, {usage.claude_calls} comptés"
+    )
+    assert usage.claude_cost_usd > 0, "coût Claude nul malgré des appels facturés"
+    assert set(usage.claude_cost_by_tier) <= {"opus", "sonnet", "haiku"}, (
+        f"palier de modèle inattendu : {set(usage.claude_cost_by_tier)}"
+    )
+    assert usage.cache_savings_usd > 0, (
+        "aucune économie de cache mesurée alors que le contexte cocon est partagé"
+    )
+    print(f"\n✓ Coût de la reprise mesuré : ${usage.claude_cost_usd:.4f} "
+          f"sur {usage.claude_calls} appels ({usage.claude_cost_by_tier})")
+
     saved = len(pass1) - regenerated
-    print(f"\n✓ Étapes 1-3 et 2 articles repris du checkpoint")
+    print(f"✓ Étapes 1-3 et 2 articles repris du checkpoint")
     print(f"✓ cocon_id stables entre les passes : {cocon_ids_pass2}")
     print(f"✓ {saved} appels LLM économisés sur la reprise")
     return 0
