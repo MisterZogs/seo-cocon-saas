@@ -24,10 +24,21 @@ export type InternalLinkType =
   | "sister_to_sister"
   | "cross_cocon";
 
-export type JobStatus = "queued" | "started" | "finished" | "failed" | "deferred";
+/**
+ * `awaiting_validation` n'est pas un statut RQ : le backend le synthétise quand
+ * un job s'est terminé sur une pause de validation plutôt que sur un résultat.
+ */
+export type JobStatus =
+  | "queued"
+  | "started"
+  | "finished"
+  | "failed"
+  | "deferred"
+  | "awaiting_validation";
 
 export type PipelineStep =
   | "keyword_research"
+  | "awaiting_validation"
   | "cocon_design"
   | "serp_analysis"
   | "article_generation"
