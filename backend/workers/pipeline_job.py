@@ -84,7 +84,24 @@ async def _run_async(form: ClientForm, run_id: str | None):
         await repo.mark_running(run_id)
 
     try:
-        result = await run_pipeline(form, on_progress=_emit, store=store)
+        result = await run_pipeline(
+            form, on_progress=_emit, store=store, run_id=run_id
+        )
+    except AwaitingValidation as pause:
+        # Pause volontaire, pas un échec : le job RQ se termine normalement.
+        # Le marquer « failed » l'exposerait au bouton de reprise, qui rejouerait
+        # le pipeline au lieu d'attendre la décision de l'agence.
+        snapshot = pause.snapshot.model_dump(mode="json")
+        await store.set(VALIDATION_CHECKPOINT, snapshot)
+        if run_id:
+            await repo.mark_awaiting_validation(run_id)
+        logger.info(
+            "job=%s run=%s suspendu : %d cocon(s) à valider",
+            job.id if job else "-",
+            run_id,
+            len(snapshot.get("proposals", [])),
+        )
+        return {"awaiting_validation": True, "run_id": run_id, "snapshot": snapshot}
     except Exception as e:
         # On persiste l'échec avant de relancer : RQ garde la traceback 24h,
         # la base la garde indéfiniment (et les checkpoints restent réutilisables).
