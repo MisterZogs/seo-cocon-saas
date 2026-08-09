@@ -67,10 +67,9 @@ export default function ValidationPage({
   const [openPool, setOpenPool] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!runId) {
-      setLoadError("Identifiant de run manquant dans l'URL.");
-      return;
-    }
+    // L'absence de run_id se lit dans l'URL, pas dans un état : la traiter ici
+    // déclencherait un rendu en cascade pour une information déjà connue.
+    if (!runId) return;
     let cancelled = false;
     fetchValidation(runId)
       .then((snap) => {
