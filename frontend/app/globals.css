@@ -246,6 +246,25 @@
   --elev-3: 0 4px 24px 0 oklch(0 0 0 / 0.4);
   --elev-4: 0 12px 48px 0 oklch(0 0 0 / 0.45);
   --elev-5: 0 24px 64px -12px oklch(0 0 0 / 0.5);
+
+  --tone-cocon: oklch(0.78 0.09 18);
+  --tone-cocon-soft: oklch(0.3 0.045 18);
+  --tone-cocon-line: oklch(0.38 0.055 18);
+  --tone-article: oklch(0.78 0.09 250);
+  --tone-article-soft: oklch(0.3 0.045 250);
+  --tone-article-line: oklch(0.38 0.055 250);
+  --tone-maillage: oklch(0.78 0.09 285);
+  --tone-maillage-soft: oklch(0.3 0.045 285);
+  --tone-maillage-line: oklch(0.38 0.055 285);
+  --tone-serp: oklch(0.78 0.07 178);
+  --tone-serp-soft: oklch(0.3 0.04 178);
+  --tone-serp-line: oklch(0.38 0.05 178);
+  --tone-backlinks: oklch(0.8 0.09 75);
+  --tone-backlinks-soft: oklch(0.31 0.045 75);
+  --tone-backlinks-line: oklch(0.39 0.055 75);
+  --tone-faq: oklch(0.79 0.08 148);
+  --tone-faq-soft: oklch(0.3 0.04 148);
+  --tone-faq-line: oklch(0.38 0.05 148);
 }
 
 @layer base {
