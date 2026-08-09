@@ -876,14 +876,18 @@ class ArticleGenerator:
         cached_context: str,
         form: ClientForm,
         used_experience: set[str] | None = None,
+        experience: list[ExperienceElement] | None = None,
     ) -> GeneratedArticle:
         # Opus pour mère (qualité max), Sonnet pour filles
         model: ModelTier = "opus" if stub.article_type == ArticleType.MOTHER else "sonnet"
+        experience = experience or []
 
         parsed, meta = await self.anthropic.complete_json(
             model=model,
             system=_FULL_SYSTEM,
-            user_prompt=_build_full_prompt(stub, cocon, analysis, form.inter_cocon_policy),
+            user_prompt=_build_full_prompt(
+                stub, cocon, analysis, form.inter_cocon_policy, experience
+            ),
             cached_context=cached_context,
             max_tokens=16000,
         )
