@@ -8,8 +8,9 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-serif);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -27,6 +28,17 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-strong: var(--destructive-strong);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-strong: var(--success-strong);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-strong: var(--warning-strong);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-strong: var(--info-strong);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -39,6 +51,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-surface: var(--surface);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -46,75 +59,151 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --shadow-xs: var(--elev-1);
+  --shadow-sm: var(--elev-2);
+  --shadow-md: var(--elev-3);
+  --shadow-lg: var(--elev-4);
+  --shadow-xl: var(--elev-5);
 }
 
+/*
+  Palette dérivée de alchie.fr : crème chaude, encre brun-noir, terracotta.
+  Les teintes sémantiques (success/warning/info) sont désaturées et réchauffées
+  pour rester dans le même système que le terracotta.
+*/
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --background: oklch(0.96 0.012 80);
+  --foreground: oklch(0.266 0.024 77);
+  --surface: oklch(0.983 0.011 63);
+
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.266 0.024 77);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: oklch(0.266 0.024 77);
+
+  --primary: oklch(0.605 0.143 53);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.929 0.017 85);
+  --secondary-foreground: oklch(0.266 0.024 77);
+
+  --muted: oklch(0.937 0.014 82);
+  --muted-foreground: oklch(0.6 0.034 77);
+
+  --accent: oklch(0.983 0.011 63);
+  --accent-foreground: oklch(0.605 0.143 53);
+
+  --destructive: oklch(0.56 0.17 27);
+  --destructive-soft: oklch(0.958 0.025 40);
+  --destructive-strong: oklch(0.44 0.15 28);
+
+  --success: oklch(0.58 0.11 145);
+  --success-soft: oklch(0.955 0.028 145);
+  --success-strong: oklch(0.44 0.09 147);
+
+  --warning: oklch(0.68 0.135 68);
+  --warning-soft: oklch(0.958 0.035 78);
+  --warning-strong: oklch(0.47 0.11 62);
+
+  --info: oklch(0.6 0.115 250);
+  --info-soft: oklch(0.955 0.022 250);
+  --info-strong: oklch(0.45 0.11 252);
+
+  --border: oklch(0.914 0.017 85);
+  --input: oklch(0.914 0.017 85);
+  --ring: oklch(0.605 0.143 53);
+
+  --chart-1: oklch(0.605 0.143 53);
+  --chart-2: oklch(0.6 0.115 250);
+  --chart-3: oklch(0.58 0.11 145);
+  --chart-4: oklch(0.68 0.135 68);
+  --chart-5: oklch(0.44 0.03 75);
+
+  --radius: 0.75rem;
+
+  --sidebar: oklch(0.983 0.011 63);
+  --sidebar-foreground: oklch(0.266 0.024 77);
+  --sidebar-primary: oklch(0.605 0.143 53);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.937 0.014 82);
+  --sidebar-accent-foreground: oklch(0.266 0.024 77);
+  --sidebar-border: oklch(0.914 0.017 85);
+  --sidebar-ring: oklch(0.605 0.143 53);
+
+  /* Ombres chaudes : teintées à l'encre brune, jamais au noir pur. */
+  --elev-1: 0 1px 3px 0 oklch(0.266 0.024 77 / 0.04);
+  --elev-2: 0 2px 12px 0 oklch(0.266 0.024 77 / 0.06);
+  --elev-3: 0 4px 24px 0 oklch(0.266 0.024 77 / 0.08);
+  --elev-4: 0 12px 48px 0 oklch(0.266 0.024 77 / 0.1);
+  --elev-5: 0 24px 64px -12px oklch(0.266 0.024 77 / 0.14);
+
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --background: oklch(0.19 0.016 75);
+  --foreground: oklch(0.95 0.011 82);
+  --surface: oklch(0.24 0.018 72);
+
+  --card: oklch(0.235 0.018 74);
+  --card-foreground: oklch(0.95 0.011 82);
+  --popover: oklch(0.235 0.018 74);
+  --popover-foreground: oklch(0.95 0.011 82);
+
+  --primary: oklch(0.68 0.145 55);
+  --primary-foreground: oklch(0.17 0.018 74);
+
+  --secondary: oklch(0.29 0.019 74);
+  --secondary-foreground: oklch(0.95 0.011 82);
+
+  --muted: oklch(0.28 0.017 74);
+  --muted-foreground: oklch(0.72 0.026 78);
+
+  --accent: oklch(0.3 0.03 60);
+  --accent-foreground: oklch(0.78 0.14 58);
+
+  --destructive: oklch(0.7 0.16 25);
+  --destructive-soft: oklch(0.3 0.06 28);
+  --destructive-strong: oklch(0.82 0.12 28);
+
+  --success: oklch(0.7 0.12 148);
+  --success-soft: oklch(0.29 0.05 148);
+  --success-strong: oklch(0.82 0.1 148);
+
+  --warning: oklch(0.78 0.13 72);
+  --warning-soft: oklch(0.31 0.055 70);
+  --warning-strong: oklch(0.86 0.1 78);
+
+  --info: oklch(0.7 0.11 250);
+  --info-soft: oklch(0.29 0.05 252);
+  --info-strong: oklch(0.83 0.09 250);
+
+  --border: oklch(0.95 0.011 82 / 12%);
+  --input: oklch(0.95 0.011 82 / 16%);
+  --ring: oklch(0.68 0.145 55);
+
+  --chart-1: oklch(0.68 0.145 55);
+  --chart-2: oklch(0.7 0.11 250);
+  --chart-3: oklch(0.7 0.12 148);
+  --chart-4: oklch(0.78 0.13 72);
+  --chart-5: oklch(0.82 0.02 80);
+
+  --sidebar: oklch(0.235 0.018 74);
+  --sidebar-foreground: oklch(0.95 0.011 82);
+  --sidebar-primary: oklch(0.68 0.145 55);
+  --sidebar-primary-foreground: oklch(0.17 0.018 74);
+  --sidebar-accent: oklch(0.29 0.019 74);
+  --sidebar-accent-foreground: oklch(0.95 0.011 82);
+  --sidebar-border: oklch(0.95 0.011 82 / 12%);
+  --sidebar-ring: oklch(0.68 0.145 55);
+
+  --elev-1: 0 1px 3px 0 oklch(0 0 0 / 0.3);
+  --elev-2: 0 2px 12px 0 oklch(0 0 0 / 0.35);
+  --elev-3: 0 4px 24px 0 oklch(0 0 0 / 0.4);
+  --elev-4: 0 12px 48px 0 oklch(0 0 0 / 0.45);
+  --elev-5: 0 24px 64px -12px oklch(0 0 0 / 0.5);
 }
 
 @layer base {
@@ -123,8 +212,55 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
   }
   html {
     @apply font-sans;
+  }
+
+  /* Les titres sont en Lora, comme sur la référence : serif, 600, chasse serrée. */
+  h1,
+  h2,
+  h3,
+  [data-slot="card-title"],
+  [data-slot="dialog-title"] {
+    font-family: var(--font-serif);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  h1 {
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer components {
+  /*
+    Sur-titre de section : petites capitales terracotta très espacées.
+    C'est la signature typographique la plus reconnaissable de la référence.
+  */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--primary);
+  }
+
+  /*
+    Mot mis en avant dans un titre : italique serif + terracotta, avec un
+    soulignement discret. À réserver à un ou deux mots par titre.
+  */
+  .accent-word {
+    font-style: italic;
+    color: var(--primary);
+  }
+  .accent-word-underline {
+    font-style: italic;
+    color: var(--primary);
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+    text-decoration-color: color-mix(in oklch, var(--primary), transparent 60%);
   }
 }
