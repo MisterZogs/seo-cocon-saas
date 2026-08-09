@@ -54,22 +54,24 @@ class InMemoryStore:
         self.data[step] = payload
 
 
-class _Meta:
-    stop_reason = "end_turn"
-    output_tokens = 1000
-
-
 class FakeAnthropic:
     """Compte les appels et renvoie des payloads valides par type de prompt.
 
     `fail_on_article_index` simule la panne : le Nième appel de génération
     d'article lève, comme le ferait un 400 crédit épuisé.
+
+    Le cumul `usage` est le vrai `UsageTotals` du client, alimenté par de vrais
+    `CompletionResult` : l'orchestrateur le lit en fin de run pour construire
+    `RunUsage`. Une doublure qui ne l'exposait pas faisait planter la passe 2
+    juste avant la ligne d'arrivée, donc le test ne vérifiait jamais rien de ce
+    qu'il annonçait vérifier.
     """
 
     def __init__(self, fail_on_article_index: int | None = None) -> None:
         self.calls: list[str] = []
         self.article_calls = 0
         self.fail_on_article_index = fail_on_article_index
+        self.usage = UsageTotals()
 
     async def complete_json(
         self, *, model: str, system: str, user_prompt: str, max_tokens: int = 4096,
@@ -88,7 +90,22 @@ class FakeAnthropic:
                     "Error code: 400 - Your credit balance is too low"
                 )
 
-        return self._payload(kind, user_prompt), _Meta()
+        result = self._result(model, cached_context)
+        self.usage.add(model, result)
+        return self._payload(kind, user_prompt), result
+
+    @staticmethod
+    def _result(model: ModelTier, cached_context: str | None) -> CompletionResult:
+        """Jetons plausibles — le contexte partagé passe en lecture de cache."""
+        cached = len(cached_context.split()) if cached_context else 0
+        return CompletionResult(
+            text="{}",
+            model=MODELS[model],
+            input_tokens=800,
+            output_tokens=1000,
+            cache_read_tokens=cached,
+            stop_reason="end_turn",
+        )
 
     @staticmethod
     def _classify(system: str) -> str:
