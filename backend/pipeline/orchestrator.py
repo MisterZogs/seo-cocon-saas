@@ -139,6 +139,30 @@ async def run_pipeline(
     )
     logger.info("[1/6] Keywords: %d, propositions cocons: %d", len(keywords), len(cocoon_proposals))
 
+    # ============ 1bis. Validation humaine (optionnelle) ============
+    # La porte se ferme tant que `cocon_design` n'est pas checkpointé. C'est
+    # exactement le bon témoin : la route de validation écrit ce checkpoint à
+    # partir des choix de l'agence, donc le run relancé passe tout droit ici
+    # sans qu'aucun état supplémentaire n'ait à être suivi.
+    if form.validate_keywords and await store.get("cocon_design") is None:
+        snapshot = build_snapshot(run_id or "", keywords, cocoon_proposals)
+        await emit(
+            JobProgress(
+                step=PipelineStep.AWAITING_VALIDATION,
+                percent=15,
+                message=(
+                    f"{len(snapshot.proposals)} cocon(s) proposé(s) — "
+                    "en attente de votre validation avant génération."
+                ),
+            )
+        )
+        logger.info(
+            "[1bis] Run suspendu pour validation : %d cocon(s), %d KW dans le pool",
+            len(snapshot.proposals),
+            len(keywords),
+        )
+        raise AwaitingValidation(snapshot)
+
     # ============ 2. Cocon Building ============
     await emit(
         JobProgress(
