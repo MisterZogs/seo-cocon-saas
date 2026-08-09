@@ -94,6 +94,7 @@ async def run_pipeline(
     dataforseo: DataForSEOClient | None = None,
     on_progress: ProgressCallback = None,
     store: CheckpointStore | None = None,
+    run_id: str | None = None,
 ) -> PipelineResult:
     """Exécute le pipeline complet et retourne le PipelineResult final.
 
