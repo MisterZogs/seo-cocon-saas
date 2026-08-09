@@ -47,6 +47,7 @@ const formSchema = z
       ),
     num_cocoons: z.number().int().min(1).max(4),
     mode: z.enum(["brief", "full"]),
+    validate_keywords: z.boolean(),
     experience_elements: z.array(
       z.object({
         type: z.enum(["case_study", "data", "screenshot", "insight", "quote"]),
