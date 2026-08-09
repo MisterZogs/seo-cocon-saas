@@ -414,7 +414,12 @@ async def job_stream(job_id: str) -> StreamingResponse:
                 yield f"event: progress\ndata: {json.dumps(progress)}\n\n"
 
             if status == "finished":
-                yield f"event: done\ndata: {json.dumps({'result': job.result})}\n\n"
+                result = job.result
+                if isinstance(result, dict) and result.get("awaiting_validation"):
+                    payload = {"run_id": result.get("run_id")}
+                    yield f"event: awaiting_validation\ndata: {json.dumps(payload)}\n\n"
+                else:
+                    yield f"event: done\ndata: {json.dumps({'result': result})}\n\n"
                 break
             if status == "failed":
                 message, traceback_raw = _friendly_error(job.exc_info)
