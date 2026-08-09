@@ -597,6 +597,7 @@ def _build_full_prompt(
     cocon: CoconStructure,
     analysis: SerpAnalysis,
     policy: InterCoconPolicy,
+    experience: list[ExperienceElement],
 ) -> str:
     return f"""{_stub_block(stub, cocon)}
 
@@ -605,6 +606,7 @@ def _build_full_prompt(
 {_structure_rules(analysis)}
 
 {_maillage_rules(policy)}
+{_build_experience_context(experience)}
 
 TASK — Produce a publish-ready article as JSON:
 {{
