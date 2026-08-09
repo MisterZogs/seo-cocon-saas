@@ -13,11 +13,21 @@ from __future__ import annotations
 
 import sys
 
-from models import ClientForm, EEATScore, ExperienceElement, StyleSample
+from models import (
+    ArticleStub,
+    ArticleType,
+    ClientForm,
+    CoconStructure,
+    EEATScore,
+    ExperienceElement,
+    StyleSample,
+)
 from pipeline.article_generator import (
     _NO_EXPERIENCE_CAP,
     _build_cached_context,
+    _build_experience_context,
     _cap_experience_score,
+    assign_experience_elements,
     inject_experience_blocks,
 )
 
