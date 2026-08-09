@@ -179,7 +179,9 @@ For EACH cocoon, provide:
     - slug (URL-friendly, in {form.language})
     - intent
     - secondary_keywords (2-3 supporting KW to also target in the article)
-- daughters: array of 5 objects with same fields as mother (but each targeting one daughter keyword)
+    - reason (1 sentence in {form.language}: why this keyword is the pillar)
+- daughters: array of 5 objects with same fields as mother, `reason` included
+  (why this keyword earns one of the 5 slots)
 
 Return JSON:
 {{
