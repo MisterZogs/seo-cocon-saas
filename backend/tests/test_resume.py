@@ -214,6 +214,10 @@ class FakeDataForSEO:
 
     is_mock = True
 
+    def __init__(self) -> None:
+        # Lu par l'orchestrateur en fin de run pour construire RunUsage.
+        self.cost_usd: float = 0.0
+
     async def get_search_volume(self, keywords: list[str]) -> list[dict]:
         return [
             {
