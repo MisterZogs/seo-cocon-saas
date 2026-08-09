@@ -743,8 +743,9 @@ class ArticleGenerator:
         all_cocoons: list[CoconStructure],
         cached_context: str,
         policy: InterCoconPolicy,
+        experience: list[ExperienceElement] | None = None,
     ) -> ArticleBrief:
-        prompt = _build_brief_prompt(stub, cocon, analysis, policy)
+        prompt = _build_brief_prompt(stub, cocon, analysis, policy, experience or [])
         try:
             # 4096 débordait dès le premier run sur SERP réelles : un brief complet
             # (sections détaillées + FAQ + 5 liens de maillage + notes éditoriales)
