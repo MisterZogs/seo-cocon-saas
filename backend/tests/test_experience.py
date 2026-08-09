@@ -137,6 +137,99 @@ def test_unicite_sur_la_run() -> bool:
     return ok
 
 
+def test_amorce_orpheline() -> bool:
+    """Retirer un marqueur doit emporter l'amorce et la chute qui l'encadraient.
+
+    Cas réel (`nid-de-frelon-dans-la-terre_APRES.md`) : l'élément avait été
+    consommé par la mère, le marqueur a sauté, et il restait dans la fille
+    « Voici comment se passe concrètement une intervention de ce type. » suivi
+    de rien du tout, puis une chute qui commentait un bloc absent.
+    """
+    print("\n[5] Amorce et chute orphelines après retrait du marqueur")
+    md = (
+        "## L'intervention professionnelle\n\n"
+        "Un professionnel dispose d'outils que le grand public n'a pas.\n\n"
+        "Voici comment se passe concrètement une intervention de ce type.\n\n"
+        f"[[EXPERIENCE:{ELEMENT.id}]]\n\n"
+        "Ce type d'intervention garantit que l'insecticide atteint toutes les loges.\n\n"
+        "## Coût d'une intervention"
+    )
+    out, used, _ = inject_experience_blocks(md, [ELEMENT], already_used={ELEMENT.id})
+
+    ok = _check(used == [], "élément non replacé")
+    ok &= _check("Voici comment se passe" not in out, "amorce retirée")
+    ok &= _check("Ce type d'intervention garantit" not in out, "chute retirée")
+    ok &= _check("Un professionnel dispose d'outils" in out, "paragraphe de fond conservé")
+    ok &= _check(out.count("## ") == 2, "les deux H2 conservés")
+    ok &= _check("\n\n\n" not in out, "pas de trou dans le markdown")
+
+    # Le nettoyage ne doit jamais mordre sur autre chose que de la prose courte.
+    protege = (
+        "## Titre\n\n"
+        "| Critère | Valeur |\n|---|---|\n| Taille | 25 mm |\n\n"
+        f"[[EXPERIENCE:{ELEMENT.id}]]\n\n"
+        "- premier point\n- second point"
+    )
+    out2, _, _ = inject_experience_blocks(protege, [ELEMENT], already_used={ELEMENT.id})
+    ok &= _check("| Taille | 25 mm |" in out2, "tableau au-dessus préservé")
+    ok &= _check("- second point" in out2, "liste en dessous préservée")
+    ok &= _check("## Titre" in out2, "titre préservé")
+
+    # Un marqueur bien résolu ne déclenche aucun nettoyage.
+    intact, used3, _ = inject_experience_blocks(md, [ELEMENT])
+    ok &= _check(used3 == [ELEMENT.id], "élément placé quand il est disponible")
+    ok &= _check("Voici comment se passe" in intact, "amorce conservée quand le bloc arrive")
+    ok &= _check("Ce type d'intervention garantit" in intact, "chute conservée aussi")
+    return ok
+
+
+def test_repartition() -> bool:
+    """Chaque élément est attribué à un article précis, mères servies en premier.
+
+    Avant : la mère passait en premier et consommait tout ce qu'elle voulait,
+    donc les cinq filles sortaient sans un seul passage non généré.
+    """
+    print("\n[6] Répartition des éléments sur les articles de la run")
+    cocons = [_cocon("a"), _cocon("b")]
+    elements = [_element(i) for i in range(1, 5)]
+    form = ClientForm(
+        product="p", description="d", seed_keywords=["k"], audience="a", niche="n",
+        experience_elements=elements,
+    )
+    assigned = assign_experience_elements(form, cocons)
+
+    ok = _check(len(assigned) == 12, "les 12 articles de la run sont dans la table")
+    ok &= _check(
+        [e.id for e in assigned["a-mere"]] == [elements[0].id]
+        and [e.id for e in assigned["b-mere"]] == [elements[1].id],
+        "les deux mères servies en premier",
+    )
+    ok &= _check(
+        assigned["a-fille1"] and assigned["b-fille1"],
+        "les filles suivantes alternent entre les cocons",
+    )
+    place = [e.id for els in assigned.values() for e in els]
+    ok &= _check(len(place) == len(set(place)) == 4, "chaque élément attribué une seule fois")
+
+    # Plus d'éléments que d'articles : on boucle, sans jamais dupliquer un id.
+    beaucoup = ClientForm(
+        product="p", description="d", seed_keywords=["k"], audience="a", niche="n",
+        experience_elements=[_element(i) for i in range(1, 15)],
+    )
+    large = assign_experience_elements(beaucoup, cocons)
+    tous = [e.id for els in large.values() for e in els]
+    ok &= _check(len(tous) == len(set(tous)) == 14, "14 éléments répartis sans doublon")
+    ok &= _check(len(large["a-mere"]) == 2, "la mère en reçoit un deuxième au second tour")
+
+    vide = assign_experience_elements(
+        ClientForm(product="p", description="d", seed_keywords=["k"], audience="a", niche="n"),
+        cocons,
+    )
+    ok &= _check(all(not v for v in vide.values()), "aucun élément fourni → table vide")
+    ok &= _check(assign_experience_elements(form, []) == {}, "aucun cocon → pas de plantage")
+    return ok
+
+
 def test_plafond_eeat() -> bool:
     """Sans matériau first-hand, le score « expérience » ne doit pas mentir."""
     print("\n[5] Plafond E-E-A-T quand aucun bloc verbatim n'est placé")
