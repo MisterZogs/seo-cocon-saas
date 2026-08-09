@@ -210,7 +210,14 @@ class FakeAnthropic:
 
 
 class FakeDataForSEO:
-    """SERP sans résultats organiques → aucun scraping réseau."""
+    """SERP sans résultats organiques → aucun scraping réseau.
+
+    Les volumes viennent des mocks du vrai client plutôt que d'un dictionnaire
+    réécrit ici : la doublure servait `search_volume` / `competition` /
+    `keyword_difficulty` là où le pipeline lit `monthly_volume` /
+    `competition_score` / `difficulty`, donc tous les mots-clés du test
+    ressortaient sans volume sans que rien ne le signale.
+    """
 
     is_mock = True
 
@@ -218,17 +225,11 @@ class FakeDataForSEO:
         # Lu par l'orchestrateur en fin de run pour construire RunUsage.
         self.cost_usd: float = 0.0
 
+    async def get_keyword_ideas(self, seeds: list[str], limit: int = 200) -> list[dict]:
+        return _mock_keyword_ideas(seeds, limit)
+
     async def get_search_volume(self, keywords: list[str]) -> list[dict]:
-        return [
-            {
-                "keyword": k,
-                "search_volume": 500,
-                "cpc": 1.2,
-                "competition": 0.4,
-                "keyword_difficulty": 35,
-            }
-            for k in keywords
-        ]
+        return [_mock_kw_data(k) for k in keywords]
 
     async def get_serp(self, keyword: str, depth: int = 10) -> dict:
         return {"organic_results": [], "paa": ["PAA ?"], "features": {}}
