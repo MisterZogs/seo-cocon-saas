@@ -176,7 +176,7 @@ export default function JobProgressPage({
                     <span
                       className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs ${
                         done
-                          ? "bg-green-600 text-white"
+                          ? "bg-success text-white"
                           : isCurrent
                             ? "bg-primary text-primary-foreground animate-pulse"
                             : "bg-muted text-muted-foreground"
