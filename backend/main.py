@@ -229,6 +229,112 @@ async def retry_job(job_id: str) -> dict:
     return {"job_id": new_job.id, "run_id": run_id, "status": new_job.get_status()}
 
 
+# ============================================================
+# Validation humaine de la sélection de mots-clés
+# ============================================================
+
+
+def _store_for(run_id: str):
+    return make_checkpoint_store(
+        run_id, redis_url=REDIS_URL, repository=get_repository()
+    )
+
+
+@app.get("/runs/{run_id}/validation")
+async def get_validation(run_id: str) -> ValidationSnapshot:
+    """Sélection proposée par Claude + pool complet, pour l'écran de validation."""
+    snapshot = await _store_for(run_id).get(VALIDATION_CHECKPOINT)
+    if snapshot is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "Aucune sélection en attente pour ce run. Elle a peut-être déjà "
+                "été validée, ou le run a été lancé sans étape de validation."
+            ),
+        )
+    return ValidationSnapshot.model_validate(snapshot)
+
+
+@app.post("/runs/{run_id}/validation")
+async def submit_validation(run_id: str, decision: ValidationDecision) -> dict:
+    """Applique la sélection de l'agence et relance le run sur cette base.
+
+    La décision est convertie en `cocon_design` checkpoint : c'est ce qui fait
+    que le pipeline relancé saute la porte de validation et reprend directement
+    à l'analyse SERP, sans repayer la recherche de mots-clés.
+    """
+    store = _store_for(run_id)
+
+    snapshot_raw = await store.get(VALIDATION_CHECKPOINT)
+    research = await store.get("keyword_research")
+    if snapshot_raw is None or research is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Run introuvable ou sélection déjà validée.",
+        )
+
+    repo = get_repository()
+    run = await repo.get_run(run_id) if repo.enabled else None
+    form_dict = (run or {}).get("form")
+    if form_dict is None:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Formulaire du run introuvable — la validation nécessite la "
+                "persistance Postgres."
+            ),
+        )
+    form = ClientForm.model_validate(form_dict)
+
+    proposals = research.get("proposals") or []
+    keywords = [KeywordWithData.model_validate(k) for k in research.get("keywords", [])]
+
+    try:
+        rebuilt = await apply_decision(
+            decision, proposals, keywords, form, AnthropicClient()
+        )
+        cocoons = CoconBuilder().build(rebuilt)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    if len(cocoons) != len(decision.cocoons):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"{len(decision.cocoons)} cocon(s) soumis, {len(cocoons)} valide(s). "
+                "Vérifiez qu'ils comptent au moins 1 mère et 3 filles."
+            ),
+        )
+
+    await store.set("cocon_design", [c.model_dump(mode="json") for c in cocoons])
+
+    new_job_id = str(uuid.uuid4())
+    await repo.relink_job(run_id, new_job_id)
+    job = app.state.queue.enqueue(
+        run_pipeline_job,
+        form_dict,
+        run_id,
+        job_id=new_job_id,
+        job_timeout=JOB_TIMEOUT_SECONDS,
+        result_ttl=86400,
+        failure_ttl=86400,
+    )
+    logger.info(
+        "Validation acceptée pour le run %s : %d cocons, %d articles — job %s",
+        run_id,
+        len(cocoons),
+        sum(1 + len(c.daughters) for c in cocoons),
+        job.id,
+    )
+    return {
+        "job_id": job.id,
+        "run_id": run_id,
+        "status": job.get_status(),
+        "cocoons": len(cocoons),
+        "articles": sum(1 + len(c.daughters) for c in cocoons),
+    }
+
+
 @app.get("/runs")
 async def list_runs(agency_id: str | None = None, limit: int = 50) -> dict:
     """Historique des générations — nécessite Postgres configuré."""
