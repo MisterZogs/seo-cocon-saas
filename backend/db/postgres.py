@@ -174,6 +174,18 @@ class RunRepository:
             json.dumps(progress, ensure_ascii=False),
         )
 
+    async def mark_awaiting_validation(self, run_id: str) -> None:
+        """Run suspendu en attente du feu vert de l'agence.
+
+        `ended_at` reste nul : le run n'est pas terminé, il attend. C'est ce qui
+        le distingue d'un run complété dans l'historique.
+        """
+        await self._execute(
+            "mark_awaiting_validation",
+            "update runs set status = 'awaiting_validation' where id = $1::uuid",
+            run_id,
+        )
+
     async def save_result(self, run_id: str, result: dict[str, Any]) -> None:
         await self._execute(
             "save_result",
