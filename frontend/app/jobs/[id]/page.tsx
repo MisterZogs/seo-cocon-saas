@@ -148,7 +148,7 @@ export default function JobProgressPage({
             <CardTitle className="flex items-center gap-3">
               Génération en cours
               {state.kind === "done" && (
-                <Badge className="bg-green-600">Terminé</Badge>
+                <Badge className="bg-success text-white">Terminé</Badge>
               )}
               {state.kind === "error" && <Badge variant="destructive">Échec</Badge>}
             </CardTitle>
