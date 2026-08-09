@@ -110,6 +110,13 @@ VOLUME IS A HARD CONSTRAINT, NOT A TIEBREAKER. The agency is paid for traffic:
   That is a reason to reject the keyword, not a missing data point.
 - Prefer building the cocoon around the highest-volume viable cluster in the list.
 
+EVERY keyword you pick must carry a `reason` — one sentence, in the client's language,
+addressed to an SEO professional who will review your selection and may overrule it.
+State what actually drove the decision (volume, intent, position in the topic, gap in
+the SERP), not a restatement of the keyword. For the mother, say why THIS keyword is
+the pillar rather than any of its daughters. A reason like "pertinent pour le sujet" is
+useless and will be rejected.
+
 Return your selection as JSON."""
 
 
