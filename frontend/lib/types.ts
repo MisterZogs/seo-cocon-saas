@@ -278,6 +278,8 @@ export interface JobProgress {
 
 export interface JobStatusResponse {
   job_id: string;
+  /** Stable d'un job à l'autre : c'est lui qui adresse la validation. */
+  run_id: string | null;
   status: JobStatus;
   progress: JobProgress | null;
   created_at: string | null;
@@ -286,6 +288,50 @@ export interface JobStatusResponse {
   result?: PipelineResult;
   error?: string;
   error_traceback?: string | null;
+}
+
+// ============================================================
+// Validation humaine de la sélection de mots-clés
+// ============================================================
+
+/** Un mot-clé retenu par Claude, avec la raison qu'il en donne. */
+export interface KeywordPick {
+  keyword: string;
+  role: ArticleType;
+  reason: string;
+  monthly_volume: number | null;
+  cpc: number | null;
+  competition_score: number | null;
+  difficulty: number | null;
+  intent: SearchIntent;
+}
+
+export interface CoconProposal {
+  index: number;
+  theme: string;
+  main_keyword: string;
+  rationale: string;
+  picks: KeywordPick[];
+}
+
+export interface ValidationSnapshot {
+  run_id: string;
+  proposals: CoconProposal[];
+  /** Tous les mots-clés enrichis du run, propositions comprises. */
+  pool: KeywordWithData[];
+  max_per_cocon: number;
+  min_per_cocon: number;
+}
+
+export interface ValidatedCocon {
+  index: number;
+  theme?: string | null;
+  mother_keyword: string;
+  daughter_keywords: string[];
+}
+
+export interface ValidationDecision {
+  cocoons: ValidatedCocon[];
 }
 
 /** Ligne d'historique renvoyée par GET /runs (sans le `result`, trop lourd). */
