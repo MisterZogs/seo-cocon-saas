@@ -846,7 +846,14 @@ class ArticleGenerator:
                     continue
 
                 article = await self._generate_full_one(
-                    stub, cocon, analysis, cocoons, cached_context, form, used_experience
+                    stub,
+                    cocon,
+                    analysis,
+                    cocoons,
+                    cached_context,
+                    form,
+                    used_experience,
+                    assigned.get(stub.slug, []),
                 )
                 used_experience.update(article.experience_used)
                 articles.append(article)
