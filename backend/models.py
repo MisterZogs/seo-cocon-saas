@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Literal
 from uuid import uuid4
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ============================================================
@@ -194,6 +194,41 @@ class KeywordWithData(BaseModel):
 
 
 # ============================================================
+# COCON STRUCTURE
+# ============================================================
+
+
+class ArticleType(str, Enum):
+    MOTHER = "mother"
+    DAUGHTER = "daughter"
+
+
+class ArticleStub(BaseModel):
+    """Métadonnées minimales d'un article — générées à l'étape design cocon."""
+
+    cocon_id: str
+    article_type: ArticleType
+    target_keyword: str
+    secondary_keywords: list[str] = Field(default_factory=list)
+    h1_title: str
+    meta_title: str = Field(..., max_length=70)
+    meta_description: str = Field(..., max_length=160)
+    slug: str
+    intent: SearchIntent
+
+
+class CoconStructure(BaseModel):
+    """Un cocon = 1 mère + N filles (généralement 5)."""
+
+    id: str
+    theme: str = Field(..., description="Thème central du cocon en 1 phrase")
+    main_keyword: str
+    mother: ArticleStub
+    daughters: list[ArticleStub] = Field(..., min_length=3, max_length=8)
+    rationale: str = Field(..., description="Pourquoi ce cocon a été formé (SEO logic)")
+
+
+# ============================================================
 # VALIDATION HUMAINE DE LA SÉLECTION
 # ============================================================
 #
@@ -216,7 +251,7 @@ class KeywordPick(BaseModel):
     """
 
     keyword: str
-    role: ArticleRole
+    role: ArticleType
     reason: str = Field(default="", description="Pourquoi ce KW, et pourquoi ce rôle")
     monthly_volume: int | None = None
     cpc: float | None = None
@@ -236,7 +271,7 @@ class CoconProposal(BaseModel):
 
     @property
     def mother(self) -> KeywordPick | None:
-        return next((p for p in self.picks if p.role == ArticleRole.MOTHER), None)
+        return next((p for p in self.picks if p.role == ArticleType.MOTHER), None)
 
 
 class ValidationSnapshot(BaseModel):
@@ -299,41 +334,6 @@ class ValidationDecision(BaseModel):
                     )
                 seen[key] = c.index
         return self
-
-
-# ============================================================
-# COCON STRUCTURE
-# ============================================================
-
-
-class ArticleType(str, Enum):
-    MOTHER = "mother"
-    DAUGHTER = "daughter"
-
-
-class ArticleStub(BaseModel):
-    """Métadonnées minimales d'un article — générées à l'étape design cocon."""
-
-    cocon_id: str
-    article_type: ArticleType
-    target_keyword: str
-    secondary_keywords: list[str] = Field(default_factory=list)
-    h1_title: str
-    meta_title: str = Field(..., max_length=70)
-    meta_description: str = Field(..., max_length=160)
-    slug: str
-    intent: SearchIntent
-
-
-class CoconStructure(BaseModel):
-    """Un cocon = 1 mère + N filles (généralement 5)."""
-
-    id: str
-    theme: str = Field(..., description="Thème central du cocon en 1 phrase")
-    main_keyword: str
-    mother: ArticleStub
-    daughters: list[ArticleStub] = Field(..., min_length=3, max_length=8)
-    rationale: str = Field(..., description="Pourquoi ce cocon a été formé (SEO logic)")
 
 
 # ============================================================
@@ -602,6 +602,7 @@ class JobStatus(str, Enum):
 
 class PipelineStep(str, Enum):
     KEYWORD_RESEARCH = "keyword_research"
+    AWAITING_VALIDATION = "awaiting_validation"
     COCON_DESIGN = "cocon_design"
     SERP_ANALYSIS = "serp_analysis"
     ARTICLE_GENERATION = "article_generation"
