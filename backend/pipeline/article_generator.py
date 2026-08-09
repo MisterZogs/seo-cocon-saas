@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 import re
 from datetime import date
+from itertools import zip_longest
 
 from clients.anthropic_client import AnthropicClient, ModelTier, ResponseTruncated
 from db.checkpoints import CheckpointStore
