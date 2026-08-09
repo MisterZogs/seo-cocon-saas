@@ -232,7 +232,7 @@ def test_repartition() -> bool:
 
 def test_plafond_eeat() -> bool:
     """Sans matériau first-hand, le score « expérience » ne doit pas mentir."""
-    print("\n[5] Plafond E-E-A-T quand aucun bloc verbatim n'est placé")
+    print("\n[7] Plafond E-E-A-T quand aucun bloc verbatim n'est placé")
     inflated = EEATScore(
         experience=80, expertise=80, authoritativeness=60, trustworthiness=60,
         overall=70, warnings=[],
