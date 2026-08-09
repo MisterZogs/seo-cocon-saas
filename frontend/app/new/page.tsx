@@ -423,6 +423,31 @@ export default function NewGenerationPage() {
                   </RadioGroup>
                 </div>
 
+                <label className="flex items-start gap-3 border rounded-md p-4 cursor-pointer">
+                  <Checkbox
+                    checked={values.validate_keywords}
+                    onCheckedChange={(checked) =>
+                      form.setValue("validate_keywords", checked === true)
+                    }
+                    className="mt-1"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">
+                        Valider les mots-clés avant de générer
+                      </span>
+                      <Badge variant="secondary">Recommandé</Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Le run s&apos;arrête après la recherche de mots-clés et vous
+                      montre la sélection de Claude, avec ses justifications. Vous
+                      décochez, vous en ajoutez d&apos;autres, puis vous lancez la
+                      génération. Décochez cette case pour un run d&apos;un seul
+                      tenant.
+                    </p>
+                  </div>
+                </label>
+
                 {mode === "full" && (
                   <div className="space-y-3">
                     <Label>Éléments d&apos;expérience client (obligatoire pour Full)</Label>
