@@ -205,7 +205,7 @@ def test_repartition() -> bool:
         "les deux mères servies en premier",
     )
     ok &= _check(
-        assigned["a-fille1"] and assigned["b-fille1"],
+        len(assigned["a-fille1"]) == 1 and len(assigned["b-fille1"]) == 1,
         "les filles suivantes alternent entre les cocons",
     )
     place = [e.id for els in assigned.values() for e in els]
