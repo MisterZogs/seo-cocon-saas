@@ -17,6 +17,7 @@ import asyncio
 import sys
 from typing import Any
 
+from clients.anthropic_client import MODELS, CompletionResult, ModelTier, UsageTotals
 from db.checkpoints import CheckpointStore
 from models import ClientForm, GenerationMode
 from pipeline.article_generator import _BRIEF_SYSTEM, _FULL_SYSTEM
