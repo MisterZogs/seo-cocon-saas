@@ -706,6 +706,7 @@ class ArticleGenerator:
         store: CheckpointStore | None = None,
     ) -> list[ArticleBrief]:
         cached_context = _build_cached_context(form, cocoons)
+        assigned = assign_experience_elements(form, cocoons)
 
         briefs: list[ArticleBrief] = []
         for cocon in cocoons:
@@ -722,7 +723,13 @@ class ArticleGenerator:
                     continue
 
                 brief = await self._generate_brief_one(
-                    stub, cocon, analysis, cocoons, cached_context, form.inter_cocon_policy
+                    stub,
+                    cocon,
+                    analysis,
+                    cocoons,
+                    cached_context,
+                    form.inter_cocon_policy,
+                    assigned.get(stub.slug, []),
                 )
                 briefs.append(brief)
                 await _checkpoint_one(store, f"brief:{stub.slug}", brief)
