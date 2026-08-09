@@ -250,6 +250,10 @@ FORM = ClientForm(
     niche="Niche de test",
     num_cocoons=1,
     mode=GenerationMode.FULL,
+    # Ce test porte sur la reprise après crash, pas sur la porte de validation
+    # humaine (couverte par tests/test_validation.py). Sans ce False, le run
+    # suspendrait avant même d'atteindre la génération d'articles.
+    validate_keywords=False,
 )
 
 
