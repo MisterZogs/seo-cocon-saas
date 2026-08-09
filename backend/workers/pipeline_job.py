@@ -54,6 +54,9 @@ def run_pipeline_job(
     """
     form = ClientForm.model_validate(form_dict)
     result = asyncio.run(_run_async(form, run_id))
+    # Un run suspendu rend déjà un dict : c'est une pause, pas un PipelineResult.
+    if isinstance(result, dict):
+        return result
     return result.model_dump(mode="json")
 
 
