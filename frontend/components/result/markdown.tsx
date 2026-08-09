@@ -207,7 +207,7 @@ export function Markdown({ content }: { content: string }) {
       blocks.push(
         <blockquote
           key={key++}
-          className="my-4 border-l-4 border-teal-400 bg-teal-50/60 py-2 pl-4 pr-3 text-sm italic dark:bg-teal-950/30"
+          className="my-4 border-l-4 border-primary/60 bg-accent py-2 pl-4 pr-3 text-sm italic"
         >
           {renderInline(quote.join(" "), `q${key}`)}
         </blockquote>,
