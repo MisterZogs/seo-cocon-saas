@@ -158,6 +158,30 @@
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
   --font-serif: var(--font-lora), Georgia, "Times New Roman", serif;
+
+  /*
+    Codage couleur par NATURE d'information dans le livrable (cf. result/section.tsx).
+    Six teintes distinctes mais toutes désaturées et ramenées vers le chaud, pour
+    qu'elles cohabitent avec le crème sans le trouer.
+  */
+  --tone-cocon: oklch(0.47 0.1 15);
+  --tone-cocon-soft: oklch(0.962 0.022 20);
+  --tone-cocon-line: oklch(0.9 0.038 20);
+  --tone-article: oklch(0.5 0.11 250);
+  --tone-article-soft: oklch(0.962 0.02 248);
+  --tone-article-line: oklch(0.9 0.035 248);
+  --tone-maillage: oklch(0.49 0.1 285);
+  --tone-maillage-soft: oklch(0.962 0.02 285);
+  --tone-maillage-line: oklch(0.9 0.033 285);
+  --tone-serp: oklch(0.48 0.08 178);
+  --tone-serp-soft: oklch(0.962 0.024 176);
+  --tone-serp-line: oklch(0.9 0.04 176);
+  --tone-backlinks: oklch(0.5 0.1 72);
+  --tone-backlinks-soft: oklch(0.962 0.032 78);
+  --tone-backlinks-line: oklch(0.9 0.05 78);
+  --tone-faq: oklch(0.48 0.09 148);
+  --tone-faq-soft: oklch(0.962 0.026 148);
+  --tone-faq-line: oklch(0.9 0.042 148);
 }
 
 .dark {
