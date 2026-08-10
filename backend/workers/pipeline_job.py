@@ -129,6 +129,21 @@ async def _run_async(form: ClientForm, run_id: str | None):
         # la base la garde indéfiniment (et les checkpoints restent réutilisables).
         if run_id:
             await repo.save_error(run_id, str(e), traceback.format_exc())
+            # Un run échoué est remboursé automatiquement. Si l'agence reprend
+            # ensuite sur checkpoint, le run sera re-débité à la traversée de
+            # l'étape 2bis — le remboursement a annulé le débit précédent, donc
+            # le compte final reste d'un seul débit par génération livrée.
+            try:
+                await get_billing_repository().refund_run(run_id)
+            except Exception as refund_error:
+                # Surtout ne pas masquer l'erreur d'origine, qui est ce que
+                # l'agence doit voir. Le remboursement manqué est rattrapable à
+                # la main depuis le journal ; l'échec du run, lui, doit remonter.
+                logger.error(
+                    "Remboursement du run %s impossible (%s) — à reprendre à la main.",
+                    run_id,
+                    refund_error,
+                )
         raise
 
     if run_id:
