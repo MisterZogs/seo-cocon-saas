@@ -30,6 +30,15 @@ logger = logging.getLogger(__name__)
 
 SCHEMA_PATH = Path(__file__).parent / "schema.sql"
 
+
+class StorageUnavailable(RuntimeError):
+    """Postgres est injoignable et l'appelant ne peut pas s'en passer.
+
+    La règle « la persistance ne casse jamais un run » ne vaut que pour
+    l'historique. L'auth et la facturation, elles, doivent échouer bruyamment :
+    une erreur avalée y devient une autorisation accordée ou un cocon offert.
+    """
+
 # Colonnes de l'historique — `result` et `form` sont volontairement exclus,
 # trop lourds pour une liste.
 _SUMMARY_COLUMNS = """
