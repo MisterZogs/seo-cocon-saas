@@ -589,6 +589,7 @@ def _build_brief_prompt(
 
 {_maillage_rules(policy)}
 {_build_experience_context(experience)}
+{_directives_block(stub)}
 
 TASK — Produce an editorial brief in JSON:
 {{
@@ -653,6 +654,7 @@ def _build_full_prompt(
 
 {_maillage_rules(policy)}
 {_build_experience_context(experience)}
+{_directives_block(stub)}
 
 TASK — Produce a publish-ready article as JSON:
 {{
