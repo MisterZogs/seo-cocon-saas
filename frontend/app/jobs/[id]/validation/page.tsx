@@ -303,10 +303,11 @@ function ValidationPage({
                   return (
                     <div
                       key={kw}
-                      className={`flex items-start gap-3 rounded-md p-3 ${
+                      className={`rounded-md p-3 ${
                         checked ? "bg-muted/40" : "opacity-60"
                       }`}
                     >
+                      <div className="flex items-start gap-3">
                       <Checkbox
                         checked={checked}
                         disabled={full || takenElsewhere}
