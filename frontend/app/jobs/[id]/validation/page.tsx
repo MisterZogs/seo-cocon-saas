@@ -34,6 +34,15 @@ type CoconState = {
   rationale: string;
   selected: string[];
   mother: string | null;
+  /**
+   * Consignes libres par article, indexées sur le mot-clé.
+   *
+   * C'est le seul écran où ça peut se saisir : au moment du formulaire, les
+   * articles n'existent pas encore (la structure sort après la recherche de
+   * mots-clés), et rien n'est encore rédigé ici — c'est donc la dernière
+   * occasion d'infléchir la rédaction sans la repayer.
+   */
+  directives: Record<string, string>;
 };
 
 function volumeLabel(v: number | null | undefined): string {
