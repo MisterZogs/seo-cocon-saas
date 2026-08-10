@@ -197,6 +197,79 @@ function BillingPage() {
               </Alert>
             )}
 
+            <h2 className="mt-10 font-serif text-xl">Formules</h2>
+            {!state.offers.payments_enabled && (
+              <Alert className="mt-3">
+                <AlertDescription>
+                  Le paiement en ligne n&apos;est pas activé sur ce serveur. Les
+                  tarifs ci-dessous sont indicatifs : contactez-nous pour
+                  souscrire, nous créditons votre compte manuellement.
+                </AlertDescription>
+              </Alert>
+            )}
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {state.offers.plans.map((plan) => {
+                const current = plan.key === state.offers.current_plan;
+                return (
+                  <Card key={plan.key} className={current ? "border-primary" : undefined}>
+                    <CardContent className="py-5">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{plan.label}</p>
+                        {current && <Badge>Formule actuelle</Badge>}
+                      </div>
+                      <p className="mt-2 font-serif text-2xl">
+                        {plan.monthly_price_eur} €
+                        <span className="text-sm text-muted-foreground"> /mois</span>
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {plan.cocoons_per_month} cocons par mois, soit{" "}
+                        {Math.round(
+                          (plan.monthly_price_eur / plan.cocoons_per_month) * 10,
+                        ) / 10}{" "}
+                        € le cocon
+                      </p>
+                      {state.offers.payments_enabled && !current && (
+                        <Button
+                          className="mt-4 w-full"
+                          size="sm"
+                          disabled={busy !== null}
+                          onClick={() =>
+                            go(() => startCheckout({ plan: plan.key }), plan.key)
+                          }
+                        >
+                          {busy === plan.key ? "Ouverture…" : "Souscrire"}
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {state.offers.payments_enabled && (
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={busy !== null}
+                  onClick={() => go(() => startCheckout({ cocoons: 1 }), "unit")}
+                >
+                  {busy === "unit"
+                    ? "Ouverture…"
+                    : `Acheter 1 cocon — ${state.offers.unit_price_eur} €`}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={busy !== null}
+                  onClick={() => go(openPortal, "portal")}
+                >
+                  {busy === "portal" ? "Ouverture…" : "Factures et résiliation"}
+                </Button>
+              </div>
+            )}
+
             <h2 className="mt-10 font-serif text-xl">Vos cocons disponibles</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Les cocons sont consommés en commençant par ceux qui expirent le
