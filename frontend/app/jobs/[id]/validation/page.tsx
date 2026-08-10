@@ -95,6 +95,7 @@ function ValidationPage({
               p.picks.find((k) => k.role === "mother")?.keyword ??
               p.picks[0]?.keyword ??
               null,
+            directives: {},
           })),
         );
       })
