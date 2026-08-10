@@ -972,9 +972,21 @@ seo/
 - [x] Popularité du cocon & Bourrelly vérifiée, canaux d'acquisition identifiés
 - [x] Landing page : section différenciateurs (maillage + verbatim E-E-A-T
       expliqué) et grille tarifaire
+- [x] **Auth multi-agences — JWT maison** (2026-08-10). Table `agencies`,
+      Argon2id, `POST /auth/register` · `/auth/login` · `GET /auth/me`,
+      dépendance `current_agency` sur toutes les routes métier. L'`agency_id`
+      d'un run est posé **côté serveur** depuis le jeton, jamais depuis le
+      formulaire ; toute lecture d'un run vérifie le propriétaire et répond 404
+      (pas 403) sinon. `JWT_SECRET` est obligatoire : le backend refuse de
+      démarrer sans. Front : page `/login`, `AuthGuard`, jeton en `localStorage`.
+      ⚠️ Le flux SSE accepte le jeton en paramètre d'URL — `EventSource` ne sait
+      pas poser d'en-tête ; c'est la seule route dans ce cas.
+      ⚠️ **Jamais exécuté contre un vrai Postgres** (pas de Docker en local) :
+      la table `agencies` et le `require_pool` sont à vérifier au déploiement.
 - [ ] Facturation : ledger de cocons, débit à la génération, remboursement des
       runs échoués, report sur 1 mois (règles arrêtées, code à écrire)
-- [ ] Test end-to-end avec DataForSEO réel (credentials à obtenir)
+- [x] Test end-to-end avec DataForSEO réel — fait depuis le 2026-08-06
+      (la case était restée décochée à tort)
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
       gratuit de Gaetan est épuisé)
 - [ ] Rapport de détection dans le livrable + argumentaire client
