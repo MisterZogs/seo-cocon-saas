@@ -127,7 +127,7 @@ function toFormValues(api: ApiClientForm): FormValues {
   };
 }
 
-export default function NewGenerationPage() {
+function NewGenerationPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
