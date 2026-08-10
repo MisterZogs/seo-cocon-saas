@@ -61,6 +61,9 @@ const formSchema = z
         content: z.string().min(20),
       }),
     ),
+    editorial_guidelines: z
+      .string()
+      .max(2000, "Consignes trop longues (2000 caractères maximum)"),
     style_samples: z
       .array(
         z.object({
@@ -99,6 +102,7 @@ const EMPTY_FORM: FormValues = {
   mode: "brief",
   validate_keywords: true,
   experience_elements: [],
+  editorial_guidelines: "",
   style_samples: [],
 };
 
@@ -124,6 +128,7 @@ function toFormValues(api: ApiClientForm): FormValues {
       title: e.title,
       content: e.content,
     })),
+    editorial_guidelines: api.editorial_guidelines ?? "",
     style_samples: (api.style_samples ?? []).map((s) => ({
       title: s.title ?? "",
       content: s.content,
@@ -197,6 +202,7 @@ function NewGenerationPage() {
         "mode",
         "validate_keywords",
         "experience_elements",
+        "editorial_guidelines",
         "style_samples",
       ],
     };
@@ -250,6 +256,7 @@ function NewGenerationPage() {
         mode: data.mode,
         validate_keywords: data.validate_keywords,
         experience_elements: data.experience_elements,
+        editorial_guidelines: data.editorial_guidelines.trim() || null,
         style_samples: data.style_samples.map((s) => ({
           title: s.title.trim() || null,
           content: s.content,
@@ -678,6 +685,42 @@ function NewGenerationPage() {
                   {form.formState.errors.style_samples?.message && (
                     <p className="text-sm text-destructive">
                       {form.formState.errors.style_samples.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2 border-t pt-6">
+                  <Label htmlFor="editorial_guidelines">
+                    Consignes éditoriales{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (optionnel)
+                    </span>
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Valables pour <strong>tous</strong> les articles : angle à
+                    privilégier, ton, sujets à éviter. Vous pourrez ajouter des
+                    consignes <em>par article</em> à l&apos;écran de validation,
+                    une fois la structure connue.
+                  </p>
+                  <Textarea
+                    id="editorial_guidelines"
+                    rows={4}
+                    maxLength={2000}
+                    placeholder="Ex. : ton direct, pas de superlatifs. Ne jamais promettre de résultat chiffré. Éviter toute comparaison nominative avec des concurrents."
+                    {...form.register("editorial_guidelines")}
+                  />
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      Éditorial uniquement — le maillage interne reste imposé par
+                      l&apos;outil, quelles que soient les consignes.
+                    </p>
+                    <span className="text-xs text-muted-foreground">
+                      {(values.editorial_guidelines ?? "").length} / 2000
+                    </span>
+                  </div>
+                  {form.formState.errors.editorial_guidelines?.message && (
+                    <p className="text-sm text-destructive">
+                      {form.formState.errors.editorial_guidelines.message}
                     </p>
                   )}
                 </div>
