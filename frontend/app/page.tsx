@@ -302,9 +302,11 @@ export default function Home() {
               c&apos;est précisément leur intérêt.
             </p>
             <p className="mt-5 rounded-lg bg-accent/60 px-5 py-4 text-[0.95rem] leading-relaxed font-medium">
-              Sans bloc verbatim, le score E-E-A-T de l&apos;article est plafonné
-              à 40 sur 100, en dur. L&apos;outil refuse de se flatter lui-même —
-              vous saurez toujours ce que vous livrez vraiment.
+              Sans bloc verbatim, la note <em>Experience</em> de l&apos;article
+              est plafonnée à 40 sur 100, en dur, et l&apos;avertissement est
+              écrit noir sur blanc dans le livrable. L&apos;outil refuse de se
+              flatter lui-même — vous saurez toujours ce que vous livrez
+              vraiment.
             </p>
           </article>
         </div>
