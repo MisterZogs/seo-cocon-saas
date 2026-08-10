@@ -535,6 +535,61 @@ export default function Home() {
   );
 }
 
+function PriceCard({
+  name,
+  price,
+  volume,
+  unit,
+  lede,
+  items,
+  featured = false,
+}: {
+  name: string;
+  price: string;
+  volume: string;
+  unit: string;
+  lede: string;
+  items: string[];
+  featured?: boolean;
+}) {
+  return (
+    <article
+      className={cn(
+        "flex flex-col rounded-xl border border-border bg-card p-8 shadow-xs",
+        featured && "border-primary/40 shadow-md ring-1 ring-primary/15",
+      )}
+    >
+      <div className="flex items-center gap-3">
+        <p className="eyebrow">{name}</p>
+        {featured && (
+          <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-semibold text-primary">
+            Le plus choisi
+          </span>
+        )}
+      </div>
+      <p className="mt-4 font-serif text-4xl font-semibold">
+        {price}
+        <span className="ml-1 text-base font-normal text-muted-foreground">
+          /mois
+        </span>
+      </p>
+      <p className="mt-2 font-semibold text-primary">{volume}</p>
+      <p className="text-sm text-muted-foreground">{unit}</p>
+      <p className="mt-4 text-[0.9rem] leading-relaxed text-muted-foreground">
+        {lede}
+      </p>
+      <ul className="mt-6 space-y-3">
+        {items.map((item) => (
+          <li key={item} className="flex gap-3 text-[0.92rem] leading-relaxed">
+            <SparklesIcon className="mt-1 size-4 shrink-0 text-primary" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </article>
+  );
+}
+
 function ModeCard({
   eyebrow,
   title,
