@@ -73,6 +73,7 @@ class RunRepository:
         self._pool: Any | None = None
         self._ready = False
         self._lock = asyncio.Lock()
+        self._last_error: str | None = None
 
         if not self._dsn:
             logger.info(
