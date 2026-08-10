@@ -75,6 +75,18 @@ function ValidationPage({
   const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState("");
   const [openPool, setOpenPool] = useState<number | null>(null);
+  // Jusqu'à 24 articles à l'écran : afficher 24 zones de texte en permanence
+  // noierait la sélection de mots-clés, qui reste la tâche principale ici.
+  const [openDirectives, setOpenDirectives] = useState<Set<string>>(new Set());
+
+  function toggleDirective(coconIndex: number, keyword: string) {
+    setOpenDirectives((prev) => {
+      const next = new Set(prev);
+      const key = `${coconIndex}|${keyword}`;
+      if (!next.delete(key)) next.add(key);
+      return next;
+    });
+  }
 
   useEffect(() => {
     // L'absence de run_id se lit dans l'URL, pas dans un état : la traiter ici
