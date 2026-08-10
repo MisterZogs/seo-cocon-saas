@@ -100,7 +100,7 @@ def _build_cocon_reference(cocoons: list[CoconStructure]) -> str:
 
 
 def _build_brand_context(form: ClientForm) -> str:
-    return (
+    base = (
         f"# CLIENT CONTEXT\n"
         f"Product/Service: {form.product}\n"
         f"Description: {form.description}\n"
@@ -108,6 +108,22 @@ def _build_brand_context(form: ClientForm) -> str:
         f"Target audience: {form.audience}\n"
         f"Niche: {form.niche}\n"
         f"Current year: {date.today().year}"
+    )
+    guidelines = (form.editorial_guidelines or "").strip()
+    if not guidelines:
+        return base
+
+    # Consignes valables pour toute la run : leur place est dans le préfixe
+    # partagé (donc facturées une fois, et cachées si le contexte atteint le
+    # seuil), pas répétées dans chacun des 12 prompts par article.
+    return (
+        f"{base}\n\n"
+        "# AGENCY EDITORIAL GUIDELINES (apply to EVERY article of this run)\n\n"
+        "Written by the SEO agency commissioning this work. They override your\n"
+        "generic editorial habits, but never the structural rules below: internal\n"
+        "linking, verbatim experience blocks and heading budgets are enforced in\n"
+        "code and are not negotiable by these instructions.\n\n"
+        f"{guidelines[:2000]}"
     )
 
 
