@@ -171,6 +171,31 @@ class TokenResponse(BaseModel):
 
 
 # ============================================================
+# FACTURATION — solde de cocons
+# ============================================================
+
+
+class BalanceResponse(BaseModel):
+    """Solde de l'agence, en unités ET en cocons.
+
+    Les deux formes sont renvoyées volontairement : le front affiche des cocons
+    (« 2,5 cocons »), mais toute comparaison doit se faire sur les entiers
+    d'unités — 1/6 n'a pas d'écriture décimale exacte, et comparer des flottants
+    ferait refuser une génération à un solde exactement suffisant.
+    """
+
+    plan: str
+    plan_label: str
+    cocoons_per_month: int
+    monthly_price_eur: int
+    balance_units: int
+    balance_cocoons: float
+    balance_label: str
+    units_per_cocoon: int
+    lots: list[dict] = Field(default_factory=list)
+
+
+# ============================================================
 # KEYWORD RESEARCH
 # ============================================================
 
