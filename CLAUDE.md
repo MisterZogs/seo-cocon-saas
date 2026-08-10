@@ -997,6 +997,20 @@ seo/
       remboursement re-débite, ce qui réconcilie « la reprise ne re-débite
       jamais » et « un run échoué est remboursé ».
       ⚠️ **Aucun paiement** : `set_plan` se change à la main, pas de Stripe.
+- [x] **Mode Brief bidirectionnel — consignes de l'agence** (2026-08-10).
+      Deux niveaux : `editorial_guidelines` sur le formulaire (toute la run,
+      posé dans le contexte partagé donc facturé une fois) et `directives` par
+      article à l'**écran de validation** — seul moment où les articles sont
+      connus et où rien n'est encore rédigé. Portées par `ArticleStub`, qui
+      traverse déjà les checkpoints : les consignes survivent à une reprise sans
+      code dédié. Une consigne rattachée à un mot-clé absent du cocon est
+      **refusée** (422) plutôt qu'ignorée en silence.
+      ⚠️ Le prompt cadre ces consignes comme **éditoriales** : le champ est du
+      texte libre, une agence écrira « mets un lien vers la page tarifs ». Le
+      maillage reste imposé en code.
+      ⚠️ La **régénération** d'un article déjà écrit (débit 1/6, `debit_regeneration`
+      existe déjà) n'est PAS faite : elle demande un job RQ, la mutation du
+      résultat stocké et une re-normalisation du maillage.
 - [ ] Paiement : Stripe (abonnements + achat à l'unité), sans quoi personne ne
       peut sortir de l'essai de 3 cocons
 - [x] Test end-to-end avec DataForSEO réel — fait depuis le 2026-08-06
