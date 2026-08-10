@@ -203,6 +203,15 @@ function ValidationPage({
         theme: c.theme,
         mother_keyword: c.mother as string,
         daughter_keywords: c.selected.filter((k) => k !== c.mother),
+        // Filtré deux fois plutôt qu'une : on n'envoie que les consignes non
+        // vides ET rattachées à un mot-clé encore sélectionné. Le backend
+        // rejetterait le reste, et un 422 sur ce formulaire coûterait à
+        // l'agence toute sa saisie.
+        directives: Object.fromEntries(
+          Object.entries(c.directives).filter(
+            ([kw, text]) => text.trim() !== "" && c.selected.includes(kw),
+          ),
+        ),
       })),
     };
     try {
