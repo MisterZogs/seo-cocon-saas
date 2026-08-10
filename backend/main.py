@@ -333,6 +333,45 @@ async def me(agency: Agency = Depends(current_agency)) -> AgencyPublic:
 
 
 # ============================================================
+# Routes — facturation
+# ============================================================
+
+
+@app.get("/billing/balance", response_model=BalanceResponse)
+async def billing_balance(agency: Agency = Depends(current_agency)) -> BalanceResponse:
+    """Solde de cocons de l'agence.
+
+    Effet de bord assumé : c'est cette lecture qui crée l'allocation du mois si
+    elle manque (octroi paresseux, cf. `db/billing.ensure_period_grant`). Il n'y
+    a pas d'ordonnanceur dans l'infra, et une allocation qui n'apparaît qu'à la
+    première consultation du mois se rattrape toute seule après une panne.
+    """
+    billing = get_billing_repository()
+    plan = await billing.get_plan_for(agency.id)
+    units = await billing.balance_units(agency.id, plan)
+    return BalanceResponse(
+        plan=plan.key,
+        plan_label=plan.label,
+        cocoons_per_month=plan.cocoons_per_month,
+        monthly_price_eur=plan.monthly_price_eur,
+        balance_units=units,
+        balance_cocoons=units_to_cocoons(units),
+        balance_label=format_cocoons(units),
+        units_per_cocoon=cocoons_to_units(1),
+        lots=await billing.lots(agency.id),
+    )
+
+
+@app.get("/billing/ledger")
+async def billing_ledger(
+    limit: int = 50, agency: Agency = Depends(current_agency)
+) -> dict:
+    """Journal des mouvements — ce qui explique le solde affiché."""
+    entries = await get_billing_repository().ledger(agency.id, limit=min(limit, 200))
+    return {"entries": entries, "units_per_cocoon": cocoons_to_units(1)}
+
+
+# ============================================================
 # Routes — pipeline
 # ============================================================
 
