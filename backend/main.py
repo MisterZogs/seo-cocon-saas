@@ -585,12 +585,20 @@ async def job_status(job_id: str, agency: Agency = Depends(current_agency)) -> d
 
 
 @app.get("/jobs/{job_id}/stream")
-async def job_stream(job_id: str) -> StreamingResponse:
-    """SSE — envoie un event à chaque changement de progression."""
+async def job_stream(
+    job_id: str, agency: Agency = Depends(current_agency_from_query)
+) -> StreamingResponse:
+    """SSE — envoie un event à chaque changement de progression.
+
+    Seule route à accepter le jeton en paramètre d'URL : `EventSource` ne sait
+    pas envoyer d'en-tête. Voir `auth.current_agency_from_query`.
+    """
     try:
-        Job.fetch(job_id, connection=app.state.redis)
+        job = Job.fetch(job_id, connection=app.state.redis)
     except Exception:
         raise HTTPException(status_code=404, detail="Job introuvable")
+
+    _require_job_access(job, agency)
 
     async def event_source():
         last_progress = None
