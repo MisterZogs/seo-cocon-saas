@@ -183,7 +183,10 @@ export default function Home() {
           Tout ce qui est chiffré ici vient de mesures réelles du pipeline
           (run de maillage non normalisé, plafond E-E-A-T). Ne rien y ajouter
           qui ne soit pas vérifiable dans un livrable. */}
-      <section id="difference" className="mx-auto max-w-6xl px-6 py-24">
+      <section
+        id="difference"
+        className="mx-auto max-w-6xl border-t border-border px-6 py-24"
+      >
         <div className="mx-auto max-w-3xl text-center">
           <p className="eyebrow">Ce qui nous distingue</p>
           <h2 className="mt-5 font-serif text-3xl leading-tight font-semibold sm:text-[2.5rem]">
