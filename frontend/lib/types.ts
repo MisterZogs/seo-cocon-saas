@@ -82,6 +82,12 @@ export interface ClientForm {
   experience_elements: ExperienceElement[];
   /** Max 5 côté backend. */
   style_samples?: StyleSample[];
+  /**
+   * Consignes valables pour TOUS les articles de la run (angle, ton, à éviter).
+   * Les consignes propres à un article se saisissent à l'écran de validation :
+   * au moment du formulaire, les articles n'existent pas encore.
+   */
+  editorial_guidelines?: string | null;
   agency_id?: string | null;
   client_project_name?: string | null;
 }
