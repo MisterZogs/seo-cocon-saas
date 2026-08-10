@@ -79,17 +79,22 @@ function BillingPage() {
   // Retour de Stripe. Le solde n'est pas forcément à jour à la seconde où
   // l'agence revient : le crédit arrive par webhook, en parallèle de la
   // redirection. D'où le message d'attente plutôt qu'un solde affirmé.
-  const [paid, setPaid] = useState<"ok" | "annule" | null>(null);
-  useEffect(() => {
-    const value = new URLSearchParams(window.location.search).get("paiement");
-    if (value === "ok" || value === "annule") setPaid(value);
-  }, []);
+  const paid = useSyncExternalStore(
+    () => () => {},
+    () => {
+      const value = new URLSearchParams(window.location.search).get("paiement");
+      return value === "ok" || value === "annule" ? value : null;
+    },
+    () => null, // rendu serveur : pas de `window`
+  );
 
   async function go(action: () => Promise<string>, key: string) {
     setBusy(key);
     setActionError(null);
     try {
-      window.location.href = await action();
+      // `assign` plutôt qu'une écriture sur `location.href` : même effet, et
+      // ça reste une simple sortie de page pour l'analyse statique de React.
+      window.location.assign(await action());
     } catch (e) {
       setActionError(e instanceof Error ? e.message : "Erreur inconnue");
       setBusy(null);
