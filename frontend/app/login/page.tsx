@@ -30,10 +30,10 @@ export default function LoginPage() {
   const [next, setNext] = useState("/new");
 
   useEffect(() => {
-    const target = new URLSearchParams(window.location.search).get("next");
-    if (target?.startsWith("/")) setNext(target); // jamais une URL absolue : redirection ouverte
+    const target = safeNext(new URLSearchParams(window.location.search).get("next"));
+    setNext(target);
     // Déjà connecté : rien à faire ici.
-    if (isAuthenticated()) window.location.href = target?.startsWith("/") ? target : "/new";
+    if (isAuthenticated()) window.location.href = target;
   }, []);
 
   async function submit(event: React.FormEvent) {
