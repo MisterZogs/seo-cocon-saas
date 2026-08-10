@@ -745,9 +745,12 @@ inscription. Les outils gratuits érodent par le bas la formule Indépendant à 
    Sedestral, qui sont français. Le différenciateur nº 2 de la liste ci-dessous
    est déclassé — voir la liste révisée.
 2. **Le pricing arrêté est bien calibré, et c'était l'intuition de Gaetan.**
-   Le marché FR se situe à 20 € (Cocon.se), 59 € (Sedestral), 89 €
-   (SEOQuantum), 90 € (YourTextGuru). L'entrée à 49 € s'y insère juste ; une
-   entrée à 199 € aurait été hors marché.
+   Le marché FR se situe à 20 € (Cocon.se), 69 € (Hack the SEO Growth+), 89 €
+   (SEOQuantum), 90 € (YourTextGuru), 99 € (Hack the SEO Pro), 119 €
+   (Sedestral). L'entrée à 49 € s'y insère juste — et reste **le prix d'entrée
+   payant le plus bas du marché**. Une entrée à 199 € aurait été hors marché.
+   ⚠️ Mais Hack the SEO a un palier **gratuit permanent** avec score SEO + GEO :
+   le vrai plancher du marché n'est plus 20 €, il est à 0 €.
 3. **La formule Agence à 249 € doit justifier un facteur 4 face à Sedestral.**
    La réponse ne peut pas être « plus d'articles » — elle doit être la rigueur
    du maillage, le Mode Brief (que personne ne propose) et le multi-clients
