@@ -506,18 +506,22 @@ async def submit_validation(
 
 
 @app.get("/runs")
-async def list_runs(agency_id: str | None = None, limit: int = 50) -> dict:
-    """Historique des générations — nécessite Postgres configuré."""
+async def list_runs(limit: int = 50, agency: Agency = Depends(current_agency)) -> dict:
+    """Historique des générations de l'agence connectée.
+
+    L'`agency_id` n'est plus un paramètre de requête : il venait du client, donc
+    n'importe qui pouvait lister l'historique de n'importe qui.
+    """
     repo = get_repository()
     if not repo.enabled:
         return {"enabled": False, "runs": [], "detail": "Base de données non configurée."}
-    runs = await repo.list_runs(agency_id=agency_id, limit=min(limit, 200))
+    runs = await repo.list_runs(agency_id=agency.id, limit=min(limit, 200))
     return {"enabled": True, "runs": runs}
 
 
 @app.get("/form-defaults")
-async def form_defaults(agency_id: str | None = None) -> dict:
-    """Valeurs de préremplissage du formulaire : la dernière demande soumise.
+async def form_defaults(agency: Agency = Depends(current_agency)) -> dict:
+    """Valeurs de préremplissage du formulaire : la dernière demande de l'agence.
 
     Le formulaire n'a plus de valeurs en dur. Sans Postgres — ou au tout premier
     usage — la réponse est `{"form": null}` et le formulaire s'ouvre vide, ce qui
@@ -527,14 +531,15 @@ async def form_defaults(agency_id: str | None = None) -> dict:
     repo = get_repository()
     if not repo.enabled:
         return {"enabled": False, "form": None}
-    return {"enabled": True, "form": await repo.get_latest_form(agency_id=agency_id)}
+    return {"enabled": True, "form": await repo.get_latest_form(agency_id=agency.id)}
 
 
 @app.get("/runs/{run_id}")
-async def get_run(run_id: str) -> dict:
+async def get_run(run_id: str, agency: Agency = Depends(current_agency)) -> dict:
     repo = get_repository()
     if not repo.enabled:
         raise HTTPException(status_code=503, detail="Base de données non configurée.")
+    await _require_run_access(run_id, agency)
     run = await repo.get_run(run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Run introuvable")
@@ -542,11 +547,13 @@ async def get_run(run_id: str) -> dict:
 
 
 @app.get("/jobs/{job_id}")
-async def job_status(job_id: str) -> dict:
+async def job_status(job_id: str, agency: Agency = Depends(current_agency)) -> dict:
     try:
         job = Job.fetch(job_id, connection=app.state.redis)
     except Exception:
         raise HTTPException(status_code=404, detail="Job introuvable")
+
+    _require_job_access(job, agency)
 
     payload = {
         "job_id": job.id,
