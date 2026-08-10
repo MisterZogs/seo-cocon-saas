@@ -203,6 +203,26 @@ async def _storage_unavailable(request: Request, exc: StorageUnavailable) -> JSO
     return JSONResponse(status_code=503, content={"detail": str(exc)})
 
 
+@app.exception_handler(InsufficientBalance)
+async def _insufficient_balance(
+    request: Request, exc: InsufficientBalance
+) -> JSONResponse:
+    """402 Payment Required — le seul statut qui dise « valide, mais impayé ».
+
+    Ni 403 (l'agence a bien le droit de générer) ni 422 (la requête est
+    parfaitement formée) : c'est le solde qui manque, et le front doit pouvoir
+    distinguer ce cas pour proposer d'acheter des cocons.
+    """
+    return JSONResponse(
+        status_code=402,
+        content={
+            "detail": str(exc),
+            "required_units": exc.required_units,
+            "available_units": exc.available_units,
+        },
+    )
+
+
 # ============================================================
 # Contrôle d'accès aux runs et aux jobs
 # ============================================================
