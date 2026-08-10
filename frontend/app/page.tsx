@@ -58,6 +58,15 @@ export default function Home() {
             >
               Historique
             </Link>
+            {/* La landing reste un composant serveur : le lien est le même que
+                l'on soit connecté ou non. /login renvoie vers /new si une
+                session valide existe déjà. */}
+            <Link
+              href="/login"
+              className="text-foreground/80 transition-colors hover:text-primary"
+            >
+              Connexion
+            </Link>
             <Link
               href="/new"
               className={cn(buttonVariants({ size: "sm" }), "h-9 px-4 font-semibold")}
