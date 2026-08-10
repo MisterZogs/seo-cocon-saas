@@ -115,6 +115,16 @@ class ClientForm(BaseModel):
         max_length=5,
         description="Articles existants du client — few-shot pour caler la voix",
     )
+    editorial_guidelines: str | None = Field(
+        default=None,
+        max_length=2000,
+        description=(
+            "Consignes éditoriales valables pour TOUS les articles de la run : "
+            "angle, ton, sujets à éviter. Les consignes propres à un article se "
+            "saisissent plus tard, à l'écran de validation — au moment du "
+            "formulaire, les articles n'existent pas encore."
+        ),
+    )
     agency_id: str | None = None
     client_project_name: str | None = None
 
