@@ -412,3 +412,22 @@ export interface LedgerEntry {
   note: string | null;
   created_at: string;
 }
+
+export interface BillingPlanOffer {
+  key: string;
+  label: string;
+  monthly_price_eur: number;
+  cocoons_per_month: number;
+}
+
+export interface BillingOffers {
+  /**
+   * `false` n'est pas une panne : le produit tourne sans paiement en ligne
+   * (essai de 3 cocons, formule attribuée à la main). Le front affiche alors
+   * les tarifs sans bouton.
+   */
+  payments_enabled: boolean;
+  unit_price_eur: number;
+  current_plan: string;
+  plans: BillingPlanOffer[];
+}

@@ -1,5 +1,6 @@
 import type {
   BalanceResponse,
+  BillingOffers,
   ClientForm,
   JobStatusResponse,
   LedgerEntry,

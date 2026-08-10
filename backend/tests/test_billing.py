@@ -496,6 +496,10 @@ def _check_stripe(client, main, head: dict) -> bool:
     def purchase_event(event_id: str, cocoons: int = 2) -> dict:
         return {
             "id": event_id,
+            # `object: "event"` est posé par Stripe sur tout événement réel, et
+            # le SDK le lit pour distinguer les webhooks v1 des notifications
+            # v2. Sans lui, `construct_event` refuse un payload pourtant signé.
+            "object": "event",
             "type": "checkout.session.completed",
             "data": {
                 "object": {
@@ -508,24 +512,21 @@ def _check_stripe(client, main, head: dict) -> bool:
             },
         }
 
-    def handle(event: dict) -> dict:
-        return _asyncio.run(main._handle_stripe_event(event))
-
     # -- achat crédité une fois -------------------------------------
     before = balance()
-    res = handle(purchase_event("evt_achat_1"))
+    res = send(purchase_event("evt_achat_1"))
     ok &= _check("achat Stripe crédité", res.get("status") == "crédité", f"{res}")
     ok &= _check("+ 2 cocons au solde", balance() == before + 12, f"{balance()} au lieu de {before + 12}")
 
     # LE contrôle : Stripe rejoue, on ne crédite pas deux fois.
     after = balance()
-    res = handle(purchase_event("evt_achat_1"))
+    res = send(purchase_event("evt_achat_1"))
     ok &= _check("même événement rejoué → déjà traité", res.get("status") == "déjà traité", f"{res}")
     ok &= _check("… et solde INCHANGÉ", balance() == after, f"{balance()} — cocons offerts")
 
     # Mais deux achats distincts identiques sont légitimes : la déduplication
     # porte sur l'identifiant d'événement, pas sur le contenu.
-    res = handle(purchase_event("evt_achat_2"))
+    res = send(purchase_event("evt_achat_2"))
     ok &= _check(
         "achat distinct au contenu identique → crédité",
         res.get("status") == "crédité" and balance() == after + 12,
@@ -536,7 +537,7 @@ def _check_stripe(client, main, head: dict) -> bool:
     unpaid = purchase_event("evt_impaye")
     unpaid["data"]["object"]["payment_status"] = "unpaid"
     before = balance()
-    res = handle(unpaid)
+    res = send(unpaid)
     ok &= _check("paiement non abouti → ignoré", res.get("status") == "ignoré", f"{res}")
     ok &= _check("… et rien crédité", balance() == before)
 
@@ -544,13 +545,14 @@ def _check_stripe(client, main, head: dict) -> bool:
     orphan["data"]["object"]["metadata"] = {"cocoons": "3"}
     orphan["data"]["object"]["client_reference_id"] = None
     orphan["data"]["object"]["customer"] = "cus_inconnu"
-    res = handle(orphan)
+    res = send(orphan)
     ok &= _check("achat non rattachable → ignoré sans planter", res.get("status") == "ignoré", f"{res}")
 
     # -- abonnement -------------------------------------------------
     def subscription_event(event_id: str, status: str, plan: str, kind: str) -> dict:
         return {
             "id": event_id,
+            "object": "event",
             "type": kind,
             "data": {
                 "object": {
@@ -562,7 +564,7 @@ def _check_stripe(client, main, head: dict) -> bool:
         }
 
     before = balance()
-    res = handle(
+    res = send(
         subscription_event("evt_sub_1", "active", "agence", "customer.subscription.created")
     )
     ok &= _check("abonnement actif → formule appliquée", res.get("plan") == "agence", f"{res}")
@@ -577,14 +579,14 @@ def _check_stripe(client, main, head: dict) -> bool:
     )
 
     after_sub = balance()
-    res = handle(
+    res = send(
         subscription_event("evt_sub_1", "active", "agence", "customer.subscription.created")
     )
     ok &= _check("abonnement rejoué → déjà traité", res.get("status") == "déjà traité", f"{res}")
     ok &= _check("… et pas de double allocation", balance() == after_sub, f"{balance()}")
 
     # Résiliation : la formule retombe, mais les cocons déjà payés restent.
-    res = handle(
+    res = send(
         subscription_event("evt_sub_del", "canceled", "agence", "customer.subscription.deleted")
     )
     ok &= _check("résiliation traitée", res.get("status") == "abonnement résilié", f"{res}")
