@@ -282,6 +282,8 @@ async def register(payload: RegisterRequest) -> TokenResponse:
         raise HTTPException(status_code=409, detail="Un compte existe déjà pour cet email.")
 
     agency = Agency(id=str(row["id"]), email=row["email"], name=row["name"])
+    # Essai : 3 cocons sans carte bancaire (coût maximal pour nous ~12 €).
+    await get_billing_repository().grant_trial(agency.id)
     token, expires_at = create_access_token(agency)
     logger.info("Compte agence créé : %s (%s)", agency.name, agency.id)
     return TokenResponse(
