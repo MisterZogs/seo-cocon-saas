@@ -866,6 +866,7 @@ seo/
 │   ├── main.py                 FastAPI routes
 │   ├── auth.py                 JWT HS256 + Argon2id + dépendance current_agency
 │   ├── billing.py              règles de facturation pures (unités, plans, périodes)
+│   ├── payments.py             Stripe Checkout + Portail + signature webhook
 │   ├── models.py               Pydantic schemas
 │   ├── pipeline/
 │   │   ├── keyword_research.py
