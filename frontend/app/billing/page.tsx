@@ -146,6 +146,28 @@ function BillingPage() {
           </Alert>
         )}
 
+        {paid === "ok" && (
+          <Alert className="mb-4">
+            <AlertDescription>
+              Paiement accepté, merci. Les cocons sont crédités par Stripe dans
+              les secondes qui suivent — rafraîchissez la page s&apos;ils
+              n&apos;apparaissent pas encore.
+            </AlertDescription>
+          </Alert>
+        )}
+        {paid === "annule" && (
+          <Alert className="mb-4">
+            <AlertDescription>
+              Paiement abandonné — rien n&apos;a été débité.
+            </AlertDescription>
+          </Alert>
+        )}
+        {actionError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{actionError}</AlertDescription>
+          </Alert>
+        )}
+
         {state.kind === "ready" && (
           <>
             <Card>
