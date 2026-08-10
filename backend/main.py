@@ -124,6 +124,11 @@ _ERROR_HINTS: list[tuple[str, str]] = [
         "Erreur DataForSEO. Vérifiez les credentials (ou laissez-les vides pour le mode mock).",
     ),
     (
+        "InsufficientBalance",
+        "Solde de cocons insuffisant pour cette génération. Le run n'a rien "
+        "consommé. Consultez votre solde pour reprendre.",
+    ),
+    (
         "HorseTimeoutException",
         "Le job a dépassé la durée maximale autorisée et a été interrompu. "
         "La reprise repart des étapes déjà terminées.",
