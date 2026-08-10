@@ -403,8 +403,11 @@ def _store_for(run_id: str):
 
 
 @app.get("/runs/{run_id}/validation")
-async def get_validation(run_id: str) -> ValidationSnapshot:
+async def get_validation(
+    run_id: str, agency: Agency = Depends(current_agency)
+) -> ValidationSnapshot:
     """Sélection proposée par Claude + pool complet, pour l'écran de validation."""
+    await _require_run_access(run_id, agency)
     snapshot = await _store_for(run_id).get(VALIDATION_CHECKPOINT)
     if snapshot is None:
         raise HTTPException(
