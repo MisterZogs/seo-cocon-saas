@@ -421,13 +421,18 @@ async def get_validation(
 
 
 @app.post("/runs/{run_id}/validation")
-async def submit_validation(run_id: str, decision: ValidationDecision) -> dict:
+async def submit_validation(
+    run_id: str,
+    decision: ValidationDecision,
+    agency: Agency = Depends(current_agency),
+) -> dict:
     """Applique la sélection de l'agence et relance le run sur cette base.
 
     La décision est convertie en `cocon_design` checkpoint : c'est ce qui fait
     que le pipeline relancé saute la porte de validation et reprend directement
     à l'analyse SERP, sans repayer la recherche de mots-clés.
     """
+    await _require_run_access(run_id, agency)
     store = _store_for(run_id)
 
     snapshot_raw = await store.get(VALIDATION_CHECKPOINT)
