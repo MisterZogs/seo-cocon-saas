@@ -444,7 +444,160 @@ def _run_api_tests(dsn: str) -> bool:
         # message sur son solde. Les appels LLM du chemin de validation sont
         # court-circuités — c'est le contrôle de solde qu'on teste, pas eux.
         ok &= _check_validation_gate(client, main, head, form, dsn)
+        ok &= _check_stripe(client, main, head)
 
+    return ok
+
+
+def _check_stripe(client, main, head: dict) -> bool:
+    """Webhooks Stripe — la seule voie par laquelle de l'argent entre.
+
+    Stripe livre « au moins une fois » et rejoue ses événements après un timeout.
+    Un achat crédité deux fois est un cocon offert : c'est le contrôle central
+    de cette section.
+    """
+    import asyncio as _asyncio
+
+    ok = True
+    print("\n[4] Paiement Stripe")
+
+    def balance() -> int:
+        return client.get("/billing/balance", headers=head).json()["balance_units"]
+
+    agency_id = client.get("/auth/me", headers=head).json()["id"]
+
+    def purchase_event(event_id: str, cocoons: int = 2) -> dict:
+        return {
+            "id": event_id,
+            "type": "checkout.session.completed",
+            "data": {
+                "object": {
+                    "mode": "payment",
+                    "payment_status": "paid",
+                    "customer": "cus_test",
+                    "client_reference_id": agency_id,
+                    "metadata": {"agency_id": agency_id, "cocoons": str(cocoons)},
+                }
+            },
+        }
+
+    def handle(event: dict) -> dict:
+        return _asyncio.run(main._handle_stripe_event(event))
+
+    # -- achat crédité une fois -------------------------------------
+    before = balance()
+    res = handle(purchase_event("evt_achat_1"))
+    ok &= _check("achat Stripe crédité", res.get("status") == "crédité", f"{res}")
+    ok &= _check("+ 2 cocons au solde", balance() == before + 12, f"{balance()} au lieu de {before + 12}")
+
+    # LE contrôle : Stripe rejoue, on ne crédite pas deux fois.
+    after = balance()
+    res = handle(purchase_event("evt_achat_1"))
+    ok &= _check("même événement rejoué → déjà traité", res.get("status") == "déjà traité", f"{res}")
+    ok &= _check("… et solde INCHANGÉ", balance() == after, f"{balance()} — cocons offerts")
+
+    # Mais deux achats distincts identiques sont légitimes : la déduplication
+    # porte sur l'identifiant d'événement, pas sur le contenu.
+    res = handle(purchase_event("evt_achat_2"))
+    ok &= _check(
+        "achat distinct au contenu identique → crédité",
+        res.get("status") == "crédité" and balance() == after + 12,
+        f"{res} solde={balance()}",
+    )
+
+    # -- cas dégradés qui ne doivent rien créditer ------------------
+    unpaid = purchase_event("evt_impaye")
+    unpaid["data"]["object"]["payment_status"] = "unpaid"
+    before = balance()
+    res = handle(unpaid)
+    ok &= _check("paiement non abouti → ignoré", res.get("status") == "ignoré", f"{res}")
+    ok &= _check("… et rien crédité", balance() == before)
+
+    orphan = purchase_event("evt_orphelin")
+    orphan["data"]["object"]["metadata"] = {"cocoons": "3"}
+    orphan["data"]["object"]["client_reference_id"] = None
+    orphan["data"]["object"]["customer"] = "cus_inconnu"
+    res = handle(orphan)
+    ok &= _check("achat non rattachable → ignoré sans planter", res.get("status") == "ignoré", f"{res}")
+
+    # -- abonnement -------------------------------------------------
+    def subscription_event(event_id: str, status: str, plan: str, kind: str) -> dict:
+        return {
+            "id": event_id,
+            "type": kind,
+            "data": {
+                "object": {
+                    "status": status,
+                    "customer": "cus_test",
+                    "metadata": {"agency_id": agency_id, "plan": plan},
+                }
+            },
+        }
+
+    before = balance()
+    res = handle(
+        subscription_event("evt_sub_1", "active", "agence", "customer.subscription.created")
+    )
+    ok &= _check("abonnement actif → formule appliquée", res.get("plan") == "agence", f"{res}")
+    ok &= _check(
+        "… et l'allocation du mois créditée tout de suite (120 unités)",
+        balance() == before + 120,
+        f"{balance()} au lieu de {before + 120}",
+    )
+    ok &= _check(
+        "formule visible sur /billing/balance",
+        client.get("/billing/balance", headers=head).json()["plan"] == "agence",
+    )
+
+    after_sub = balance()
+    res = handle(
+        subscription_event("evt_sub_1", "active", "agence", "customer.subscription.created")
+    )
+    ok &= _check("abonnement rejoué → déjà traité", res.get("status") == "déjà traité", f"{res}")
+    ok &= _check("… et pas de double allocation", balance() == after_sub, f"{balance()}")
+
+    # Résiliation : la formule retombe, mais les cocons déjà payés restent.
+    res = handle(
+        subscription_event("evt_sub_del", "canceled", "agence", "customer.subscription.deleted")
+    )
+    ok &= _check("résiliation traitée", res.get("status") == "abonnement résilié", f"{res}")
+    ok &= _check(
+        "… formule revenue à l'essai",
+        client.get("/billing/balance", headers=head).json()["plan"] == "trial",
+    )
+    ok &= _check(
+        "… mais les cocons déjà payés ne sont PAS repris",
+        balance() == after_sub,
+        f"{balance()} au lieu de {after_sub}",
+    )
+
+    # -- routes -----------------------------------------------------
+    r = client.get("/billing/offers", headers=head)
+    ok &= _check("offres lisibles", r.status_code == 200, f"statut {r.status_code}")
+    ok &= _check(
+        "… Stripe annoncé non configuré (aucune clé dans ce test)",
+        r.json().get("payments_enabled") is False,
+        f"{r.json().get('payments_enabled')}",
+    )
+    ok &= _check(
+        "… 3 formules payantes proposées, l'essai exclu",
+        [p["key"] for p in r.json()["plans"]] == ["independant", "agence", "studio"],
+        f"{[p['key'] for p in r.json()['plans']]}",
+    )
+
+    r = client.post("/billing/checkout", headers=head, json={"plan": "agence"})
+    ok &= _check("checkout sans clé Stripe → 503 explicite", r.status_code == 503, f"statut {r.status_code}")
+    r = client.post("/billing/checkout", headers=head, json={"plan": "agence", "cocoons": 2})
+    ok &= _check("checkout ambigu (formule ET cocons) → 422", r.status_code == 422, f"statut {r.status_code}")
+    r = client.post("/billing/checkout", headers=head, json={})
+    ok &= _check("checkout vide → 422", r.status_code == 422, f"statut {r.status_code}")
+
+    r = client.post("/billing/webhook", json={"id": "evt_x", "type": "ping"})
+    ok &= _check(
+        "webhook sans signature vérifiable → refusé (jamais traité)",
+        r.status_code in (400, 503),
+        f"statut {r.status_code}",
+    )
     return ok
 
 
