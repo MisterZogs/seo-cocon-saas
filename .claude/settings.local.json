@@ -5,5 +5,18 @@
       "Bash(docker compose *)",
       "Bash(echo \"---exit code: $?\")"
     ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"$HOME/.claude/projects/-Users-gaetan-Documents-IA-seo/memory/taches_gaetan.md\"; [ -f \"$f\" ] && awk 'BEGIN{n=0} /^---$/{n++; next} /^\\*\\*Why/{exit} n>=2' \"$f\" | jq -Rs '{systemMessage: ., hookSpecificOutput: {hookEventName: \"SessionStart\", additionalContext: (\"Tâches en attente côté Gaetan (hors code), à lui rappeler en début de session :\\n\" + .)}}' 2>/dev/null || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
   }
 }
