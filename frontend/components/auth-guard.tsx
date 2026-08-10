@@ -50,11 +50,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
 /** Nom de l'agence connectée + déconnexion, à poser dans les en-têtes. */
 export function AccountMenu() {
-  const [name, setName] = useState<string | null>(null);
-
-  // Même raison que ci-dessus : la session ne se lit qu'une fois monté côté
-  // client, sinon le HTML rendu au serveur et celui du client divergent.
-  useEffect(() => setName(getAgency()?.name ?? null), []);
+  // Même mécanique que `AuthGuard` : rien au rendu serveur, le nom apparaît dès
+  // que le composant est monté côté client.
+  const name = useSyncExternalStore(
+    noSubscription,
+    () => getAgency()?.name ?? null,
+    () => null,
+  );
 
   if (!name) return null;
 
