@@ -903,7 +903,7 @@ seo/
 - Pipeline complet en Mode Brief
 - 1 seule verticale = agences SEO (pas de sélecteur secteur au formulaire au MVP)
 - Export JSON + Markdown
-- Auth basique (à trancher : JWT FastAPI maison ou service tiers)
+- ✅ Auth : JWT FastAPI maison (tranché et livré le 2026-08-10)
 - Dashboard agence : historique générations, projets clients
 - Pricing au cocon (49 / 249 / 690 €/mois + 20 € à l'unité)
 
