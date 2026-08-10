@@ -1,0 +1,13 @@
+# Dépendances de développement — jamais installées en production.
+#
+#   .venv/bin/pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+# PostgreSQL embarqué, utilisé par tests/test_billing.py.
+# Le ledger de cocons est essentiellement du SQL — verrou `for update`,
+# consommation FIFO sur plusieurs lots, contraintes d'unicité, transactions.
+# Le tester contre une doublure en mémoire reviendrait à tester la doublure,
+# sur le seul code du projet dont une erreur se compte en euros.
+# Sans cette dépendance, le test s'annonce ignoré au lieu d'échouer.
+pgserver>=0.1.4
