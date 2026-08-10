@@ -24,7 +24,7 @@ Gaetan — co-fondateur de Wall of Traders (walloftraders.com/blog), expert SEO 
 | **Marché V1** | **France uniquement** — angle Bourrelly authentique, réseau exploitable |
 | **Marché V2+** | Vision long-terme : concurrencer Scalenut sur l'international EN une fois le modèle prouvé en FR |
 | **Angle défendable** | Rigueur maillage Bourrelly + Mode Brief distinct + white hat + FR-native |
-| **Pricing cible** | €199-499/mois (adapté agences FR, couvre coûts API) |
+| **Pricing cible** | **Au cocon, pas à l'abonnement illimité** — 49 / 249 / 690 €/mois + 20 € le cocon à l'unité (voir « Pricing » ci-dessous) |
 
 ### Vision long-terme (V2+, 12-18 mois post-MVP)
 Concurrencer Scalenut de front sur le marché international n'est PAS exclu. Le marché SEO tools mondial pèse plusieurs milliards — plusieurs acteurs peuvent coexister. Slack a été lancé après HipChat, Notion après Evernote, Airbnb après les hôtels. La question n'est pas "y a-t-il un concurrent" mais "peut-on mieux servir un segment précis".
