@@ -139,14 +139,14 @@ export default function NewGenerationPage() {
   });
 
   // Préremplissage avec la dernière demande soumise : chaque génération lancée
-  // devient le point de départ de la suivante. On attend la réponse avant
-  // d'afficher le formulaire, sinon un `reset()` tardif écraserait ce qui
-  // vient d'être tapé.
+  // devient le point de départ de la suivante.
   useEffect(() => {
     let cancelled = false;
     fetchFormDefaults()
       .then(({ form: last }) => {
-        if (cancelled || !last) return;
+        // `isDirty` : si la réponse arrive après que l'utilisateur a commencé à
+        // taper, on ne lui écrase pas sa saisie sous les doigts.
+        if (cancelled || !last || form.formState.isDirty) return;
         form.reset(toFormValues(last));
       })
       .catch(() => {
