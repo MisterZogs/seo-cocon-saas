@@ -40,14 +40,16 @@ export default function LoginPage() {
   // Page où retourner après connexion, posée par `redirectToLogin`. Lue depuis
   // `window` plutôt qu'avec `useSearchParams`, qui imposerait un <Suspense>
   // autour de toute la page au prérendu.
-  const [next, setNext] = useState("/new");
+  const next = useSyncExternalStore(
+    () => () => {},
+    () => safeNext(new URLSearchParams(window.location.search).get("next")),
+    () => "/new", // rendu serveur : pas de `window`
+  );
 
+  // Déjà connecté : on ne montre pas le formulaire de connexion.
   useEffect(() => {
-    const target = safeNext(new URLSearchParams(window.location.search).get("next"));
-    setNext(target);
-    // Déjà connecté : rien à faire ici.
-    if (isAuthenticated()) window.location.href = target;
-  }, []);
+    if (isAuthenticated()) window.location.href = next;
+  }, [next]);
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
