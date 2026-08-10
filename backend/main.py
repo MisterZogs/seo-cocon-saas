@@ -564,6 +564,19 @@ async def submit_validation(
             ),
         )
 
+    # Second contrôle de solde, sur le nombre de cocons réellement validés.
+    # Celui de /generate portait sur `num_cocoons` du formulaire ; rien
+    # n'empêche l'agence d'en ajouter ici. Sans ce garde-fou, le dépassement
+    # n'apparaîtrait qu'au débit, à l'intérieur du worker — l'agence verrait un
+    # run planté au lieu d'un message lui disant qu'il lui manque des cocons.
+    billing = get_billing_repository()
+    available = await billing.balance_units(
+        agency.id, await billing.get_plan_for(agency.id)
+    )
+    required = cocoons_to_units(len(cocoons))
+    if available < required:
+        raise InsufficientBalance(required_units=required, available_units=available)
+
     await store.set("cocon_design", [c.model_dump(mode="json") for c in cocoons])
 
     new_job_id = str(uuid.uuid4())
