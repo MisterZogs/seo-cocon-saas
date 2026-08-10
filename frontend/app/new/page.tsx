@@ -80,34 +80,86 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Formulaire vierge — l'état avant que la dernière demande soumise ne soit
+// chargée depuis la base, et l'état définitif au tout premier usage. Les
+// valeurs correspondent aux défauts du backend (models.py, ClientForm).
+const EMPTY_FORM: FormValues = {
+  product: "",
+  description: "",
+  niche: "",
+  audience: "",
+  language: "fr",
+  seed_keywords_text: "",
+  num_cocoons: 2,
+  mode: "brief",
+  validate_keywords: true,
+  experience_elements: [],
+  style_samples: [],
+};
+
+/**
+ * `ClientForm` (API) → valeurs du formulaire. Les deux formes divergent sur les
+ * seeds (liste côté API, textarea ici) et sur les titres nullables. Les champs
+ * sont recopiés un à un volontairement : `reset()` avale les clés inconnues
+ * (`id`, `source`...) et elles ressortiraient telles quelles à la soumission.
+ */
+function toFormValues(api: ApiClientForm): FormValues {
+  return {
+    product: api.product ?? "",
+    description: api.description ?? "",
+    niche: api.niche ?? "",
+    audience: api.audience ?? "",
+    language: api.language || "fr",
+    seed_keywords_text: (api.seed_keywords ?? []).join("\n"),
+    num_cocoons: api.num_cocoons ?? EMPTY_FORM.num_cocoons,
+    mode: api.mode === "full" ? "full" : "brief",
+    validate_keywords: api.validate_keywords ?? true,
+    experience_elements: (api.experience_elements ?? []).map((e) => ({
+      type: e.type,
+      title: e.title,
+      content: e.content,
+    })),
+    style_samples: (api.style_samples ?? []).map((s) => ({
+      title: s.title ?? "",
+      content: s.content,
+    })),
+  };
+}
+
 export default function NewGenerationPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingDefaults, setLoadingDefaults] = useState(true);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     mode: "onBlur",
-    defaultValues: {
-      product: "Extermination Frelons",
-      description: "mon client tue les frelons dans les maisons des particuliers et les copropriétés en passant de l'insecticide sous pression",
-      niche: "frelons",
-      audience: "propiétaires de maisons individuelles et syndics de copropriété",
-      language: "fr",
-      seed_keywords_text: "tuer frelons\nexterminer frelons\nse débarasser des frelons\ndétruire nid de frelons\nnid de frelons",
-      num_cocoons: 2,
-      mode: "full",
-      validate_keywords: true,
-      experience_elements: [
-        {
-          type: "case_study",
-          title: "Intervention frelons",
-          content: "j'ai été appelé par un particulier ayant une petite maison avec un nid de frelons à détruire. J'ai passé de l'insecticide sous pression à 6 bars et les frelons ont été tués.",
-        },
-      ],
-      style_samples: [],
-    },
+    defaultValues: EMPTY_FORM,
   });
+
+  // Préremplissage avec la dernière demande soumise : chaque génération lancée
+  // devient le point de départ de la suivante. On attend la réponse avant
+  // d'afficher le formulaire, sinon un `reset()` tardif écraserait ce qui
+  // vient d'être tapé.
+  useEffect(() => {
+    let cancelled = false;
+    fetchFormDefaults()
+      .then(({ form: last }) => {
+        if (cancelled || !last) return;
+        form.reset(toFormValues(last));
+      })
+      .catch(() => {
+        // Base injoignable ou vide : on ouvre un formulaire vierge. Rien n'est
+        // perdu, donc rien à signaler à l'utilisateur.
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingDefaults(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [form]);
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
