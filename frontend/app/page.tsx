@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "#methode", label: "Méthode" },
+  { href: "#difference", label: "Différence" },
   { href: "#modes", label: "Modes" },
   { href: "#etapes", label: "Étapes" },
   { href: "#pricing", label: "Tarifs" },
