@@ -153,12 +153,19 @@ async def apply_decision(
     for cocon in decision.cocoons:
         source = proposals[cocon.index] if cocon.index < len(proposals) else {}
 
+        # Les consignes sont indexées sur le mot-clé normalisé : l'agence les
+        # saisit sur l'écran, où le mot-clé s'affiche tel qu'écrit par le modèle,
+        # mais rien ne garantit la casse ni les espaces au retour.
+        directives = {_norm(k): v.strip() for k, v in cocon.directives.items() if v.strip()}
+
         def stub_for(kw: str) -> dict:
             key = _norm(kw)
             data = dict(known_stubs.get(key) or generated.get(key) or {})
             # Le rôle change quand l'agence promeut une fille en mère : le stub
             # est réutilisé tel quel, seul `target_keyword` fait autorité.
             data["target_keyword"] = kw
+            if key in directives:
+                data["directives"] = directives[key]
             return data
 
         rebuilt.append(
