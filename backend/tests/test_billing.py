@@ -352,6 +352,94 @@ async def _run_db_tests(dsn: str) -> bool:
 
 
 # ============================================================
+# 3. L'API : essai à l'inscription, 402 quand le solde manque
+# ============================================================
+
+
+def _run_api_tests(dsn: str) -> bool:
+    os.environ.setdefault("JWT_SECRET", "secret-de-test-suffisamment-long-pour-passer")
+    os.environ["DATABASE_URL"] = dsn
+
+    import db.postgres as pg
+    from fastapi.testclient import TestClient
+
+    pg._repository = pg.RunRepository(dsn)
+    import main
+
+    main.get_repository = pg.get_repository
+
+    class FakeJob:
+        def __init__(self, job_id: str, args: tuple) -> None:
+            self.id, self.args = job_id, args
+
+        def get_status(self, refresh: bool = False) -> str:
+            return "queued"
+
+    class FakeQueue:
+        def enqueue(self, _fn, *args, job_id: str, **kwargs) -> FakeJob:
+            return FakeJob(job_id, args)
+
+    ok = True
+    print("\n[3] API — essai, solde, refus 402")
+
+    form = {
+        "product": "Plateforme de trading",
+        "description": "Une plateforme de copy-trading pour investisseurs particuliers.",
+        "seed_keywords": ["copy trading"],
+        "audience": "Investisseurs particuliers",
+        "niche": "Finance",
+    }
+
+    with TestClient(main.app) as client:
+        main.app.state.queue = FakeQueue()
+
+        r = client.post(
+            "/auth/register",
+            json={"email": "api@agence.fr", "password": "motdepasse-solide", "name": "API"},
+        )
+        ok &= _check("inscription", r.status_code == 200, f"{r.status_code} {r.text[:120]}")
+        head = {"Authorization": f"Bearer {r.json()['access_token']}"}
+
+        r = client.get("/billing/balance", headers=head)
+        body = r.json()
+        ok &= _check(
+            "l'inscription accorde l'essai : 3 cocons",
+            body.get("balance_units") == 18 and body.get("balance_cocoons") == 3.0,
+            f"{body}",
+        )
+        ok &= _check("formule par défaut : essai", body.get("plan") == "trial", body.get("plan"))
+        ok &= _check("libellé lisible", body.get("balance_label") == "3 cocons", body.get("balance_label"))
+
+        # 3 cocons demandés sur 3 disponibles : ça passe, et rien n'est débité
+        # (règle « débit à la génération, jamais à la soumission »).
+        r = client.post("/generate", headers=head, json={**form, "num_cocoons": 3})
+        ok &= _check("génération de 3 cocons acceptée", r.status_code == 200, f"{r.status_code} {r.text[:150]}")
+        after = client.get("/billing/balance", headers=head).json()["balance_units"]
+        ok &= _check(
+            "la soumission ne débite RIEN (recherche de mots-clés offerte)",
+            after == 18,
+            f"solde tombé à {after}",
+        )
+
+        # 4 cocons demandés sur 3 disponibles.
+        r = client.post("/generate", headers=head, json={**form, "num_cocoons": 4})
+        ok &= _check("solde insuffisant → 402", r.status_code == 402, f"statut {r.status_code}")
+        detail = r.json()
+        ok &= _check(
+            "… le 402 chiffre le manque",
+            detail.get("required_units") == 24 and detail.get("available_units") == 18,
+            f"{detail}",
+        )
+
+        r = client.get("/billing/ledger", headers=head)
+        ok &= _check("journal accessible", r.status_code == 200, f"statut {r.status_code}")
+        r = client.get("/billing/balance")
+        ok &= _check("solde non lisible sans jeton → 401", r.status_code == 401, f"statut {r.status_code}")
+
+    return ok
+
+
+# ============================================================
 
 
 def main_() -> int:
