@@ -406,7 +406,7 @@ seo/
 - Export JSON + Markdown
 - Auth basique (à trancher : JWT FastAPI maison ou service tiers)
 - Dashboard agence : historique générations, projets clients
-- Pricing €199-499/mois
+- Pricing au cocon (49 / 249 / 690 €/mois + 20 € à l'unité)
 
 **V1 (post-MVP, 1-2 mois) — consolidation FR** :
 - Mode Génération complète avec upload expérience
