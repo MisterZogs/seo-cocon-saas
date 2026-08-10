@@ -640,13 +640,22 @@ outils gratuits érodent par le bas la formule Indépendant à 49 €.
 - **GrowthBar** — clusters + articles
 - **AlliAI** — automatisation SEO complète
 
-**Différenciateurs assumés (par ordre de force) :**
+**Différenciateurs assumés (révisés août 2026, par ordre de force) :**
 1. **Rigueur maillage Bourrelly codifiée** — règles précises (fille→mère, mère→filles,
    sœurs toutes liées entre elles, étanchéité inter-cocons), appliquées en code et non
    laissées au bon vouloir du LLM. Vérifiable : chaque page reçoit exactement 5 liens
-   entrants dans un cocon de 6. Aucun concurrent EN ne fait ça.
-2. **Positionnement FR-native** — interface FR, prompts optimisés FR, comprend le SEO à la française
-3. **Mode Brief vs Génération distincts** — Scalenut ne le fait pas clairement
+   entrants dans un cocon de 6.
+   ⚠️ **Nuance ajoutée :** l'affirmation « aucun concurrent ne fait ça » était fausse.
+   Sedestral annonce un maillage vertical + horizontal avec détection des pages
+   orphelines. La différence tient au **déterminisme** (règle arithmétique vs
+   plafond heuristique de 4-6 liens ; impossible par construction vs détecté
+   après coup) — réelle, mais fine et exigeante à vendre.
+2. **Mode Brief vs Génération distincts** — personne ne le propose, ni en FR ni
+   en EN. Promu nº 2 : c'est le différenciateur le plus facile à faire
+   comprendre à une agence, qui a ses propres rédacteurs.
+3. ~~**Positionnement FR-native**~~ — **déclassé.** C'était un argument contre
+   Scalenut ; il ne vaut rien contre Cocon.se, YourTextGuru, Semji ou Sedestral,
+   qui sont français. Ne plus le mettre en avant.
 4. **Score E-E-A-T par article** anti-deindex — unique
 5. **White hat pur** (pas de marketplace de liens) — différenciation éthique vs Scalenut/Arvow
 6. **Multi-cocons reliés** — inter-cocon maillage explicite
