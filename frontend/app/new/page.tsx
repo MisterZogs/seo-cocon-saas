@@ -17,7 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { createGeneration } from "@/lib/api";
+import { createGeneration, fetchFormDefaults } from "@/lib/api";
 import type { ClientForm as ApiClientForm } from "@/lib/types";
 
 const STEPS = [
