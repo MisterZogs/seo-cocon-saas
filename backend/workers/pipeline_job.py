@@ -81,12 +81,33 @@ async def _run_async(form: ClientForm, run_id: str | None):
         if run_id:
             await repo.save_progress(run_id, payload)
 
+    async def _bill(cocoons: int) -> None:
+        """Débite le run au moment où il devient facturable.
+
+        Sans `run_id` ou sans `agency_id`, on ne débite pas : ce sont des runs
+        lancés hors du parcours normal (persistance absente, script de test), et
+        débiter au hasard vaut moins que ne pas débiter. Le cas ne se produit
+        pas en production, où l'API pose toujours les deux.
+        """
+        if not run_id or not form.agency_id:
+            logger.warning(
+                "Run non facturé (run_id=%s, agency_id=%s)", run_id, form.agency_id
+            )
+            return
+        billing = get_billing_repository()
+        await billing.debit_generation(
+            agency_id=form.agency_id,
+            run_id=run_id,
+            cocoons=cocoons,
+            plan=await billing.get_plan_for(form.agency_id),
+        )
+
     if run_id:
         await repo.mark_running(run_id)
 
     try:
         result = await run_pipeline(
-            form, on_progress=_emit, store=store, run_id=run_id
+            form, on_progress=_emit, on_billable=_bill, store=store, run_id=run_id
         )
     except AwaitingValidation as pause:
         # Pause volontaire, pas un échec : le job RQ se termine normalement.
