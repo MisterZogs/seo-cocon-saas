@@ -33,21 +33,37 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from redis import Redis
 from rq import Queue
 from rq.job import Job
 
 load_dotenv(Path(__file__).parent / ".env")
 
+from auth import (  # noqa: E402
+    Agency,
+    create_access_token,
+    current_agency,
+    current_agency_from_query,
+    get_secret,
+    hash_password,
+    normalize_email,
+    validate_password_strength,
+    verify_password,
+)
 from clients.anthropic_client import AnthropicClient  # noqa: E402
+from db.agencies import EmailAlreadyUsed, get_agency_repository  # noqa: E402
 from db.checkpoints import make_checkpoint_store  # noqa: E402
-from db.postgres import get_repository  # noqa: E402
+from db.postgres import StorageUnavailable, get_repository  # noqa: E402
 from models import (  # noqa: E402
+    AgencyPublic,
     ClientForm,
     KeywordWithData,
+    LoginRequest,
+    RegisterRequest,
+    TokenResponse,
     ValidationDecision,
     ValidationSnapshot,
 )
