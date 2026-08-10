@@ -98,6 +98,7 @@ async def run_pipeline(
     anthropic: AnthropicClient | None = None,
     dataforseo: DataForSEOClient | None = None,
     on_progress: ProgressCallback = None,
+    on_billable: BillableCallback = None,
     store: CheckpointStore | None = None,
     run_id: str | None = None,
 ) -> PipelineResult:
