@@ -342,7 +342,15 @@ export interface RunSummary {
   project_name: string | null;
   mode: GenerationMode;
   language: string;
-  status: "queued" | "running" | "completed" | "failed";
+  // `awaiting_validation` manquait ici alors que le backend l'écrit
+  // (contrainte CHECK de `runs.status` dans db/schema.sql) : un run en attente
+  // de validation tombait dans aucun cas connu de l'affichage.
+  status:
+    | "queued"
+    | "running"
+    | "awaiting_validation"
+    | "completed"
+    | "failed";
   error: string | null;
   cocoons_count: number;
   articles_count: number;
