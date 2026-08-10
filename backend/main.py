@@ -345,6 +345,21 @@ async def list_runs(agency_id: str | None = None, limit: int = 50) -> dict:
     return {"enabled": True, "runs": runs}
 
 
+@app.get("/form-defaults")
+async def form_defaults(agency_id: str | None = None) -> dict:
+    """Valeurs de préremplissage du formulaire : la dernière demande soumise.
+
+    Le formulaire n'a plus de valeurs en dur. Sans Postgres — ou au tout premier
+    usage — la réponse est `{"form": null}` et le formulaire s'ouvre vide, ce qui
+    est le comportement attendu et pas une erreur : la route ne renvoie jamais
+    503, sinon /new afficherait une alerte pour une base simplement vide.
+    """
+    repo = get_repository()
+    if not repo.enabled:
+        return {"enabled": False, "form": None}
+    return {"enabled": True, "form": await repo.get_latest_form(agency_id=agency_id)}
+
+
 @app.get("/runs/{run_id}")
 async def get_run(run_id: str) -> dict:
     repo = get_repository()
