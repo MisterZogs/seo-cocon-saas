@@ -277,6 +277,12 @@ export default function NewGenerationPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-10">
+        {loadingDefaults && (
+          <p className="mb-6 text-sm text-muted-foreground">
+            Chargement de votre dernière demande…
+          </p>
+        )}
+
         {/* Progression */}
         <div className="mb-8">
           <ol className="flex items-center gap-2 text-sm">
