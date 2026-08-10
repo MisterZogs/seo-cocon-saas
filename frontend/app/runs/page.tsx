@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AccountMenu, AuthGuard } from "@/components/auth-guard";
 import { fetchRuns } from "@/lib/api";
 import type { RunSummary } from "@/lib/types";
 
