@@ -262,6 +262,32 @@ class RunRepository:
         )
         return _row_to_dict(rows[0]) if rows else None
 
+    async def get_latest_form(
+        self, *, agency_id: str | None = None
+    ) -> dict[str, Any] | None:
+        """Formulaire de la demande la plus récente — sert de valeurs par défaut.
+
+        Le tri est sur `created_at`, pas sur le statut : ce qui a été *soumis* en
+        dernier est ce que l'agence a en tête, qu'il ait abouti, échoué ou qu'il
+        attende encore une validation.
+        """
+        if agency_id:
+            rows = await self._fetch(
+                "get_latest_form",
+                "select form from runs where agency_id = $1 "
+                "order by created_at desc limit 1",
+                agency_id,
+            )
+        else:
+            rows = await self._fetch(
+                "get_latest_form",
+                "select form from runs order by created_at desc limit 1",
+            )
+        if not rows:
+            return None
+        form = rows[0]["form"]
+        return json.loads(form) if isinstance(form, str) else form
+
     # ------------------------------------------------------------------
     # Checkpoints
     # ------------------------------------------------------------------
