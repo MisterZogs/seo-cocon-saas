@@ -284,8 +284,10 @@ def test_isolation() -> bool:
 
     agencies = FakeAgencyRepository()
     runs = FakeRunRepository()
+    billing = FakeBillingRepository()
     main.get_agency_repository = lambda: agencies
     main.get_repository = lambda: runs
+    main.get_billing_repository = lambda: billing
 
     with TestClient(main.app) as client:
         main.app.state.queue = FakeQueue()
