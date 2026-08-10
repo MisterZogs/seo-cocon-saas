@@ -443,7 +443,7 @@ def _run_api_tests(dsn: str) -> bool:
         # débit, dans le worker : l'agence verrait un run planté au lieu d'un
         # message sur son solde. Les appels LLM du chemin de validation sont
         # court-circuités — c'est le contrôle de solde qu'on teste, pas eux.
-        ok &= _check_validation_gate(client, main, head, form)
+        ok &= _check_validation_gate(client, main, head, form, dsn)
 
     return ok
 
