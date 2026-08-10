@@ -146,6 +146,17 @@ QUEUE_NAME = "pipeline"
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Échoue tôt et bruyamment : un backend qui démarre sans secret de
+    # signature est un backend dont toutes les URL de run sont publiques.
+    # `get_secret` lève une `AuthNotConfigured` qui explique comment en générer un.
+    get_secret()
+
+    if not get_repository().enabled:
+        logger.warning(
+            "DATABASE_URL absent : les comptes agences n'ont nulle part où être "
+            "stockés. /auth/* et toutes les routes protégées répondront 503."
+        )
+
     app.state.redis = Redis.from_url(REDIS_URL)
     app.state.queue = Queue(QUEUE_NAME, connection=app.state.redis)
     logger.info("FastAPI démarré, Redis: %s", REDIS_URL)
