@@ -658,6 +658,15 @@ seo/
 - [x] Position tranchée sur la détection IA (humanizer abandonné, voir section dédiée)
 - [x] Voix de marque few-shot (`style_samples`) + injection verbatim des éléments
       d'expérience + plafond E-E-A-T honnête
+- [x] Préremplissage du formulaire depuis la dernière demande soumise
+      (`GET /form-defaults`) — plus aucune valeur en dur dans `/new`
+- [x] Dimensionnement du marché FR (SAM ~4 000 comptes, plafond ~1,5 M€ d'ARR)
+- [x] Modèle de pricing arrêté (au cocon : 49/249/690 €/mois + 20 € l'unité)
+- [x] Popularité du cocon & Bourrelly vérifiée, canaux d'acquisition identifiés
+- [x] Landing page : section différenciateurs (maillage + verbatim E-E-A-T
+      expliqué) et grille tarifaire
+- [ ] Facturation : ledger de cocons, débit à la génération, remboursement des
+      runs échoués, report sur 1 mois (règles arrêtées, code à écrire)
 - [ ] Test end-to-end avec DataForSEO réel (credentials à obtenir)
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
       gratuit de Gaetan est épuisé)
