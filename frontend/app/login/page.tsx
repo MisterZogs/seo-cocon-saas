@@ -139,7 +139,7 @@ export default function LoginPage() {
                 {mode === "register" && (
                   <p className="text-xs text-muted-foreground">
                     {MIN_PASSWORD_LENGTH} caractères minimum. Aucune règle de
-                    composition : une phrase longue vaut mieux qu'un mot court
+                    composition : une phrase longue vaut mieux qu&apos;un mot court
                     truffé de symboles.
                   </p>
                 )}
