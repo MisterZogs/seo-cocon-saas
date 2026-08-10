@@ -6,9 +6,28 @@
 -- Un "run" = une exécution du pipeline déclenchée par le formulaire.
 -- Le job RQ associé (job_id) expire au bout de 24h ; le run, lui, reste.
 
+-- Agences : un compte = une agence SEO. Pas de table `users` séparée au MVP —
+-- une agence a un seul jeu d'identifiants. Le multi-utilisateur par agence
+-- viendra avec le white-label (chantier 11), il s'ajoutera par une table
+-- `agency_members` sans casser celle-ci.
+create table if not exists agencies (
+    id            uuid primary key default gen_random_uuid(),
+    -- Stocké en minuscules, normalisé en code (pas de citext : ça imposerait
+    -- une extension à installer sur une base déjà déployée).
+    email         text not null unique,
+    password_hash text not null,
+    name          text not null,
+    created_at    timestamptz not null default now(),
+    last_login_at timestamptz
+);
+
 create table if not exists runs (
     id            uuid primary key default gen_random_uuid(),
     job_id        text unique,
+    -- Contient l'`agencies.id` (en texte) depuis la mise en place de l'auth.
+    -- Volontairement SANS clé étrangère : la colonne existait avant, remplie
+    -- avec du texte libre saisi au formulaire, et une FK ferait échouer
+    -- l'application du schéma sur la base de prod à cause de ces lignes.
     agency_id     text,
     project_name  text,
 
