@@ -983,8 +983,20 @@ seo/
       pas poser d'en-tête ; c'est la seule route dans ce cas.
       ⚠️ **Jamais exécuté contre un vrai Postgres** (pas de Docker en local) :
       la table `agencies` et le `require_pool` sont à vérifier au déploiement.
-- [ ] Facturation : ledger de cocons, débit à la génération, remboursement des
-      runs échoués, report sur 1 mois (règles arrêtées, code à écrire)
+- [x] **Facturation : ledger de cocons** (2026-08-10). Tout est compté en
+      **unités entières, 1 cocon = 6** — le sixième est la granularité d'une
+      régénération, et 1/6 n'a pas d'écriture décimale exacte. Tables
+      `cocoon_lots` (octrois datés) et `cocoon_ledger` (journal append-only).
+      Le **report d'un mois plafonné à 1× l'allocation n'est pas codé** : il tombe
+      de la durée de vie des lots (un lot d'abonnement vit deux périodes, donc au
+      plus deux sont vivants). Débit à la traversée de l'étape 2bis du pipeline,
+      402 si le solde manque (contrôlé à `/generate` **et** à la validation).
+      Un run échoué est remboursé dans ses lots d'origine ; une reprise après
+      remboursement re-débite, ce qui réconcilie « la reprise ne re-débite
+      jamais » et « un run échoué est remboursé ».
+      ⚠️ **Aucun paiement** : `set_plan` se change à la main, pas de Stripe.
+- [ ] Paiement : Stripe (abonnements + achat à l'unité), sans quoi personne ne
+      peut sortir de l'essai de 3 cocons
 - [x] Test end-to-end avec DataForSEO réel — fait depuis le 2026-08-06
       (la case était restée décochée à tort)
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
