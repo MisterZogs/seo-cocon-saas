@@ -357,3 +357,46 @@ export interface RunSummary {
   created_at: string;
   ended_at: string | null;
 }
+
+// ============================================================
+// Facturation — solde de cocons
+// ============================================================
+
+/**
+ * Le solde est renvoyé en unités ET en cocons. 1 cocon = 6 unités, parce qu'une
+ * régénération d'article se débite au sixième et que 1/6 n'a pas d'écriture
+ * décimale exacte : **toute comparaison doit porter sur `balance_units`**, la
+ * forme en cocons n'existe que pour l'affichage.
+ */
+export interface CocoonLot {
+  id: string;
+  kind: "trial" | "subscription" | "purchase" | "manual";
+  period_key: string | null;
+  granted_units: number;
+  remaining_units: number;
+  granted_at: string;
+  expires_at: string | null;
+}
+
+export interface BalanceResponse {
+  plan: string;
+  plan_label: string;
+  cocoons_per_month: number;
+  monthly_price_eur: number;
+  balance_units: number;
+  balance_cocoons: number;
+  balance_label: string;
+  units_per_cocoon: number;
+  lots: CocoonLot[];
+}
+
+export interface LedgerEntry {
+  id: string;
+  lot_id: string | null;
+  run_id: string | null;
+  kind: "grant" | "debit_generation" | "debit_regeneration" | "refund";
+  delta_units: number;
+  reversed_at: string | null;
+  note: string | null;
+  created_at: string;
+}
