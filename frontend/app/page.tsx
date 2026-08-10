@@ -179,6 +179,134 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Différenciateurs — le cœur de l'argumentaire.
+          Tout ce qui est chiffré ici vient de mesures réelles du pipeline
+          (run de maillage non normalisé, plafond E-E-A-T). Ne rien y ajouter
+          qui ne soit pas vérifiable dans un livrable. */}
+      <section id="difference" className="mx-auto max-w-6xl px-6 py-24">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="eyebrow">Ce qui nous distingue</p>
+          <h2 className="mt-5 font-serif text-3xl leading-tight font-semibold sm:text-[2.5rem]">
+            Tout le monde sait faire rédiger une IA.
+            <br />
+            Personne ne sait tenir l&apos;
+            <span className="accent-word">architecture</span>.
+          </h2>
+          <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+            La rédaction ne vaut plus rien : elle coûte quelques centimes et
+            n&apos;importe qui y a accès. Ce qui reste difficile, c&apos;est la
+            structure qui rend ces articles utiles — et la preuve qu&apos;un
+            humain était dans la boucle.
+          </p>
+        </div>
+
+        <div className="mt-14 grid gap-6 lg:grid-cols-2">
+          {/* 01 — Maillage */}
+          <article className="rounded-xl border border-border bg-card p-8 shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex size-11 items-center justify-center rounded-lg bg-accent text-primary">
+                <LinkIcon className="size-5" />
+              </span>
+              <p className="eyebrow">Différenciateur 01</p>
+            </div>
+            <h3 className="mt-5 font-serif text-2xl font-semibold">
+              Le maillage est calculé, pas demandé
+            </h3>
+            <p className="mt-4 text-[0.95rem] leading-relaxed text-muted-foreground">
+              Les règles du cocon sont arithmétiques. La mère lie ses cinq
+              filles, chaque fille lie la mère et ses quatre sœurs, aucun lien
+              ne perce le silo. Trente liens au total, et chaque page reçoit
+              exactement cinq liens entrants.
+            </p>
+            <p className="mt-4 text-[0.95rem] leading-relaxed text-muted-foreground">
+              Demandé à un modèle de langage, ce résultat n&apos;arrive jamais.
+              Sur un run que nous avons mesuré, sans mise en conformité :
+            </p>
+            <ul className="mt-5 space-y-2.5 border-l-2 border-primary/25 pl-5 text-[0.95rem] leading-relaxed">
+              <li>
+                <strong className="font-semibold text-primary">27</strong> des
+                40 liens transversaux attendus
+              </li>
+              <li>aucune réciprocité entre articles sœurs</li>
+              <li>une page sans le moindre lien entrant</li>
+              <li>
+                <strong className="font-semibold text-primary">14</strong> liens
+                qui perçaient l&apos;étanchéité entre cocons
+              </li>
+            </ul>
+            <p className="mt-5 text-[0.95rem] leading-relaxed text-muted-foreground">
+              Chez nous ces règles ne sont pas dans le prompt, elles sont dans
+              le code. Le maillage est complété, nettoyé, et les liens sont
+              réécrits jusque dans le corps des articles pour rester cohérents
+              avec la map livrée.
+            </p>
+            <p className="mt-5 rounded-lg bg-accent/60 px-5 py-4 text-[0.95rem] leading-relaxed font-medium">
+              Comptez les liens vous-même. C&apos;est probablement la seule
+              promesse d&apos;un livrable SEO que vous puissiez vérifier à la
+              main en cinq minutes.
+            </p>
+          </article>
+
+          {/* 02 — Verbatim E-E-A-T */}
+          <article className="rounded-xl border border-border bg-card p-8 shadow-xs">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex size-11 items-center justify-center rounded-lg bg-accent text-primary">
+                <ShieldCheckIcon className="size-5" />
+              </span>
+              <p className="eyebrow">Différenciateur 02</p>
+            </div>
+            <h3 className="mt-5 font-serif text-2xl font-semibold">
+              L&apos;expérience de votre client, mot pour mot
+            </h3>
+
+            {/* E-E-A-T n'est pas du vocabulaire courant côté agence : on
+                l'explique avant de s'en servir comme argument. */}
+            <div className="mt-5 rounded-lg border border-border bg-surface p-5">
+              <p className="text-sm font-semibold">E-E-A-T, en clair</p>
+              <p className="mt-2 text-[0.9rem] leading-relaxed text-muted-foreground">
+                C&apos;est la grille avec laquelle Google fait noter la qualité
+                d&apos;une page par ses évaluateurs humains. Quatre critères :
+              </p>
+              <dl className="mt-4 space-y-2.5 text-[0.9rem] leading-relaxed">
+                {[
+                  ["Experience", "avez-vous vécu ce dont vous parlez ?"],
+                  ["Expertise", "connaissez-vous réellement le sujet ?"],
+                  ["Authoritativeness", "les autres vous reconnaissent-ils ?"],
+                  ["Trustworthiness", "peut-on vous croire ?"],
+                ].map(([term, def]) => (
+                  <div key={term} className="flex gap-2">
+                    <dt className="font-semibold text-primary">{term}</dt>
+                    <dd className="text-muted-foreground">— {def}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-4 text-[0.9rem] leading-relaxed text-muted-foreground">
+                Le premier E a été ajouté fin 2022. C&apos;est le seul des
+                quatre qu&apos;une IA ne peut pas simuler : elle n&apos;a rien
+                vécu.
+              </p>
+            </div>
+
+            <p className="mt-5 text-[0.95rem] leading-relaxed text-muted-foreground">
+              D&apos;où le verbatim. Votre client vous donne un cas réel, une
+              donnée maison, un constat de terrain. Ce texte est inséré{" "}
+              <strong className="font-semibold text-foreground">
+                tel quel
+              </strong>
+              , en bloc cité et attribué. Le modèle ne le réécrit jamais : il
+              pose un marqueur, et le texte exact est substitué en code. Ce sont
+              les seuls passages de l&apos;article qui ne sont pas générés — et
+              c&apos;est précisément leur intérêt.
+            </p>
+            <p className="mt-5 rounded-lg bg-accent/60 px-5 py-4 text-[0.95rem] leading-relaxed font-medium">
+              Sans bloc verbatim, le score E-E-A-T de l&apos;article est plafonné
+              à 40 sur 100, en dur. L&apos;outil refuse de se flatter lui-même —
+              vous saurez toujours ce que vous livrez vraiment.
+            </p>
+          </article>
+        </div>
+      </section>
+
       {/* Les deux modes */}
       <section id="modes" className="border-y border-border bg-surface">
         <div className="mx-auto max-w-6xl px-6 py-24">
