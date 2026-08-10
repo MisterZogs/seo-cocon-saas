@@ -201,6 +201,18 @@ async def run_pipeline(
     )
     logger.info("[2/6] Cocons construits: %d", len(cocoons))
 
+    # ============ 2bis. Le run devient facturable ============
+    # Ici et pas ailleurs :
+    #  · après la recherche de mots-clés, qui est **offerte** — elle sert d'essai
+    #    et de moment de validation, et ne coûte que ~$0,38 ;
+    #  · après la porte de validation, donc sur le nombre de cocons que l'agence
+    #    a réellement arrêtés, pas sur ce qu'elle avait demandé au formulaire ;
+    #  · avant l'analyse SERP, première étape réellement coûteuse.
+    # Le débit lui-même est idempotent par run : une reprise sur checkpoint
+    # repasse par ici sans re-débiter.
+    if on_billable is not None:
+        await on_billable(len(cocoons))
+
     # ============ 3. SERP Analysis ============
     all_stubs = [stub for cocon in cocoons for stub in [cocon.mother, *cocon.daughters]]
     await emit(
