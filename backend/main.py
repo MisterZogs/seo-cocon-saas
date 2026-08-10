@@ -213,6 +213,20 @@ async def _storage_unavailable(request: Request, exc: StorageUnavailable) -> JSO
     return JSONResponse(status_code=503, content={"detail": str(exc)})
 
 
+@app.exception_handler(payments.PaymentsNotConfigured)
+async def _payments_not_configured(
+    request: Request, exc: payments.PaymentsNotConfigured
+) -> JSONResponse:
+    """503 — Stripe n'est pas configuré sur ce serveur.
+
+    Ce n'est pas une panne : le produit tourne sans paiement en ligne (essai de
+    3 cocons, formule attribuée à la main). Le message le dit, pour que l'agence
+    ne croie pas à un bug.
+    """
+    logger.warning("Paiement indisponible sur %s : %s", request.url.path, exc)
+    return JSONResponse(status_code=503, content={"detail": str(exc)})
+
+
 @app.exception_handler(InsufficientBalance)
 async def _insufficient_balance(
     request: Request, exc: InsufficientBalance
