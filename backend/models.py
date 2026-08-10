@@ -374,6 +374,15 @@ class ValidatedCocon(BaseModel):
     theme: str | None = None
     mother_keyword: str
     daughter_keywords: list[str] = Field(..., min_length=3)
+    directives: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Consignes par article — clé = mot-clé cible de l'article. Un dict et "
+            "non des listes parallèles : `_check_unique_across_cocoons` garantit "
+            "déjà l'unicité des mots-clés sur toute la run, donc la clé est sûre "
+            "par construction et rien ne se désaligne si l'agence retire une fille."
+        ),
+    )
 
     @model_validator(mode="after")
     def _check_size(self) -> "ValidatedCocon":
