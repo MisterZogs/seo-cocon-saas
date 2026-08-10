@@ -490,10 +490,8 @@ On revendique l'application de la méthode, pas son adoubement.
 
 ### Canaux identifiés, par ordre de rendement estimé
 
-1. **Événements SEO FR** — c'est là que la cible est physiquement réunie :
-   Salon du Search Marketing (ex SEO CAMP'us, FePSeM, Paris, janvier), SMX Paris
-   (mars, 50+ speakers), SEO Garden Party (février, en ligne, gratuite),
-   SEO & GEO Summit (octobre, Disneyland Paris).
+1. **Événements SEO FR** — c'est là que la cible est physiquement réunie.
+   Calendrier détaillé ci-dessous.
 2. **SEO CAMP / FePSeM** — l'association professionnelle, avec son annuaire de
    consultants et agences. Double usage : canal ET source de dimensionnement
    bottom-up du SAM.
