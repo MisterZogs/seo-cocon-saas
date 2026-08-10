@@ -145,6 +145,44 @@ export async function fetchLedger(): Promise<{
   return res.json();
 }
 
+export async function fetchOffers(): Promise<BillingOffers> {
+  const res = await apiFetch("/billing/offers");
+  if (!res.ok) {
+    throw new Error(`Formules indisponibles (${res.status})`);
+  }
+  return res.json();
+}
+
+/**
+ * Ouvre le paiement Stripe. `plan` pour un abonnement, `cocoons` pour un achat
+ * à l'unité — jamais les deux, le backend refuse (422).
+ *
+ * Renvoie l'URL au lieu de rediriger : c'est à l'appelant de décider quand
+ * quitter la page, et ça reste testable.
+ */
+export async function startCheckout(
+  target: { plan: string } | { cocoons: number },
+): Promise<string> {
+  const res = await apiFetch("/billing/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(target),
+  });
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, `Paiement indisponible (${res.status})`));
+  }
+  return (await res.json()).url;
+}
+
+/** Portail Stripe : moyens de paiement, factures, résiliation. */
+export async function openPortal(): Promise<string> {
+  const res = await apiFetch("/billing/portal", { method: "POST" });
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, `Portail indisponible (${res.status})`));
+  }
+  return (await res.json()).url;
+}
+
 /**
  * Formulaire de la dernière demande soumise par l'agence — sert à préremplir /new.
  *
