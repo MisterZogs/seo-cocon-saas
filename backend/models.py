@@ -185,6 +185,24 @@ class TokenResponse(BaseModel):
 # ============================================================
 
 
+class CheckoutRequest(BaseModel):
+    """Ouverture d'une page de paiement : un abonnement OU des cocons à l'unité."""
+
+    plan: str | None = Field(default=None, description="Clé de formule à souscrire")
+    cocoons: int | None = Field(
+        default=None, ge=1, le=50, description="Nombre de cocons à acheter à l'unité"
+    )
+
+    @model_validator(mode="after")
+    def _exactly_one(self) -> "CheckoutRequest":
+        if bool(self.plan) == bool(self.cocoons):
+            raise ValueError(
+                "Indiquez soit une formule à souscrire, soit un nombre de cocons "
+                "à acheter — pas les deux, pas aucun."
+            )
+        return self
+
+
 class BalanceResponse(BaseModel):
     """Solde de l'agence, en unités ET en cocons.
 
