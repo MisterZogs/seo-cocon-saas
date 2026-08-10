@@ -864,6 +864,7 @@ inscription. Les outils gratuits érodent par le bas la formule Indépendant à 
 seo/
 ├── backend/                    (FastAPI + workers Python)
 │   ├── main.py                 FastAPI routes
+│   ├── auth.py                 JWT HS256 + Argon2id + dépendance current_agency
 │   ├── models.py               Pydantic schemas
 │   ├── pipeline/
 │   │   ├── keyword_research.py
