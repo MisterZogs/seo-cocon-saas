@@ -133,7 +133,7 @@ function BillingPage() {
               <Alert className="mt-4">
                 <AlertDescription>
                   Solde épuisé. Une génération lancée maintenant serait refusée —
-                  la recherche de mots-clés reste offerte, c'est le passage à la
+                  la recherche de mots-clés reste offerte, c&apos;est le passage à la
                   rédaction qui est débité.
                 </AlertDescription>
               </Alert>
