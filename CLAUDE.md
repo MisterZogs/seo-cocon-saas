@@ -949,7 +949,7 @@ seo/
 - [x] Persona client défini (agences SEO françaises premium)
 - [x] Marché défini (FR d'abord, vision V4+ internationale)
 - [x] Choix modèles Claude par étape
-- [x] Prompt caching identifié comme obligatoire
+- [x] Prompt caching mesuré et redimensionné (gain plafonné à ~10 %, pas 4×)
 - [x] Analyse concurrentielle faite (Scalenut vérifié, Arvow vérifié)
 - [x] Pivot stratégique acté (FR premium suite à concurrence Scalenut sur EN)
 - [x] Stratégie backlinks tranchée (white hat pur)
