@@ -53,6 +53,12 @@ export default function Home() {
               </a>
             ))}
             <Link
+              href="/runs"
+              className="hidden text-foreground/80 transition-colors hover:text-primary sm:block"
+            >
+              Historique
+            </Link>
+            <Link
               href="/new"
               className={cn(buttonVariants({ size: "sm" }), "h-9 px-4 font-semibold")}
             >
