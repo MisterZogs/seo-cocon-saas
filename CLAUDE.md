@@ -1011,8 +1011,20 @@ seo/
       ⚠️ La **régénération** d'un article déjà écrit (débit 1/6, `debit_regeneration`
       existe déjà) n'est PAS faite : elle demande un job RQ, la mutation du
       résultat stocké et une re-normalisation du maillage.
-- [ ] Paiement : Stripe (abonnements + achat à l'unité), sans quoi personne ne
-      peut sortir de l'essai de 3 cocons
+- [x] **Paiement Stripe** (2026-08-10). Checkout et Portail hébergés (aucune
+      donnée de carte chez nous, SCA et TVA gérées par Stripe), abonnements
+      49/249/690 € **et** achat à l'unité à 20 €. **Aucun produit à créer dans
+      le tableau de bord** : les tarifs sont déclarés en ligne (`price_data`)
+      depuis `billing.PLANS`, qui reste la seule source de vérité.
+      🔴 **L'idempotence des webhooks vient de `event.id`** (table
+      `stripe_events`), pas du ledger : Stripe livre « au moins une fois » et
+      rejoue après un timeout — un achat crédité deux fois est un cocon offert.
+      L'enregistrement de l'événement et l'octroi sont dans la même transaction.
+      Deux achats identiques restent légitimes, seul l'identifiant les distingue.
+      Sans `STRIPE_SECRET_KEY`, les routes de paiement répondent 503 et **tout
+      le reste fonctionne** — essai de 3 cocons + formule attribuée à la main.
+      ⚠️ Webhook à déclarer côté Stripe : `https://<DOMAIN>/api/billing/webhook`,
+      événements `checkout.session.completed` et `customer.subscription.*`.
 - [x] Test end-to-end avec DataForSEO réel — fait depuis le 2026-08-06
       (la case était restée décochée à tort)
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
