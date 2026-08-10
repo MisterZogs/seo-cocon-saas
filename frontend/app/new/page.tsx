@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -479,7 +479,7 @@ export default function NewGenerationPage() {
                       const capped = Math.max(0, expected - provided);
                       if (capped === 0) return null;
                       return (
-                        <p className="rounded border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+                        <p className="rounded border border-warning-line bg-warning-soft px-3 py-2 text-xs text-warning-strong">
                           {provided} élément{provided > 1 ? "s" : ""} pour ~{expected}{" "}
                           articles : <strong>{capped} article{capped > 1 ? "s" : ""}</strong>{" "}
                           n&apos;auront aucun passage first-hand et verront leur score
