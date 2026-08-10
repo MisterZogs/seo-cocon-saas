@@ -108,12 +108,33 @@ class RunRepository:
                 async with self._pool.acquire() as conn:
                     await conn.execute(SCHEMA_PATH.read_text())
                 self._ready = True
+                self._last_error = None
                 logger.info("Postgres connecté — persistance des runs active.")
                 return self._pool
             except Exception as e:
                 logger.warning("Postgres injoignable (%s) — persistance désactivée.", e)
+                self._last_error = str(e)
                 self._pool = None
                 return None
+
+    async def require_pool(self) -> Any:
+        """Pool ou exception — pour les appelants qui ne tolèrent pas le no-op.
+
+        `_get_pool` renvoie `None` et laisse le pipeline continuer ; l'auth et le
+        ledger ont besoin de l'inverse. Voir `StorageUnavailable`.
+        """
+        if not self._dsn:
+            raise StorageUnavailable(
+                "DATABASE_URL est absent du .env du backend. La persistance des "
+                "runs peut s'en passer, pas l'authentification : il n'y a nulle "
+                "part où stocker les comptes."
+            )
+        pool = await self._get_pool()
+        if pool is None:
+            raise StorageUnavailable(
+                f"Postgres injoignable ({self._last_error or 'cause inconnue'})."
+            )
+        return pool
 
     async def _execute(self, label: str, query: str, *args: Any) -> None:
         pool = await self._get_pool()
