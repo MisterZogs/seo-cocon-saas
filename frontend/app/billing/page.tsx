@@ -68,21 +68,45 @@ type State =
       balance: BalanceResponse;
       entries: LedgerEntry[];
       perCocoon: number;
+      offers: BillingOffers;
     };
 
 function BillingPage() {
   const [state, setState] = useState<State>({ kind: "loading" });
+  const [busy, setBusy] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  // Retour de Stripe. Le solde n'est pas forcément à jour à la seconde où
+  // l'agence revient : le crédit arrive par webhook, en parallèle de la
+  // redirection. D'où le message d'attente plutôt qu'un solde affirmé.
+  const [paid, setPaid] = useState<"ok" | "annule" | null>(null);
+  useEffect(() => {
+    const value = new URLSearchParams(window.location.search).get("paiement");
+    if (value === "ok" || value === "annule") setPaid(value);
+  }, []);
+
+  async function go(action: () => Promise<string>, key: string) {
+    setBusy(key);
+    setActionError(null);
+    try {
+      window.location.href = await action();
+    } catch (e) {
+      setActionError(e instanceof Error ? e.message : "Erreur inconnue");
+      setBusy(null);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([fetchBalance(), fetchLedger()])
-      .then(([balance, ledger]) => {
+    Promise.all([fetchBalance(), fetchLedger(), fetchOffers()])
+      .then(([balance, ledger, offers]) => {
         if (cancelled) return;
         setState({
           kind: "ready",
           balance,
           entries: ledger.entries,
           perCocoon: ledger.units_per_cocoon,
+          offers,
         });
       })
       .catch((err: unknown) => {
