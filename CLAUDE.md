@@ -321,6 +321,198 @@ la place un rapport de détection + l'argumentaire à opposer au client.
 
 ---
 
+## Dimensionnement du marché FR (août 2026)
+
+Aucune étude de marché formelle n'a été commandée. Ce qui suit est un calcul à
+partir de sources publiques, avec les hypothèses explicitées. **Deux chiffres de
+base sont faibles** et signalés comme tels — à recouper avant tout usage externe.
+
+### Entonnoir
+
+| Étape | Chiffre | Source / hypothèse |
+|---|---|---|
+| Entreprises NAF 7311Z (agences de publicité) | 48 186 | ❌ **inutilisable** — saturé d'auto-entrepreneurs sans activité, couvre print/affichage/événementiel |
+| Agences digitales spécialisées | ~9 000 | ⚠️ source faible (modelesdebusinessplan.com), point de départ retenu |
+| … qui vendent réellement du SEO (55 %) | 4 950 | hypothèse |
+| … qui produisent du contenu éditorial en volume (45 %) | **2 200** | hypothèse — filtre le plus discriminant (un netlinker pur n'a aucun usage du produit) |
+| Freelances SEO vivant de leur activité | **1 000-1 500** | 3-5 000 déclarés × ~35 % à plein temps |
+| SEO interne ETI/GE produisant à l'échelle | **500-700** | 7 500 ETI × 18 % + 300 GE × 70 %, puis × 40 % (Insee 2023) |
+
+**SAM ≈ 4 000 comptes adressables en France.**
+
+### SOM et plafond de revenu
+
+ARPA mixte prudent 280 €/mois (le mix penche vers le palier bas) :
+
+| Pénétration | Clients | MRR | ARR |
+|---|---|---|---|
+| 1 % | 40 | 11 200 € | 134 k€ |
+| 2 % | 80 | 22 400 € | 269 k€ |
+| 3 % | 120 | 33 600 € | 403 k€ |
+| 10 % (très optimiste) | 400 | 112 000 € | 1,34 M€ |
+
+**Conséquence stratégique majeure : le marché FR seul plafonne autour de
+1,5 M€ d'ARR.** L'expansion internationale décrite en V4+ n'est donc pas une
+ambition optionnelle — elle est *obligatoire* dès lors que l'objectif dépasse
+~1 M€ d'ARR. À l'inverse, pour un revenu de fondateur solide (200-400 k€), la
+France suffit et l'international est une distraction.
+
+**Concentration.** À l'intérieur des 2 200 agences éditoriales, la capacité
+d'achat est très concentrée sur quelques centaines de structures. Le réseau
+Wall of Traders et l'angle Bourrelly donnent un accès direct à ce noyau : ça
+vaut mieux qu'un TAM à cinq chiffres.
+
+**Chiffres à recouper avant usage externe :** les « ~9 000 agences digitales »
+et le « marché SEO FR à 1,8 Md€ en 2023 » (blog seorator, non recoupé, **non
+utilisé** dans les calculs ci-dessus pour cette raison). L'annuaire SEO CAMP
+serait la meilleure contre-mesure bottom-up — leur site refusait la connexion
+lors de la vérification, à retenter.
+
+---
+
+## Pricing — modèle au cocon (arrêté août 2026)
+
+**Décision : facturation à l'usage, pas d'abonnement illimité.** Un abonnement
+illimité sur un produit dont chaque unité coûte de l'argent réel est une prime
+au client le plus lourd.
+
+### Coûts unitaires mesurés (instrumentés dans `RunUsage`)
+
+| Mode | Anthropic | DataForSEO | Total | + 30 % de marge d'erreur |
+|---|---|---|---|---|
+| Brief | ~$1 | $0,38 | $1,38 | **1,70 €** |
+| Génération complète | ~$3 | $0,38 | $3,38 | **4,00 €** |
+
+Le coût n'est jamais la contrainte : les paliers se calibrent sur la valeur
+perçue et la segmentation. C'est confortable mais piégeux — sans contrainte de
+coût, on sous-tarife par prudence.
+
+### Grille
+
+| Formule | Prix/mois | Cocons | Prix unitaire | Marge à 100 % d'usage |
+|---|---|---|---|---|
+| À la carte | — | 20 € l'unité | 20 € | 80 % |
+| **Indépendant** | 49 € | 3 | 16 € | 76 % |
+| **Agence** | 249 € | 20 | 12 € | 68 % |
+| **Studio** | 690 € | 60 | 11 € | 65 % |
+| Au-delà | sur devis | | | |
+
+L'entrée à 49 € est un choix assumé de Gaetan : les indépendants et petites
+structures FR sont sensibles au prix, et l'adoption prime au lancement. Deux
+risques identifiés, à surveiller plutôt qu'à corriger d'avance :
+1. un palier bas attire un segment dont la charge de support est
+   disproportionnée par rapport au revenu ;
+2. en B2B, un prix bas est lu comme un signal de qualité faible.
+
+Le format « au cocon » permet de **relever le prix effectif sans toucher au
+prix affiché**, en réduisant l'allocation mensuelle. C'est commercialement bien
+plus facile qu'une hausse de tarif, et c'est la raison principale de préférer
+ce modèle à un forfait sec.
+
+À la carte 20 € vs Indépendant 49 € : dès 3 cocons l'abonnement est plus
+avantageux. C'est voulu — l'unité sert à dérisquer le premier achat, puis
+l'abonnement domine.
+
+### Règles produit qui découlent du pricing (à implémenter)
+
+- **Débit à la génération, jamais à la soumission.** La recherche de mots-clés
+  est offerte (0,38 $) — elle sert d'essai gratuit et de moment de validation.
+- **Un run échoué est remboursé automatiquement.**
+- **Une reprise sur checkpoint ne re-débite jamais.** Le système de checkpoints
+  existant est un actif direct du pricing, pas seulement de la fiabilité.
+- **Report des cocons non consommés sur 1 mois** (plafonné à 1× l'allocation).
+  Les agences onboardent par à-coups ; sans report, un mois creux déclenche une
+  résiliation.
+- **Essai : 3 cocons sans carte bancaire** (coût max 12 €).
+- Annuel = 2 mois offerts.
+
+**Pourquoi pas des crédits prépayés seuls :** ça détruit le MRR, donc l'ARR,
+donc la prévisibilité de trésorerie et tout le raisonnement de valorisation.
+Un acheteur ponctuel n'est pas un client récurrent.
+
+---
+
+## Positionnement — la rédaction est commoditisée (août 2026)
+
+Constat acté : **personne ne paiera pour « des articles »**. L'accès à l'IA
+générative est universel et quasi gratuit. La valeur doit venir d'ailleurs.
+
+**Le test à appliquer à tout différenciateur candidat :** *une agence peut-elle
+le refaire avec un abonnement ChatGPT et un après-midi ?*
+
+| Candidat | Reproductible en un après-midi ? | Verdict |
+|---|---|---|
+| Rédaction d'articles | Oui | ❌ Pas un différenciateur |
+| **Humanizer** | Oui — et **sans effet mesuré** | ❌ **Écarté définitivement**, voir « Détection IA » |
+| « Qualité » | Partiellement, et invérifiable | ⚠️ Ne pas construire le pitch dessus |
+| FR-native | Oui, par Scalenut, en quelques mois | ⚠️ Avance temporaire |
+| Volumes DataForSEO réels | Non — abonnement + intégration | 🟡 Moyen |
+| Scrape + analyse du top 10 | Non — c'est du code | 🟡 Moyen |
+| **Maillage imposé en code** | **Non** | ✅ **Fort** |
+| **Verbatim E-E-A-T avec unicité sur le run** | **Non** | ✅ **Fort** |
+
+**Recadrage du produit : on ne vend pas du contenu, on vend une architecture.**
+L'article est l'élément le moins différenciant du livrable. La map de maillage,
+les volumes réels, l'analyse du top 10 et le score E-E-A-T plafonné honnêtement
+sont ce qu'une agence ne peut pas produire seule.
+
+Le maillage est le meilleur actif et il était sous-exploité dans le
+positionnement : c'est le seul endroit du produit où une promesse est
+**vérifiable et arithmétique** (« chaque page reçoit exactement 5 liens
+entrants, comptez »), dans un marché qui ne vend que des promesses
+invérifiables. Le plafond E-E-A-T à 40 est un argument de vente en soi : un
+outil qui refuse de se flatter, dans une catégorie où tout le monde s'auto-note
+85/100.
+
+---
+
+## Popularité du cocon sémantique & canaux d'acquisition (vérifié août 2026)
+
+**Le cocon sémantique est vivant, et c'est confirmé.** Le concept, formalisé
+par Laurent Bourrelly en 2013, génère toujours en 2026 une production éditoriale
+continue chez les agences et consultants FR (Eskimoz, HubSpot FR, Invox, Adimeo,
+seo.fr et des dizaines de blogs d'agences publient des guides « cocon sémantique
+2026 »). C'est **le vocabulaire natif du SEO francophone** — les anglophones
+disent « topic cluster » ou « siloing », ce qui n'est pas la même méthode. C'est
+exactement l'écart que le produit exploite.
+
+**Laurent Bourrelly est toujours actif mais a changé de rythme et de sujet.**
+Dernier article de son blog : janvier 2026 (« Transformer l'IA en imprimante à
+fric »). Dernier article dédié au cocon : « Cocon Sémantique : état des lieux
+2024 » (avril 2024). Il publie peu, mais reste présent en conférences, podcast
+et formation (formation cocon en 13 vidéos, partenariat Fred Bobet). Conclusion
+opérationnelle : **son audience se touche en événement et sur les réseaux, pas
+en commentaire de blog.** Sa marque reste un actif de crédibilité ; son blog
+n'est pas un canal d'acquisition à volume.
+
+⚠️ **Ne jamais laisser entendre un partenariat ou une caution de Bourrelly.**
+On revendique l'application de la méthode, pas son adoubement.
+
+### Canaux identifiés, par ordre de rendement estimé
+
+1. **Événements SEO FR** — c'est là que la cible est physiquement réunie :
+   Salon du Search Marketing (ex SEO CAMP'us, FePSeM, Paris, janvier), SMX Paris
+   (mars, 50+ speakers), SEO Garden Party (février, en ligne, gratuite),
+   SEO & GEO Summit (octobre, Disneyland Paris).
+2. **SEO CAMP / FePSeM** — l'association professionnelle, avec son annuaire de
+   consultants et agences. Double usage : canal ET source de dimensionnement
+   bottom-up du SAM.
+3. **WebRankInfo** (Olivier Duffez, depuis 2002) — la plus grosse communauté SEO
+   francophone, format forum.
+4. **LinkedIn FR** — le vrai lieu du débat SEO français aujourd'hui, et le
+   terrain naturel pour publier les mesures de maillage (le contenu « voici les
+   27 liens sur 40 que produit un LLM livré à lui-même » est fait pour ça).
+5. **Groupes Facebook** (« SEO — France ») et **Slack/Discord SEO FR** — actifs
+   mais bruyants, faible densité de décideurs.
+
+**Angle de contenu recommandé :** publier les mesures, pas les promesses. Le
+run non normalisé (27/40 liens, aucune réciprocité, une page orpheline, 14
+ruptures de silo) est un contenu de démonstration bien plus fort qu'un
+argumentaire produit — il prouve la thèse « un LLM ne tient pas un cocon » que
+tout le milieu soupçonne sans l'avoir chiffrée.
+
+---
+
 ## Paysage concurrentiel
 
 ### Concurrents vérifiés
