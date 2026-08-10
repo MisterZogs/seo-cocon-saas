@@ -89,6 +89,14 @@ class CoconBuilder:
         except ValueError:
             intent = SearchIntent.INFORMATIONAL
 
+        # Consignes de l'agence pour cet article, posées à l'écran de validation
+        # (cf. pipeline/validation.py). Tronquées à la limite du modèle plutôt
+        # que rejetées : perdre la fin d'une consigne trop longue vaut mieux que
+        # faire échouer un cocon entier sur un champ éditorial.
+        directives = (data.get("directives") or "").strip() or None
+        if directives:
+            directives = directives[:2000]
+
         return ArticleStub(
             cocon_id=cocon_id,
             article_type=article_type,
@@ -99,4 +107,5 @@ class CoconBuilder:
             meta_description=meta_description,
             slug=slug,
             intent=intent,
+            directives=directives,
         )
