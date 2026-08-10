@@ -318,7 +318,19 @@ def test_isolation() -> bool:
         ok &= _check("B ne voit pas le run de A → 404 (pas 403)", r.status_code == 404, f"statut {r.status_code}")
         r = client.get(f"/runs/{run_a}/validation", headers=head_b)
         ok &= _check("B ne lit pas la validation de A → 404", r.status_code == 404, f"statut {r.status_code}")
-        r = client.post(f"/runs/{run_a}/validation", headers=head_b, json={"cocoons": []})
+        # Corps volontairement VALIDE : avec un corps invalide, FastAPI répondrait
+        # 422 avant même d'exécuter la route, et le test passerait sans rien
+        # prouver du contrôle de propriété.
+        valid_decision = {
+            "cocoons": [
+                {
+                    "index": 0,
+                    "mother_keyword": "copy trading",
+                    "daughter_keywords": ["copy trading avis", "copy trading debutant", "copy trading risques"],
+                }
+            ]
+        }
+        r = client.post(f"/runs/{run_a}/validation", headers=head_b, json=valid_decision)
         ok &= _check("B ne soumet pas la validation de A → 404", r.status_code == 404, f"statut {r.status_code}")
         r = client.get(f"/jobs/{job_a}", headers=head_b)
         ok &= _check("B ne suit pas le job de A → 404", r.status_code == 404, f"statut {r.status_code}")
