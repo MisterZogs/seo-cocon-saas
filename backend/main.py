@@ -1,10 +1,21 @@
 """FastAPI backend — expose le pipeline via REST + SSE.
 
-Routes :
+Routes publiques :
 - GET  /health                 — santé du service
+- POST /auth/register          — crée un compte agence
+- POST /auth/login             — échange email + mot de passe contre un JWT
+
+Routes authentifiées (en-tête `Authorization: Bearer <jeton>`) :
+- GET  /auth/me                — l'agence connectée
 - POST /generate               — enqueue un job pipeline, retourne job_id
+- GET  /runs                   — historique de l'agence
 - GET  /jobs/{job_id}          — statut + progression + résultat si terminé
-- GET  /jobs/{job_id}/stream   — SSE stream de la progression en temps réel
+- GET  /jobs/{job_id}/stream   — SSE de la progression (jeton en query, cf. auth.py)
+
+Cloisonnement : chaque run porte l'`agency_id` de son créateur, posé **côté
+serveur** depuis le jeton — jamais depuis le formulaire. Toutes les lectures
+d'un run vérifient ce propriétaire et répondent 404 (pas 403) quand il ne
+correspond pas, pour ne pas révéler l'existence du run.
 
 Run local :
     cd backend
