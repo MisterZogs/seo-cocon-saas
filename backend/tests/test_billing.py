@@ -466,6 +466,7 @@ def main_() -> int:
         dsn = server.get_uri()
         os.environ["DATABASE_URL"] = dsn
         ok &= asyncio.run(_run_db_tests(dsn))
+        ok &= _run_api_tests(dsn)
     finally:
         try:
             server.cleanup()
