@@ -443,10 +443,14 @@ l'abonnement domine.
   dès la conception du ledger : une *reprise* répare un échec technique dont le
   client n'est pas responsable ; une *régénération* — l'agence donne de nouvelles
   consignes sur un article et redemande la rédaction — est un nouveau travail
-  qu'elle commande. Granularité recommandée : le 1/6 de cocon (l'article), le coût
-  réel étant par article. Première génération incluse, chaque reprise éditoriale
-  ensuite débitée. Découle du Mode Brief bidirectionnel (consignes par article sur
-  l'écran de validation).
+  qu'elle commande. **Granularité arrêtée : le 1/6 de cocon**, c'est-à-dire
+  l'article — le coût réel est par article. Première génération incluse dans le
+  cocon débité, chaque reprise éditoriale ensuite débitée à l'article. L'option
+  « un cocon entier par régénération » a été écartée : plus simple à afficher,
+  mais refaire un seul article coûterait autant qu'en générer six, et la fonction
+  ne serait plus utilisée. **Conséquence technique : le ledger stocke et affiche
+  des fractions de cocon, pas des entiers.** Découle du Mode Brief bidirectionnel
+  (consignes par article sur l'écran de validation).
 - **Report des cocons non consommés sur 1 mois** (plafonné à 1× l'allocation).
   Les agences onboardent par à-coups ; sans report, un mois creux déclenche une
   résiliation.
