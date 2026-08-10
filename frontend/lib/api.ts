@@ -1,6 +1,8 @@
 import type {
+  BalanceResponse,
   ClientForm,
   JobStatusResponse,
+  LedgerEntry,
   RunSummary,
   ValidationDecision,
   ValidationSnapshot,
