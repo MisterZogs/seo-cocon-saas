@@ -377,6 +377,170 @@ async def billing_ledger(
 
 
 # ============================================================
+# Routes — paiement Stripe
+# ============================================================
+#
+# Le SDK Stripe est synchrone : chaque appel part dans le pool de threads, sinon
+# il bloquerait la boucle d'événements pendant tout l'aller-retour réseau.
+
+
+async def _stripe_customer(agency: Agency) -> str:
+    """Identifiant client Stripe de l'agence, créé et mémorisé au besoin."""
+    billing = get_billing_repository()
+    known = await billing.get_stripe_customer(agency.id)
+    customer_id = await run_in_threadpool(
+        payments.ensure_customer,
+        customer_id=known,
+        email=agency.email,
+        name=agency.name,
+        agency_id=agency.id,
+    )
+    if customer_id != known:
+        await billing.set_stripe_customer(agency.id, customer_id)
+    return customer_id
+
+
+@app.get("/billing/offers")
+async def billing_offers(agency: Agency = Depends(current_agency)) -> dict:
+    """Formules souscriptibles et prix à l'unité, pour l'écran de facturation.
+
+    `payments_enabled: false` n'est pas une erreur : le produit fonctionne sans
+    Stripe (essai de 3 cocons, formule attribuée à la main). Le front affiche
+    alors les tarifs sans bouton de paiement.
+    """
+    return {
+        "payments_enabled": payments.is_configured(),
+        "unit_price_eur": payments.UNIT_PRICE_EUR,
+        "current_plan": (await get_billing_repository().get_plan_for(agency.id)).key,
+        "plans": [
+            {
+                "key": plan.key,
+                "label": plan.label,
+                "monthly_price_eur": plan.monthly_price_eur,
+                "cocoons_per_month": plan.cocoons_per_month,
+            }
+            for plan in PLANS.values()
+            if plan.monthly_price_eur > 0
+        ],
+    }
+
+
+@app.post("/billing/checkout")
+async def billing_checkout(
+    payload: CheckoutRequest, agency: Agency = Depends(current_agency)
+) -> dict:
+    """Ouvre une page de paiement Stripe — abonnement ou achat à l'unité."""
+    try:
+        target = (
+            payments.subscription_target(payments.plan_from_key(payload.plan))
+            if payload.plan
+            else payments.purchase_target(payload.cocoons or 0)
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    customer_id = await _stripe_customer(agency)
+    url = await run_in_threadpool(
+        payments.create_checkout_session,
+        customer_id=customer_id,
+        target=target,
+        agency_id=agency.id,
+    )
+    return {"url": url}
+
+
+@app.post("/billing/portal")
+async def billing_portal(agency: Agency = Depends(current_agency)) -> dict:
+    """Portail Stripe : moyens de paiement, factures, résiliation."""
+    customer_id = await _stripe_customer(agency)
+    return {"url": await run_in_threadpool(payments.create_portal_session, customer_id)}
+
+
+@app.post("/billing/webhook")
+async def billing_webhook(request: Request) -> dict:
+    """Réception des événements Stripe.
+
+    **Route publique — c'est la signature qui fait l'authentification.** Sans la
+    vérification de `Stripe-Signature`, n'importe qui connaissant l'URL pourrait
+    créditer un compte. Elle est donc obligatoire, jamais optionnelle.
+
+    Le corps est lu en octets bruts : la signature porte sur les octets exacts,
+    et re-sérialiser le JSON la casserait.
+    """
+    signature = request.headers.get("Stripe-Signature", "")
+    try:
+        event = payments.construct_event(await request.body(), signature)
+    except payments.PaymentsNotConfigured:
+        raise
+    except Exception as e:
+        # 400 et pas 401 : c'est ce que Stripe attend pour marquer la livraison
+        # en échec et la rejouer.
+        logger.warning("Webhook Stripe rejeté (signature invalide) : %s", e)
+        raise HTTPException(status_code=400, detail="Signature invalide.")
+
+    return await _handle_stripe_event(event)
+
+
+async def _handle_stripe_event(event: Any) -> dict:
+    billing = get_billing_repository()
+    obj = event["data"]["object"]
+    metadata = obj.get("metadata") or {}
+    kind = event["type"]
+
+    async def agency_of() -> str | None:
+        return metadata.get("agency_id") or obj.get("client_reference_id") or (
+            await billing.find_agency_by_stripe_customer(obj.get("customer"))
+            if obj.get("customer")
+            else None
+        )
+
+    if kind == "checkout.session.completed" and obj.get("mode") == "payment":
+        # Achat à l'unité. Seul cas où un weblook rejoué coûterait de l'argent,
+        # d'où l'octroi et la déduplication dans une transaction unique.
+        if obj.get("payment_status") != "paid":
+            return {"status": "ignoré", "raison": "paiement non abouti"}
+        agency_id = await agency_of()
+        cocoons = int(metadata.get("cocoons") or 0)
+        if not agency_id or cocoons <= 0:
+            logger.error("Achat Stripe non rattachable : event=%s", event["id"])
+            return {"status": "ignoré", "raison": "agence ou quantité inconnue"}
+        granted = await billing.grant_purchase_from_stripe(
+            agency_id=agency_id, cocoons=cocoons, event_id=event["id"], event_type=kind
+        )
+        return {"status": "crédité" if granted else "déjà traité"}
+
+    if kind in ("customer.subscription.created", "customer.subscription.updated"):
+        if not await billing.mark_stripe_event(event["id"], kind):
+            return {"status": "déjà traité"}
+        agency_id = await agency_of()
+        if not agency_id:
+            logger.error("Abonnement Stripe non rattachable : event=%s", event["id"])
+            return {"status": "ignoré", "raison": "agence inconnue"}
+        # `trialing` compte comme actif : Stripe l'emploie pendant une période
+        # d'essai payante, où le service est bien dû.
+        active = obj.get("status") in ("active", "trialing")
+        plan_key = metadata.get("plan") if active else DEFAULT_PLAN
+        plan = await billing.set_plan(agency_id, plan_key or DEFAULT_PLAN)
+        # L'allocation du mois est créée tout de suite plutôt qu'à la première
+        # consultation du solde : l'agence vient de payer, elle doit voir ses
+        # cocons en revenant de Stripe.
+        await billing.ensure_period_grant(agency_id, plan)
+        return {"status": "formule appliquée", "plan": plan.key}
+
+    if kind == "customer.subscription.deleted":
+        if not await billing.mark_stripe_event(event["id"], kind):
+            return {"status": "déjà traité"}
+        agency_id = await agency_of()
+        if agency_id:
+            # Retour à l'essai, sans rien retirer : les cocons déjà octroyés
+            # sont payés et vivent jusqu'à leur expiration normale.
+            await billing.set_plan(agency_id, DEFAULT_PLAN)
+        return {"status": "abonnement résilié"}
+
+    return {"status": "ignoré", "type": kind}
+
+
+# ============================================================
 # Routes — pipeline
 # ============================================================
 
