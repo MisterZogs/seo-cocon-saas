@@ -281,6 +281,7 @@ export default function NewGenerationPage() {
               Historique
             </Link>
             <span className="text-sm font-medium">Nouvelle génération</span>
+            <AccountMenu />
           </div>
         </div>
       </header>
