@@ -1,30 +1,42 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { clearSession, getAgency, isAuthenticated, redirectToLogin } from "@/lib/auth";
 
 /**
+ * `useSyncExternalStore` plutôt qu'un `useState` posé dans un effet.
+ *
+ * La contrainte : `localStorage` n'existe pas au rendu serveur, donc la session
+ * ne peut pas être lue pendant le premier rendu. La solution naïve — état à
+ * `false` puis `setState` dans un effet — provoque un rendu en cascade
+ * (React la refuse via `react-hooks/set-state-in-effect`). Ici le « snapshot
+ * serveur » vaut la valeur de repli, le « snapshot client » lit vraiment le
+ * stockage, et React fait la bascule sans re-rendu superflu.
+ *
+ * Pas d'abonnement : la session ne change pas sous les pieds du composant —
+ * connexion et déconnexion rechargent la page.
+ */
+const noSubscription = () => () => {};
+
+/**
  * Barrière d'accès aux écrans agence.
  *
  * Le vrai contrôle est côté API — ce composant ne protège aucune donnée, il
- * évite seulement d'afficher une page qui se remplirait d'erreurs 401. La
- * vérification a lieu dans un effet et pas au rendu parce que `localStorage`
- * n'existe pas pendant le rendu serveur : lire le jeton plus tôt renverrait
- * toujours « pas connecté » et déclencherait une redirection permanente.
+ * évite seulement d'afficher une page qui se remplirait d'erreurs 401.
  */
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const [ready, setReady] = useState(false);
+  const ready = useSyncExternalStore(
+    noSubscription,
+    () => isAuthenticated(),
+    () => false, // au rendu serveur, on ne sait pas encore
+  );
 
   useEffect(() => {
-    if (isAuthenticated()) {
-      setReady(true);
-    } else {
-      redirectToLogin();
-    }
-  }, []);
+    if (!ready) redirectToLogin();
+  }, [ready]);
 
   if (!ready) {
     return (
