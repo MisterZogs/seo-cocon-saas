@@ -456,10 +456,37 @@ def _check_stripe(client, main, head: dict) -> bool:
     Un achat crédité deux fois est un cocon offert : c'est le contrôle central
     de cette section.
     """
-    import asyncio as _asyncio
+    import hashlib
+    import hmac
+    import json as _json
+    import time
 
     ok = True
     print("\n[4] Paiement Stripe")
+
+    # Les événements passent par la VRAIE route, avec une signature calculée
+    # comme Stripe la calcule. Deux raisons : appeler le gestionnaire en direct
+    # depuis un `asyncio.run()` casserait le pool asyncpg (attaché à la boucle
+    # du TestClient), et surtout ça sauterait la vérification de signature —
+    # or c'est elle qui empêche n'importe qui de se créditer des cocons.
+    secret = "whsec_test_secret"
+    os.environ["STRIPE_WEBHOOK_SECRET"] = secret
+
+    def send(event: dict) -> dict:
+        payload = _json.dumps(event).encode()
+        ts = int(time.time())
+        signature = hmac.new(
+            secret.encode(), b"%d." % ts + payload, hashlib.sha256
+        ).hexdigest()
+        r = client.post(
+            "/billing/webhook",
+            content=payload,
+            headers={
+                "Stripe-Signature": f"t={ts},v1={signature}",
+                "Content-Type": "application/json",
+            },
+        )
+        return r.json() if r.status_code == 200 else {"status": f"HTTP {r.status_code}"}
 
     def balance() -> int:
         return client.get("/billing/balance", headers=head).json()["balance_units"]
