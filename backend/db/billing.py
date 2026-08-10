@@ -131,6 +131,81 @@ class BillingRepository:
                     note or f"Achat à l'unité : {cocoons} cocon(s)",
                 )
 
+    async def grant_purchase_from_stripe(
+        self, *, agency_id: str, cocoons: int, event_id: str, event_type: str
+    ) -> bool:
+        """Achat à l'unité payé via Stripe. Retourne False si déjà traité.
+
+        L'enregistrement de l'événement et l'octroi sont dans **la même
+        transaction**, volontairement : les faire l'un après l'autre laisserait
+        une fenêtre où un plantage entre les deux offrirait — ou perdrait — un
+        cocon selon l'ordre choisi.
+
+        La déduplication porte sur l'identifiant d'événement Stripe et pas sur
+        le contenu de l'achat : deux achats identiques par la même agence à
+        quelques secondes d'intervalle sont parfaitement légitimes, seul
+        `event.id` distingue une répétition d'un doublon.
+        """
+        units = cocoons_to_units(cocoons)
+        pool = await self._pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                inserted = await conn.fetchval(
+                    """
+                    insert into stripe_events (id, type) values ($1, $2)
+                    on conflict (id) do nothing
+                    returning id
+                    """,
+                    event_id,
+                    event_type,
+                )
+                if inserted is None:
+                    logger.info("Webhook Stripe %s déjà traité — ignoré.", event_id)
+                    return False
+
+                lot_id = await conn.fetchval(
+                    """
+                    insert into cocoon_lots
+                        (agency_id, kind, granted_units, remaining_units, expires_at)
+                    values ($1::uuid, 'purchase', $2, $2, null)
+                    returning id
+                    """,
+                    agency_id,
+                    units,
+                )
+                await conn.execute(
+                    """
+                    insert into cocoon_ledger (agency_id, lot_id, kind, delta_units, note)
+                    values ($1::uuid, $2, 'grant', $3, $4)
+                    """,
+                    agency_id,
+                    lot_id,
+                    units,
+                    f"Achat de {cocoons} cocon(s) — paiement Stripe",
+                )
+        logger.info("Achat Stripe crédité : %d cocon(s) à l'agence %s", cocoons, agency_id)
+        return True
+
+    async def mark_stripe_event(self, event_id: str, event_type: str) -> bool:
+        """Marque un événement traité, hors octroi. False s'il l'était déjà.
+
+        Sert aux événements d'abonnement, dont le traitement (`set_plan`) est
+        naturellement idempotent : les enregistrer quand même évite de rejouer
+        du travail inutile et laisse une trace de ce que Stripe a envoyé.
+        """
+        pool = await self._pool()
+        async with pool.acquire() as conn:
+            inserted = await conn.fetchval(
+                """
+                insert into stripe_events (id, type) values ($1, $2)
+                on conflict (id) do nothing
+                returning id
+                """,
+                event_id,
+                event_type,
+            )
+        return inserted is not None
+
     # ------------------------------------------------------------------
     # Solde
     # ------------------------------------------------------------------
