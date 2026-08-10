@@ -184,8 +184,126 @@ app.add_middleware(
 )
 
 
+@app.exception_handler(StorageUnavailable)
+async def _storage_unavailable(request: Request, exc: StorageUnavailable) -> JSONResponse:
+    """Postgres injoignable sur une route qui ne peut pas s'en passer.
+
+    503 et non 500 : ce n'est pas un bug du code, c'est une dépendance absente,
+    et le message dit laquelle.
+    """
+    logger.error("Stockage indisponible sur %s : %s", request.url.path, exc)
+    return JSONResponse(status_code=503, content={"detail": str(exc)})
+
+
 # ============================================================
-# Routes
+# Contrôle d'accès aux runs et aux jobs
+# ============================================================
+
+
+async def _require_run_access(run_id: str, agency: Agency) -> None:
+    """404 si le run n'existe pas OU n'appartient pas à l'agence.
+
+    Le même code dans les deux cas est délibéré : distinguer « n'existe pas » de
+    « pas à vous » transformerait la route en oracle d'existence des runs.
+    """
+    owner = await get_repository().get_run_owner(run_id)
+    if owner is None or owner != agency.id:
+        raise HTTPException(status_code=404, detail="Run introuvable")
+
+
+def _job_agency_id(job: Job) -> str | None:
+    """Propriétaire d'un job RQ, lu dans le formulaire passé en argument.
+
+    On ne repasse pas par Postgres : le formulaire est déjà dans les args du job,
+    et cette lecture doit rester possible même sans base (le suivi de job vit
+    dans Redis).
+    """
+    args = job.args or ()
+    form = args[0] if args else None
+    return form.get("agency_id") if isinstance(form, dict) else None
+
+
+def _require_job_access(job: Job, agency: Agency) -> None:
+    if _job_agency_id(job) != agency.id:
+        raise HTTPException(status_code=404, detail="Job introuvable")
+
+
+# ============================================================
+# Routes — authentification
+# ============================================================
+
+
+@app.post("/auth/register", response_model=TokenResponse)
+async def register(payload: RegisterRequest) -> TokenResponse:
+    """Crée un compte agence et renvoie directement un jeton.
+
+    Pas de vérification d'email au MVP : la cible est une poignée d'agences
+    françaises, souvent onboardées à la main. À ajouter avant toute inscription
+    ouverte au public.
+    """
+    validate_password_strength(payload.password)
+    email = normalize_email(payload.email)
+
+    try:
+        row = await get_agency_repository().create(
+            email=email,
+            name=payload.name.strip(),
+            password_hash=hash_password(payload.password),
+        )
+    except EmailAlreadyUsed:
+        raise HTTPException(status_code=409, detail="Un compte existe déjà pour cet email.")
+
+    agency = Agency(id=str(row["id"]), email=row["email"], name=row["name"])
+    token, expires_at = create_access_token(agency)
+    logger.info("Compte agence créé : %s (%s)", agency.name, agency.id)
+    return TokenResponse(
+        access_token=token,
+        expires_at=expires_at,
+        agency=AgencyPublic(id=agency.id, email=agency.email, name=agency.name),
+    )
+
+
+@app.post("/auth/login", response_model=TokenResponse)
+async def login(payload: LoginRequest) -> TokenResponse:
+    repo = get_agency_repository()
+    row = await repo.get_by_email(normalize_email(payload.email))
+
+    # Message identique pour « email inconnu » et « mot de passe faux » : sinon
+    # la route énumère les comptes existants.
+    invalid = HTTPException(status_code=401, detail="Email ou mot de passe incorrect.")
+    if row is None:
+        raise invalid
+
+    ok, new_hash = verify_password(row["password_hash"], payload.password)
+    if not ok:
+        raise invalid
+
+    agency_id = str(row["id"])
+    if new_hash:
+        await repo.update_password_hash(agency_id, new_hash)
+    await repo.touch_last_login(agency_id)
+
+    agency = Agency(id=agency_id, email=row["email"], name=row["name"])
+    token, expires_at = create_access_token(agency)
+    return TokenResponse(
+        access_token=token,
+        expires_at=expires_at,
+        agency=AgencyPublic(id=agency.id, email=agency.email, name=agency.name),
+    )
+
+
+@app.get("/auth/me", response_model=AgencyPublic)
+async def me(agency: Agency = Depends(current_agency)) -> AgencyPublic:
+    """Vérifie qu'un jeton stocké côté front est toujours valide.
+
+    Les champs viennent du jeton, pas de la base : c'est un contrôle de session,
+    il ne doit pas dépendre de Postgres.
+    """
+    return AgencyPublic(id=agency.id, email=agency.email, name=agency.name)
+
+
+# ============================================================
+# Routes — pipeline
 # ============================================================
 
 
@@ -199,9 +317,13 @@ async def health() -> dict:
 
 
 @app.post("/generate")
-async def generate(form: ClientForm) -> dict:
+async def generate(form: ClientForm, agency: Agency = Depends(current_agency)) -> dict:
     """Enqueue une génération de cocons. Retourne le job_id."""
     form_dict = form.model_dump(mode="json")
+    # Le propriétaire vient du jeton, jamais du formulaire : `agency_id` reste
+    # un champ du ClientForm pour la compatibilité des runs déjà persistés, mais
+    # la valeur envoyée par le client est ignorée.
+    form_dict["agency_id"] = agency.id
     job_id = str(uuid.uuid4())
 
     # Le run_id est indépendant du job RQ : il survit au TTL de 24h et sert de
