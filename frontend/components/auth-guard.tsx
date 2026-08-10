@@ -59,10 +59,38 @@ export function AccountMenu() {
     () => null,
   );
 
+  // Le solde vient du réseau, donc pas de `useSyncExternalStore` ici : le
+  // `setState` est dans un callback de promesse, ce que React admet — c'est le
+  // `setState` synchrone dans le corps d'un effet qui est proscrit.
+  const [balance, setBalance] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetchBalance()
+      .then((b) => {
+        if (!cancelled) setBalance(b.balance_label);
+      })
+      .catch(() => {
+        // Solde indisponible : on n'affiche rien plutôt qu'un « 0 cocon »
+        // trompeur, qui ferait croire à un compte vidé.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (!name) return null;
 
   return (
     <div className="flex items-center gap-3">
+      {balance && (
+        <Link
+          href="/billing"
+          className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+          title="Solde de cocons"
+        >
+          {balance}
+        </Link>
+      )}
       <Link
         href="/runs"
         className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline"
