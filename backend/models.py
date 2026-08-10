@@ -396,6 +396,16 @@ class ValidatedCocon(BaseModel):
         seen = [k.strip().lower() for k in [self.mother_keyword, *self.daughter_keywords]]
         if len(set(seen)) != len(seen):
             raise ValueError(f"Cocon {self.index} : un mot-clé est présent deux fois.")
+
+        # Une consigne dont la clé ne désigne aucun article du cocon serait
+        # ignorée en silence : l'agence croirait avoir donné une instruction qui
+        # n'atteint jamais le rédacteur. Mieux vaut refuser la validation.
+        orphans = [k for k in self.directives if k.strip().lower() not in seen]
+        if orphans:
+            raise ValueError(
+                f"Cocon {self.index} : consigne(s) rattachée(s) à un mot-clé absent "
+                f"du cocon — {', '.join(sorted(orphans))}."
+            )
         return self
 
 
