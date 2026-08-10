@@ -39,6 +39,11 @@ logger = logging.getLogger(__name__)
 
 ProgressCallback = Callable[[JobProgress], Awaitable[None]] | None
 
+# Appelée une fois par run, avec le nombre de cocons réellement construits, au
+# moment précis où le run devient facturable. L'orchestrateur ne sait rien du
+# solde ni des lots : il signale l'événement, le worker décide quoi en faire.
+BillableCallback = Callable[[int], Awaitable[None]] | None
+
 
 class AwaitingValidation(Exception):
     """Le run est suspendu : l'agence doit valider la sélection de mots-clés.
