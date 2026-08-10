@@ -549,7 +549,75 @@ plateformes data, pas des producteurs de contenu SEO.
 
 ## Paysage concurrentiel
 
-### Concurrents vérifiés
+### ⚠️ Concurrents FRANÇAIS (vérifiés août 2026 — angle mort corrigé)
+
+Jusqu'à cette révision, cette section ne listait que des outils anglophones,
+alors que le positionnement est FR-native. **C'était l'angle mort principal du
+document.** Le champ concurrentiel qui compte réellement est français, et il se
+divise en trois familles.
+
+**A. Outils de structure / audit — ne génèrent aucun contenu**
+
+| Outil | Ce qu'il fait | Prix | Créateur |
+|---|---|---|---|
+| **Cocon.se** | Visualisation d'arborescence (graphes CMAP), détection des fuites et erreurs de maillage, analyse d'un site **existant**. Intégration Metamot. | 20-400 € HT/mois + crédits de crawl 15-50 € | Christian Méline (2015) |
+| **SEOQuantum** | Génération **semi-automatique** d'arborescence de cocon, deeplearning sur les relations sémantiques, export FreeMind. Pas d'articles. | 89 € (crawler + sémantique) / 239 € (stratégie KW) | — |
+| **Visiblis** | Analyse sémantique d'un site/page/texte, glissement sémantique entre deux pages, vérification de structure de cocon. | n.c. | — |
+
+**B. Optimisation sémantique / rédaction — ne produisent aucune architecture**
+
+| Outil | Ce qu'il fait | Prix |
+|---|---|---|
+| **YourTextGuru** | Guides sémantiques par analyse mathématique de la SERP, score d'optimisation. **Frères Peyronnet** — crédibilité énorme dans le SEO FR. | dès 90 € HT/mois |
+| **Thot SEO** | Intention de recherche, structure d'article (longueur, densité, Hn), comparaison au top 10. | n.c. |
+| **Semji** | Plateforme premium orientée ROI (impact trafic par contenu), GEO natif. ~1 200 entreprises, 4,4/5 sur 180 avis Capterra. Ne couvre ni le technique ni le netlinking. | sur devis, essai 15 j |
+| **1.fr** | Entrée de gamme, version gratuite. | freemium |
+
+**C. 🔴 Sedestral — le seul vrai concurrent direct, et il était inconnu**
+
+Français, **dès 59 €/mois**, 500+ e-commerçants. Fait la chaîne complète :
+recherche de mots-clés → silos thématiques → hiérarchie pilier/fille/petite-fille
+→ articles complets de 1 200-1 500 mots → FAQ → images (DALL-E / Stable
+Diffusion) → maillage interne → publication WordPress / PrestaShop / Shopify en
+moins de dix minutes. Agents IA nommés (Alya rédaction, Rémi optimisation, Nox
+technique). Audits mensuels automatisés.
+
+Maillage annoncé : vertical **et** horizontal, détection de pages orphelines,
+distribution d'ancres (exact / partiel / générique), **« 4 à 6 liens pertinents
+par page maximum »**.
+
+**Où passe la différence, précisément.** « 4 à 6 liens par page maximum » est un
+plafond heuristique, pas une règle arithmétique. Le cocon de Bourrelly impose
+qu'une fille émette exactement 5 liens (mère + 4 sœurs) et en reçoive exactement
+5. Surtout : *détecter* les pages orphelines est le symptôme d'un système
+non déterministe — chez nous une page orpheline est impossible par construction,
+il n'y a rien à détecter. C'est une différence réelle, mais **subtile et difficile
+à vendre**, pas le gouffre que ce document affirmait.
+
+**Aussi :** hacktheseo.com propose un générateur de structure de cocon **gratuit**
+(structure seule, en amont d'un service payant de rédaction + maillage). Les
+outils gratuits érodent par le bas la formule Indépendant à 49 €.
+
+### Ce que ça change
+
+1. **« FR-native » ne vaut plus rien comme différenciateur.** C'était vrai
+   contre Scalenut, ça ne l'est pas contre Cocon.se, YourTextGuru, Semji ou
+   Sedestral, qui sont français. Le différenciateur nº 2 de la liste ci-dessous
+   est déclassé — voir la liste révisée.
+2. **Le pricing arrêté est bien calibré, et c'était l'intuition de Gaetan.**
+   Le marché FR se situe à 20 € (Cocon.se), 59 € (Sedestral), 89 €
+   (SEOQuantum), 90 € (YourTextGuru). L'entrée à 49 € s'y insère juste ; une
+   entrée à 199 € aurait été hors marché.
+3. **La formule Agence à 249 € doit justifier un facteur 4 face à Sedestral.**
+   La réponse ne peut pas être « plus d'articles » — elle doit être la rigueur
+   du maillage, le Mode Brief (que personne ne propose) et le multi-clients
+   d'agence. À défendre explicitement sur la page de tarifs.
+4. **La vraie menace n'est pas un nouvel entrant** qui copierait le produit,
+   mais **YourTextGuru ou SEOQuantum ajoutant la génération d'articles** — ils
+   ont déjà la marque et l'audience —, ou **Sedestral quittant l'e-commerce pour
+   viser les agences**.
+
+### Concurrents vérifiés (anglophones)
 
 **Scalenut** ⚠️ — leader international, fait 80% du concept mais généraliste
 - Features : keyword clusters (5-75/mois), article generation, internal linking (dès $89), SERP analysis, GEO audit (AI Overviews), tracking ChatGPT/AIO/Perplexity, backlinks marketplace
