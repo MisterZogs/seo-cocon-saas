@@ -393,14 +393,44 @@ l'écart n'est pas expliqué : à investiguer avant de graver les coûts unitair
 dans un business plan. Ne pas écraser la ligne d'origine tant que ce n'est pas
 tranché — deux mesures valent mieux qu'une moyenne inventée.
 
-🔴 **Le prompt caching ne fonctionne quasiment pas.** Sur ce même run :
-`cache_read_tokens` 14 184 pour 74 815 tokens d'entrée (19 %), et
-`cache_savings_usd` **$0,038 sur $2,70, soit 1,4 %**. Le présent document
-affirme pourtant que le caching est OBLIGATOIRE et que « sans caching = 4x plus
-cher ». L'un des deux est faux. À diagnostiquer dans
-`clients/anthropic_client.py` : contexte partagé probablement reconstruit à
-chaque appel, ou `cache_control` mal placé, ou blocs sous le seuil minimum de
-tokens cachables.
+### Prompt caching — diagnostiqué le 2026-08-10, priorité revue à la baisse
+
+Constat de départ : `cache_read_tokens` 14 184 pour 74 815 tokens d'entrée (19 %),
+`cache_savings_usd` **$0,038 sur $2,70, soit 1,4 %**, alors que ce document
+promettait « 4× plus cher sans caching ». Deux causes, mesurées :
+
+**1. Le contexte partagé est sous le seuil minimum cachable.** Anthropic ignore
+`cache_control` en silence sous un seuil qui dépend du modèle — pas d'erreur,
+juste `cache_creation_input_tokens: 0`.
+
+| Usage | Modèle | Seuil |
+|---|---|---|
+| Article mère | `claude-opus-4-7` | **2048 tokens** |
+| Articles filles | `claude-sonnet-4-6` | **1024 tokens** |
+| Tâches simples | `claude-haiku-4-5` | **4096 tokens** |
+
+Mesure de `_build_cached_context` (`pipeline/article_generator.py:156`) :
+**sans `style_samples`, 1 519 chars ≈ 379 tokens** — sous les trois seuils, donc
+strictement rien n'est caché. Avec 3 échantillons de style : ≈ 4 768 tokens, ce
+qui passe pour Opus et Sonnet. Les seuils ne sont pas monotones : Opus 4.7 exige
+2048 là où Opus 4.8 se contente de 1024.
+
+Corollaire : le garde `len(system) > 4000` d'`anthropic_client.py:199` est du code
+mort — le plus gros prompt système du projet fait 2 100 chars.
+
+**2. Et surtout : le plafond de gain est de ~10 %, pas de 4×.** Une lecture de
+cache coûte 0,1× le tarif d'entrée. Si 100 % des 74 815 tokens d'entrée étaient
+servis depuis le cache, l'économie maximale serait de **$0,20 (tarif Sonnet) à
+$0,34 (tarif Opus) sur $2,70**, soit 7 à 12 %. La raison est structurelle : le
+produit génère ~30 000 mots par run, **la sortie domine le coût et ne se cache
+pas**. La promesse « 4× » était impossible pour cette charge de travail.
+
+**À faire, sans urgence :** passer le TTL à 1 h (point d'équilibre à 3 lectures,
+on en a 11 par run) ; **ne pas rembourrer** le contexte pour atteindre le seuil,
+ce serait payer des tokens pour rien. La seule piste à volume réel : déplacer
+l'analyse SERP — aujourd'hui passée *par article* dans le prompt utilisateur alors
+qu'elle est identique pour les 6 articles d'un cocon — dans un préfixe caché *par
+cocon*.
 
 Le coût n'est jamais la contrainte : les paliers se calibrent sur la valeur
 perçue et la segmentation. C'est confortable mais piégeux — sans contrainte de
