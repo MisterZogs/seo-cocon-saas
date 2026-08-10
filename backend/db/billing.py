@@ -470,6 +470,36 @@ class BillingRepository:
             )
         return get_plan(key)
 
+    async def get_stripe_customer(self, agency_id: str) -> str | None:
+        pool = await self._pool()
+        async with pool.acquire() as conn:
+            return await conn.fetchval(
+                "select stripe_customer_id from agencies where id = $1::uuid", agency_id
+            )
+
+    async def set_stripe_customer(self, agency_id: str, customer_id: str) -> None:
+        pool = await self._pool()
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "update agencies set stripe_customer_id = $2 where id = $1::uuid",
+                agency_id,
+                customer_id,
+            )
+
+    async def find_agency_by_stripe_customer(self, customer_id: str) -> str | None:
+        """Retrouve l'agence depuis l'identifiant client Stripe.
+
+        Repli pour les événements d'abonnement dont les métadonnées seraient
+        absentes — un abonnement créé à la main depuis le tableau de bord, par
+        exemple.
+        """
+        pool = await self._pool()
+        async with pool.acquire() as conn:
+            row = await conn.fetchval(
+                "select id from agencies where stripe_customer_id = $1", customer_id
+            )
+        return str(row) if row else None
+
     async def set_plan(self, agency_id: str, plan_key: str) -> Plan:
         """Change la formule. Appelé à la main tant qu'il n'y a pas de paiement.
 
