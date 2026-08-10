@@ -459,9 +459,11 @@ class _FakeCocon:
         return {"index": self._index}
 
 
-def _check_validation_gate(client, main, head: dict, form: dict) -> bool:
+def _check_validation_gate(client, main, head: dict, form: dict, dsn: str) -> bool:
     """Vérifie le 402 rendu par POST /runs/{id}/validation."""
-    import asyncio as _asyncio
+    import json as _json
+
+    import asyncpg
 
     from workers.pipeline_job import VALIDATION_CHECKPOINT
 
@@ -471,11 +473,28 @@ def _check_validation_gate(client, main, head: dict, form: dict) -> bool:
     r = client.post("/generate", headers=head, json={**form, "num_cocoons": 1})
     run_id = r.json()["run_id"]
 
-    repo = main.get_repository()
-    _asyncio.run(repo.save_checkpoint(run_id, VALIDATION_CHECKPOINT, {"proposals": []}))
-    _asyncio.run(
-        repo.save_checkpoint(run_id, "keyword_research", {"keywords": [], "proposals": []})
-    )
+    async def _seed() -> None:
+        # Connexion dédiée, et surtout PAS le pool du repository : celui-ci est
+        # attaché à la boucle d'événements du TestClient, s'en servir depuis un
+        # `asyncio.run()` échoue — et `RunRepository._execute` avale l'erreur,
+        # donc l'écriture disparaîtrait en silence.
+        conn = await asyncpg.connect(dsn)
+        try:
+            for step, payload in (
+                (VALIDATION_CHECKPOINT, {"proposals": []}),
+                ("keyword_research", {"keywords": [], "proposals": []}),
+            ):
+                await conn.execute(
+                    "insert into run_checkpoints (run_id, step, payload) "
+                    "values ($1::uuid, $2, $3::jsonb)",
+                    run_id,
+                    step,
+                    _json.dumps(payload),
+                )
+        finally:
+            await conn.close()
+
+    asyncio.run(_seed())
 
     saved_decision, saved_builder = main.apply_decision, main.CoconBuilder
 
