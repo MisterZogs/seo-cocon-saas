@@ -274,6 +274,17 @@ class ArticleStub(BaseModel):
     meta_description: str = Field(..., max_length=160)
     slug: str
     intent: SearchIntent
+    directives: str | None = Field(
+        default=None,
+        max_length=2000,
+        description=(
+            "Consignes libres de l'agence pour CET article, saisies à l'écran de "
+            "validation. Portées par le stub parce qu'il traverse déjà les "
+            "checkpoints : les consignes survivent donc à une reprise sans code "
+            "supplémentaire. ⚠️ Éditorial uniquement — jamais de contrainte "
+            "structurelle ici, le maillage reste imposé en code."
+        ),
+    )
 
 
 class CoconStructure(BaseModel):
