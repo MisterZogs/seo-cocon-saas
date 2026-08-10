@@ -101,7 +101,7 @@ export default function LoginPage() {
             <form onSubmit={submit} className="space-y-4">
               {mode === "register" && (
                 <div className="space-y-2">
-                  <Label htmlFor="name">Nom de l'agence</Label>
+                  <Label htmlFor="name">Nom de l&apos;agence</Label>
                   <Input
                     id="name"
                     required
