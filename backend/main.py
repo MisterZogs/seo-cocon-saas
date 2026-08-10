@@ -361,6 +361,8 @@ async def retry_job(job_id: str, agency: Agency = Depends(current_agency)) -> di
             detail="Job introuvable — au-delà de 24h, relancez depuis l'historique.",
         )
 
+    _require_job_access(job, agency)
+
     if not job.is_failed:
         raise HTTPException(
             status_code=409,
