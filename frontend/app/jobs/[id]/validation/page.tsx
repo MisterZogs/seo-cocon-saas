@@ -353,6 +353,16 @@ function ValidationPage({
                           {isMother ? "mère" : "en faire la mère"}
                         </button>
                       )}
+                      </div>
+
+                      {checked && (
+                        <DirectiveField
+                          value={c.directives[kw] ?? ""}
+                          open={openDirectives.has(`${c.index}|${kw}`)}
+                          onToggle={() => toggleDirective(c.index, kw)}
+                          onChange={(text) => setDirective(c.index, kw, text)}
+                        />
+                      )}
                     </div>
                   );
                 })}
