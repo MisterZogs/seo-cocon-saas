@@ -160,6 +160,20 @@ create index if not exists cocoon_ledger_run_idx
 -- ne touche pas une table existante.
 alter table agencies add column if not exists plan text not null default 'trial';
 alter table agencies add column if not exists plan_started_at timestamptz not null default now();
+alter table agencies add column if not exists stripe_customer_id text;
+
+-- Webhooks Stripe déjà traités.
+--
+-- Stripe livre « au moins une fois » : il rejoue un événement après un timeout
+-- ou une réponse en erreur. Sans cette table, un achat rejoué créditerait le
+-- compte deux fois. La déduplication ne peut pas venir des lots ni du journal,
+-- parce qu'un achat légitime peut parfaitement être identique au précédent —
+-- seul l'identifiant d'événement de Stripe distingue les deux cas.
+create table if not exists stripe_events (
+    id          text primary key,
+    type        text not null,
+    received_at timestamptz not null default now()
+);
 
 -- updated_at auto
 create or replace function touch_updated_at()
