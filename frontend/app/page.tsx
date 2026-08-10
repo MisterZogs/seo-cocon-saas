@@ -406,28 +406,89 @@ export default function Home() {
 
       {/* Pricing */}
       <section id="pricing" className="border-y border-border bg-surface">
-        <div className="mx-auto max-w-6xl px-6 py-24 text-center">
-          <p className="eyebrow">Tarifs</p>
-          <h2 className="mt-5 font-serif text-3xl leading-tight font-semibold sm:text-[2.5rem]">
-            Pensés pour les <span className="accent-word">agences</span>.
-          </h2>
-          <p className="mx-auto mt-5 max-w-xl text-lg text-muted-foreground">
-            La grille définitive arrive. Pendant la phase MVP, l&apos;accès est
-            gratuit pour les premières agences partenaires.
+        <div className="mx-auto max-w-6xl px-6 py-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">Tarifs</p>
+            <h2 className="mt-5 font-serif text-3xl leading-tight font-semibold sm:text-[2.5rem]">
+              Vous payez au <span className="accent-word">cocon</span>, pas à
+              l&apos;abonnement illimité.
+            </h2>
+            <p className="mx-auto mt-5 text-lg leading-relaxed text-muted-foreground">
+              Un cocon, c&apos;est un article mère, cinq filles et le maillage
+              complet entre les six. Les cocons non consommés sont reportés un
+              mois, et un cocon qui échoue n&apos;est jamais décompté.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-6 lg:grid-cols-3">
+            <PriceCard
+              name="Indépendant"
+              price="49 €"
+              volume="3 cocons par mois"
+              unit="soit 16 € le cocon"
+              lede="Pour un consultant SEO qui gère son propre portefeuille de clients."
+              items={[
+                "Mode Brief et Génération complète",
+                "Volumes DataForSEO réels, analyse du top 10",
+                "Maillage complet, vérifié en code",
+                "Export JSON et Markdown",
+                "Report des cocons non utilisés sur 1 mois",
+              ]}
+            />
+            <PriceCard
+              featured
+              name="Agence"
+              price="249 €"
+              volume="20 cocons par mois"
+              unit="soit 12 € le cocon"
+              lede="Le format d'une agence qui suit 20 à 30 clients en référencement."
+              items={[
+                "Tout ce que contient Indépendant",
+                "Score E-E-A-T par article, plafond honnête",
+                "Rapport backlinks stratégique par cocon",
+                "Jusqu'à 4 cocons par génération",
+                "Support prioritaire",
+              ]}
+            />
+            <PriceCard
+              name="Studio"
+              price="690 €"
+              volume="60 cocons par mois"
+              unit="soit 11 € le cocon"
+              lede="Pour les structures qui produisent du contenu en continu."
+              items={[
+                "Tout ce que contient Agence",
+                "White-label sur les livrables (bientôt)",
+                "Publication WordPress directe (bientôt)",
+                "Projets clients séparés",
+                "Accompagnement à la prise en main",
+              ]}
+            />
+          </div>
+
+          <p className="mt-8 text-center text-[0.95rem] text-muted-foreground">
+            Sans abonnement :{" "}
+            <strong className="font-semibold text-foreground">
+              20 € le cocon
+            </strong>{" "}
+            à l&apos;unité. Au-delà de 60 cocons par mois, sur devis.
           </p>
 
-          <div className="mx-auto mt-12 max-w-md rounded-2xl border border-primary/30 bg-card p-9 text-left shadow-md">
+          <div className="mx-auto mt-14 max-w-2xl rounded-2xl border border-primary/30 bg-card p-8 text-center shadow-md">
             <p className="eyebrow">Accès anticipé</p>
-            <p className="mt-4 font-serif text-5xl font-semibold">Gratuit</p>
-            <p className="mt-3 text-[0.95rem] leading-relaxed text-muted-foreground">
+            <p className="mt-4 font-serif text-3xl font-semibold">
+              Gratuit pour les premières agences partenaires
+            </p>
+            <p className="mx-auto mt-3 max-w-lg text-[0.95rem] leading-relaxed text-muted-foreground">
               En échange d&apos;un retour détaillé sur les cocons produits. Sans
-              engagement, sans carte bancaire.
+              engagement, sans carte bancaire. La grille ci-dessus s&apos;appliquera
+              au lancement.
             </p>
             <Link
               href="/new"
               className={cn(
                 buttonVariants({ size: "lg" }),
-                "mt-7 h-12 w-full gap-2 text-base font-bold",
+                "mt-7 h-12 gap-2 px-8 text-base font-bold",
               )}
             >
               Commencer
