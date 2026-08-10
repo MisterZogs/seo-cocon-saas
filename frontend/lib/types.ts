@@ -334,6 +334,12 @@ export interface ValidatedCocon {
   theme?: string | null;
   mother_keyword: string;
   daughter_keywords: string[];
+  /**
+   * Consignes par article, clé = mot-clé cible. Le backend REFUSE une clé qui
+   * ne désigne aucun article du cocon (422) : une consigne orpheline serait
+   * ignorée en silence, et l'agence croirait avoir instruit le rédacteur.
+   */
+  directives?: Record<string, string>;
 }
 
 export interface ValidationDecision {
