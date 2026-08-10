@@ -439,6 +439,14 @@ l'abonnement domine.
 - **Un run échoué est remboursé automatiquement.**
 - **Une reprise sur checkpoint ne re-débite jamais.** Le système de checkpoints
   existant est un actif direct du pricing, pas seulement de la fiabilité.
+- **Une régénération d'article se débite, elle.** Distinction structurante à tenir
+  dès la conception du ledger : une *reprise* répare un échec technique dont le
+  client n'est pas responsable ; une *régénération* — l'agence donne de nouvelles
+  consignes sur un article et redemande la rédaction — est un nouveau travail
+  qu'elle commande. Granularité recommandée : le 1/6 de cocon (l'article), le coût
+  réel étant par article. Première génération incluse, chaque reprise éditoriale
+  ensuite débitée. Découle du Mode Brief bidirectionnel (consignes par article sur
+  l'écran de validation).
 - **Report des cocons non consommés sur 1 mois** (plafonné à 1× l'allocation).
   Les agences onboardent par à-coups ; sans report, un mois creux déclenche une
   résiliation.
