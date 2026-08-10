@@ -881,6 +881,7 @@ seo/
 │   ├── db/
 │   │   ├── postgres.py
 │   │   ├── agencies.py         comptes agences (erreurs remontées, pas avalées)
+│   │   ├── billing.py          lots + journal, transactions et verrous
 │   │   └── schema.sql
 │   ├── requirements.txt
 │   └── .env.example
