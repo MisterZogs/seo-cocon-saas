@@ -127,6 +127,36 @@ class FakeRunRepository:
             self.runs[run_id]["job_id"] = job_id
 
 
+class FakeBillingRepository:
+    """Solde toujours suffisant.
+
+    Ce test porte sur le cloisonnement entre agences, pas sur la facturation :
+    l'arithmétique du ledger est vérifiée contre un vrai PostgreSQL dans
+    `tests/test_billing.py`. Ici on veut seulement que `/generate` ne se fasse
+    pas refuser pour une raison hors sujet.
+    """
+
+    def __init__(self) -> None:
+        self.trials: list[str] = []
+
+    async def grant_trial(self, agency_id: str) -> None:
+        self.trials.append(agency_id)
+
+    async def get_plan_for(self, agency_id: str):
+        from billing import get_plan
+
+        return get_plan("agence")
+
+    async def balance_units(self, agency_id: str, plan=None) -> int:
+        return 10_000
+
+    async def lots(self, agency_id: str) -> list:
+        return []
+
+    async def ledger(self, agency_id: str, limit: int = 50) -> list:
+        return []
+
+
 class FakeJob:
     def __init__(self, job_id: str, args: tuple) -> None:
         self.id = job_id
