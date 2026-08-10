@@ -294,7 +294,8 @@ def test_isolation() -> bool:
             ("post", "/generate"), ("get", "/jobs/x"), ("get", "/jobs/x/stream"),
             ("post", "/jobs/x/retry"), ("get", "/runs/x"), ("get", "/runs/x/validation"),
         ]:
-            r = getattr(client, method)(path, json={} if method == "post" else None)
+            kwargs = {"json": {}} if method == "post" else {}
+            r = getattr(client, method)(path, **kwargs)
             ok &= _check(f"{method.upper()} {path} sans jeton → 401", r.status_code == 401, f"statut {r.status_code}")
 
         r = client.get("/health")
