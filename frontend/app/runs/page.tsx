@@ -103,7 +103,10 @@ function RunsPage() {
           >
             ← Retour
           </Link>
-          <span className="text-sm font-medium">Historique des générations</span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium">Historique des générations</span>
+            <AccountMenu />
+          </div>
         </div>
       </header>
 
