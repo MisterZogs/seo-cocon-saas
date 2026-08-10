@@ -109,7 +109,7 @@ Note : à V4+ (18+ mois), SI une verticale explose (ex: crypto/trading grâce à
 | **Article mère (pillar)** | `claude-opus-4-7` | Qualité maximale sur l'article central |
 | **Articles filles (cluster)** | `claude-sonnet-4-6` | Bon rapport qualité/coût, 5 filles par cocon |
 | **Tâches simples** | `claude-haiku-4-5-20251001` | Slug, meta description, classification intent |
-| **Prompt caching** | **OBLIGATOIRE** | Sans caching = 4x plus cher (contexte cocon + SERP réutilisés) |
+| **Prompt caching** | **Gain marginal — ~10 % au mieux** | ⚠️ Corrigé le 2026-08-10. La ligne d'origine disait « OBLIGATOIRE, sans caching = 4× plus cher » : **c'est arithmétiquement impossible ici**, voir « Prompt caching » ci-dessous. |
 
 Doc caching : https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching
 
