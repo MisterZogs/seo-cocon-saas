@@ -346,7 +346,7 @@ async def generate(form: ClientForm, agency: Agency = Depends(current_agency)) -
 
 
 @app.post("/jobs/{job_id}/retry")
-async def retry_job(job_id: str) -> dict:
+async def retry_job(job_id: str, agency: Agency = Depends(current_agency)) -> dict:
     """Relance un job échoué en réutilisant ses checkpoints.
 
     Les étapes déjà passées (et payées) sont relues au lieu d'être rejouées :
