@@ -671,9 +671,72 @@ non déterministe — chez nous une page orpheline est impossible par constructi
 il n'y a rien à détecter. C'est une différence réelle, mais **subtile et difficile
 à vendre**, pas le gouffre que ce document affirmait.
 
-**Aussi :** hacktheseo.com propose un générateur de structure de cocon **gratuit**
-(structure seule, en amont d'un service payant de rédaction + maillage). Les
-outils gratuits érodent par le bas la formule Indépendant à 49 €.
+### D. 🔴 Hack the SEO — second concurrent frontal FR (vérifié le 2026-08-10)
+
+*(Ce document les décrivait comme « un générateur de structure de cocon gratuit ».
+**C'était très en dessous de la réalité** et ça a masqué un concurrent direct
+pendant toute la conception du backlog. Ce qui suit vient du site, de leur page
+tarifs et de Pappers.)*
+
+**Société.** HACK THE SEO, SAS, SIREN 987 505 708, Halle de l'Innovation, 10 place
+Françoise Héritier, 34000 **Montpellier**. NAF 62.01Z. Créée le **28 février 2024**.
+Capital 15 000 €, **aucun salarié**, aucun compte publié. **Deux frères :** Bruno
+Ibanez (président) et Eric Ibanez (DG). Eric est co-auteur de *SEO pour booster sa
+croissance* chez **Dunod** — leur actif de crédibilité, l'exact équivalent de notre
+angle Bourrelly.
+→ Micro-structure bootstrappée sans levée, **même catégorie de poids que nous**,
+comme Sedestral.
+
+**Deux lignes de produit en parallèle.**
+
+*Plugin WordPress :*
+
+| Formule | Prix | Contenu |
+|---|---|---|
+| Free | 0 € | SEO technique (12 modules), **Score SEO + Score GEO**, Search Console, coach SEO 5 questions/mois, health check, llms.txt |
+| Pro | 99 €/mois (barré 199) | + coach illimité, rapports auto, **cocons sémantiques IA**, 10 articles/mois, détection de cannibalisation, **planification éditoriale** |
+| Ultra | 249 €/mois (barré 499) | + 30 articles/mois avec images, **maillage IA automatique**, mode agent autonome, **publication programmée**, rapport hebdo |
+
+*Plateforme SaaS :* Growth+ 69 €/mois (20 articles, 1 site, audit 1 000 pages) ·
+PRO+ 119 €/mois (100 articles, 10 sites, audit 10 000 pages) · IA + humain
+299 €/mois (chef de projet, 6 articles relus). Annuel −20 %, prix HT.
+
+**Revendications (auto-déclarées, à traiter comme du marketing) :** 1 300+
+entreprises dans 18 pays, note Google 5,0/5, garantie « trafic en hausse le premier
+mois ou mois remboursé », témoignages à ×5 de trafic en 2,5 mois. Aucun compte
+déposé : rien de vérifiable. Même prudence que pour les « 1 800 marques » de
+Sedestral — ces nombres comptent des inscriptions.
+
+**🔴 Recoupement direct avec notre backlog — ils ont déjà livré ce qu'on projette :**
+
+| Notre chantier | Chez eux |
+|---|---|
+| Export WordPress | ✅ leur produit *est* un plugin WordPress |
+| Calendrier + publication programmée | ✅ « planification éditoriale » (99 €), « publication programmée » (249 €) |
+| Score GEO | ✅ **dans la version gratuite** |
+| Maillage automatique | ✅ « maillage IA automatique » (249 €) |
+
+Conséquence : ces chantiers sont des **rattrapages de parité, pas des
+différenciateurs**. Les faire reste nécessaire — sans eux nous sommes en retard sur
+deux concurrents FR — mais ne jamais construire le pitch dessus.
+
+**Ce qu'ils n'ont pas :** aucun **Mode Brief**, et surtout aucun déterminisme.
+« Maillage IA automatique » est la formulation même du problème mesuré ici : un LLM
+livré à lui-même produisait 27 des 40 liens transversaux attendus, sans réciprocité,
+avec une page orpheline. Ils vendent exactement ce que notre normalisation corrige.
+
+⚠️ **À vérifier :** leur page EN du générateur de topical map semble annoncer une
+qualité supérieure avec « minimal AI detection » (vu dans un résumé de recherche,
+pas lu directement sur la page). Si c'est confirmé, c'est une promesse que nos
+propres mesures Pangram démontent — angle d'attaque, mais à sourcer avant usage.
+
+⚠️ **Piège de comparatif :** Ultra 249 € = 30 articles, notre formule Agence 249 € =
+20 cocons ≈ 120 articles. Nous sommes 4× moins chers à l'article, mais eux
+embarquent un plugin de SEO technique. **Ne pas comparer des articles, comparer des
+architectures** — le comparatif au volume nous dessert autant qu'il nous flatte.
+
+**Aussi :** leur générateur de structure de cocon reste **gratuit** et sans
+inscription. Les outils gratuits érodent par le bas la formule Indépendant à 49 €.
 
 ### Ce que ça change
 
