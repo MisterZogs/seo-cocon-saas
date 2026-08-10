@@ -283,7 +283,7 @@ function ArticlesPanel({
             className={cn(
               "border-l-4",
               isMother
-                ? "border-l-violet-500 bg-violet-50/30 dark:bg-violet-950/10"
+                ? "border-l-tone-cocon bg-tone-cocon-soft/40"
                 : "border-l-sky-300 dark:border-l-sky-800",
             )}
           >
@@ -295,8 +295,8 @@ function ArticlesPanel({
                       className={cn(
                         "font-semibold",
                         isMother
-                          ? "bg-violet-600 text-white"
-                          : "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
+                          ? "bg-tone-cocon text-background"
+                          : "bg-tone-article-soft text-tone-article",
                       )}
                     >
                       {isMother ? "Mère" : "Fille"}
@@ -344,7 +344,7 @@ function MetaBlock({ stub }: { stub: CoconStructure["mother"] }) {
         <p className="font-semibold uppercase tracking-wide text-muted-foreground mb-0.5">
           KW cible
         </p>
-        <p className="font-mono font-semibold text-teal-700 dark:text-teal-300">
+        <p className="font-mono font-semibold text-tone-serp">
           {stub.target_keyword}
         </p>
       </div>
@@ -374,7 +374,7 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
           Analyse SERP
         </SectionHeading>
         {brief.serp_analysis.low_sample && (
-          <p className="mb-2 rounded border border-amber-300 bg-amber-50 px-2 py-1.5 text-xs text-amber-900">
+          <p className="mb-2 rounded border border-warning-line bg-warning-soft px-2 py-1.5 text-xs text-warning-strong">
             Calibration peu fiable : seulement {brief.serp_analysis.scraped_pages_count} page
             {brief.serp_analysis.scraped_pages_count > 1 ? "s" : ""} exploitable
             {brief.serp_analysis.scraped_pages_count > 1 ? "s" : ""} dans le top 10.
@@ -400,7 +400,7 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
             {brief.serp_analysis.key_entities.slice(0, 12).map((e) => (
               <Badge
                 key={e}
-                className="bg-teal-50 text-teal-800 text-xs font-medium dark:bg-teal-950 dark:text-teal-300"
+                className="bg-tone-serp-soft text-tone-serp text-xs font-medium"
               >
                 {e}
               </Badge>
@@ -415,13 +415,13 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
         </SectionHeading>
         <ol className="space-y-2.5 text-sm">
           {brief.sections.map((s, i) => (
-            <li key={i} className="border-l-2 border-sky-400 pl-3">
+            <li key={i} className="border-l-2 border-tone-article-line pl-3">
               <p className="font-semibold text-foreground">{s.h2}</p>
               {s.h3s.length > 0 && (
                 <ul className="text-xs text-muted-foreground mt-1 space-y-0.5">
                   {s.h3s.map((h3, j) => (
                     <li key={j} className="flex gap-1.5">
-                      <span className="text-sky-400">›</span>
+                      <span className="text-tone-article">›</span>
                       {h3}
                     </li>
                   ))}
@@ -440,7 +440,7 @@ function BriefContent({ brief }: { brief: ArticleBrief }) {
           <ul className="space-y-1.5 text-sm">
             {brief.faq_questions.map((q, i) => (
               <li key={i} className="flex gap-2">
-                <span className="font-semibold text-rose-500">?</span>
+                <span className="font-semibold text-tone-faq">?</span>
                 {q}
               </li>
             ))}
@@ -476,10 +476,10 @@ function Metric({ label, value }: { label: string; value: string }) {
 function EeatBadge({ score }: { score: number }) {
   const tone =
     score >= 70
-      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300"
+      ? "bg-success-soft text-success-strong"
       : score >= 50
-        ? "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300"
-        : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300";
+        ? "bg-warning-soft text-warning-strong"
+        : "bg-destructive-soft text-destructive-strong";
   return (
     <span
       className={cn(
@@ -529,12 +529,12 @@ function CopyButton({ text }: { text: string }) {
     >
       {state === "ok" ? (
         <>
-          <CheckIcon data-icon="inline-start" className="text-emerald-600" />
+          <CheckIcon data-icon="inline-start" className="text-success" />
           Copié
         </>
       ) : state === "error" ? (
         <>
-          <TriangleAlertIcon data-icon="inline-start" className="text-amber-600" />
+          <TriangleAlertIcon data-icon="inline-start" className="text-warning" />
           Échec
         </>
       ) : (
@@ -558,15 +558,15 @@ function ArticleContent({ article }: { article: GeneratedArticle }) {
       </div>
 
       {article.eeat_score?.warnings.length ? (
-        <Alert className="border-amber-300 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/30">
+        <Alert className="border-warning-line bg-warning-soft">
           <AlertDescription>
-            <p className="text-xs font-bold text-amber-800 dark:text-amber-300 mb-1.5">
+            <p className="text-xs font-bold text-warning-strong mb-1.5">
               À améliorer avant publication
             </p>
             <ul className="text-xs space-y-1">
               {article.eeat_score.warnings.map((w, i) => (
                 <li key={i} className="flex gap-2">
-                  <span className="text-amber-600">•</span>
+                  <span className="text-warning">•</span>
                   {w}
                 </li>
               ))}
@@ -621,21 +621,21 @@ function MaillageBlock({
     daughter_to_mother: {
       label: "↑ Mère",
       className:
-        "bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-300",
+        "bg-tone-cocon-soft text-tone-cocon",
     },
     mother_to_daughter: {
       label: "↓ Fille",
-      className: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
+      className: "bg-tone-article-soft text-tone-article",
     },
     sister_to_sister: {
       label: "↔ Sœur",
       className:
-        "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
+        "bg-success-soft text-success-strong",
     },
     cross_cocon: {
       label: "⤳ Inter-cocon",
       className:
-        "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300",
+        "bg-warning-soft text-warning-strong",
     },
   };
 
@@ -679,7 +679,7 @@ function BacklinkPanel({ report }: { report: BacklinkReport | undefined }) {
   return (
     <div className="space-y-3">
       <GroupHeading tone="backlinks">Rapport backlinks</GroupHeading>
-      <Card className="border-l-4 border-l-amber-400">
+      <Card className="border-l-4 border-l-warning">
         <CardContent className="pt-6 space-y-5">
           <div>
             <SectionHeading tone="backlinks">
@@ -702,7 +702,7 @@ function BacklinkPanel({ report }: { report: BacklinkReport | undefined }) {
               {report.opportunities.slice(0, 10).map((o, i) => (
                 <li key={i} className="border rounded-lg p-3 bg-card">
                   <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-bold text-amber-800 dark:text-amber-300">
+                    <span className="font-bold text-warning-strong">
                       {o.referring_domain}
                     </span>
                     <div className="flex items-center gap-2 text-xs">
@@ -711,7 +711,7 @@ function BacklinkPanel({ report }: { report: BacklinkReport | undefined }) {
                           DR {o.domain_rating}
                         </Badge>
                       )}
-                      <Badge className="bg-amber-100 text-amber-900 font-medium dark:bg-amber-950 dark:text-amber-300">
+                      <Badge className="bg-warning-soft text-warning-strong font-medium">
                         {o.outreach_template_type}
                       </Badge>
                     </div>
@@ -741,13 +741,13 @@ function RatioBar({ label, value }: { label: string; value: number }) {
     <div>
       <div className="flex items-baseline justify-between mb-1">
         <span className="text-muted-foreground">{label}</span>
-        <span className="font-bold tabular-nums text-amber-700 dark:text-amber-300">
+        <span className="font-bold tabular-nums text-warning-strong">
           {pct}%
         </span>
       </div>
       <div className="h-1.5 rounded-full bg-muted overflow-hidden">
         <div
-          className="h-full rounded-full bg-amber-500"
+          className="h-full rounded-full bg-warning"
           style={{ width: `${Math.min(pct, 100)}%` }}
         />
       </div>
