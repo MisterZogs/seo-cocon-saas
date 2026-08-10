@@ -215,12 +215,22 @@ def create_portal_session(customer_id: str) -> str:
     return session.url
 
 
-def construct_event(payload: bytes, signature: str) -> Any:
-    """Vérifie la signature Stripe et rend l'événement.
+def construct_event(payload: bytes, signature: str) -> dict[str, Any]:
+    """Vérifie la signature Stripe et rend l'événement en dict simple.
 
     Sans cette vérification, la route de webhook serait un moyen public de
     créditer n'importe quel compte : il suffirait d'en connaître l'URL.
+
+    Le retour est converti en `dict` natif plutôt que laissé en `StripeObject` :
+    ce dernier redirige les attributs inconnus vers ses données, si bien qu'un
+    `obj.get(...)` lève un `KeyError` au lieu d'appeler `dict.get`. Le
+    gestionnaire d'événements n'a pas à connaître ce piège.
     """
+    import json
+
     from stripe import Webhook
 
-    return Webhook.construct_event(payload, signature, webhook_secret())
+    event = Webhook.construct_event(payload, signature, webhook_secret())
+    # `to_dict()` n'est pas récursif — un aller-retour JSON l'est, et
+    # l'événement vient de toute façon d'un corps JSON.
+    return json.loads(json.dumps(event.to_dict(), default=str))
