@@ -24,6 +24,23 @@ export async function createGeneration(
   return res.json();
 }
 
+/**
+ * Formulaire de la dernière demande soumise — sert à préremplir /new.
+ *
+ * `form: null` est un cas normal (base vide ou non configurée), pas une erreur :
+ * le formulaire s'ouvre alors vierge.
+ */
+export async function fetchFormDefaults(): Promise<{
+  enabled: boolean;
+  form: ClientForm | null;
+}> {
+  const res = await fetch(`${API_URL}/form-defaults`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Valeurs par défaut indisponibles (${res.status})`);
+  }
+  return res.json();
+}
+
 export async function fetchJobStatus(jobId: string): Promise<JobStatusResponse> {
   const res = await fetch(`${API_URL}/jobs/${jobId}`, { cache: "no-store" });
   if (!res.ok) {
