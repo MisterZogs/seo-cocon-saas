@@ -25,6 +25,7 @@ from typing import Any
 
 from rq import get_current_job
 
+from db.billing import get_billing_repository
 from db.checkpoints import make_checkpoint_store
 from db.postgres import get_repository
 from models import ClientForm, JobProgress
