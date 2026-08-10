@@ -436,6 +436,87 @@ def _run_api_tests(dsn: str) -> bool:
         r = client.get("/billing/balance")
         ok &= _check("solde non lisible sans jeton → 401", r.status_code == 401, f"statut {r.status_code}")
 
+        # -- second contrôle, à la validation ------------------------
+        # Le contrôle de /generate portait sur `num_cocoons` du formulaire ;
+        # rien n'empêche l'agence d'ajouter des cocons sur l'écran de
+        # validation. Sans ce garde-fou, le dépassement n'exploserait qu'au
+        # débit, dans le worker : l'agence verrait un run planté au lieu d'un
+        # message sur son solde. Les appels LLM du chemin de validation sont
+        # court-circuités — c'est le contrôle de solde qu'on teste, pas eux.
+        ok &= _check_validation_gate(client, main, head, form)
+
+    return ok
+
+
+class _FakeCocon:
+    """Juste ce que la route de validation manipule d'un CoconStructure."""
+
+    def __init__(self, index: int) -> None:
+        self.daughters = [object()] * 5
+        self._index = index
+
+    def model_dump(self, mode: str = "json") -> dict:
+        return {"index": self._index}
+
+
+def _check_validation_gate(client, main, head: dict, form: dict) -> bool:
+    """Vérifie le 402 rendu par POST /runs/{id}/validation."""
+    import asyncio as _asyncio
+
+    from workers.pipeline_job import VALIDATION_CHECKPOINT
+
+    ok = True
+    wanted = 5  # 5 cocons validés alors que l'essai n'en donne que 3
+
+    r = client.post("/generate", headers=head, json={**form, "num_cocoons": 1})
+    run_id = r.json()["run_id"]
+
+    repo = main.get_repository()
+    _asyncio.run(repo.save_checkpoint(run_id, VALIDATION_CHECKPOINT, {"proposals": []}))
+    _asyncio.run(
+        repo.save_checkpoint(run_id, "keyword_research", {"keywords": [], "proposals": []})
+    )
+
+    saved_decision, saved_builder = main.apply_decision, main.CoconBuilder
+
+    async def _fake_decision(*args, **kwargs):
+        return []
+
+    class _FakeBuilder:
+        def build(self, _proposals):
+            return [_FakeCocon(i) for i in range(wanted)]
+
+    main.apply_decision = _fake_decision
+    main.CoconBuilder = _FakeBuilder
+    try:
+        decision = {
+            "cocoons": [
+                {
+                    "index": i,
+                    "mother_keyword": f"mere {i}",
+                    "daughter_keywords": [f"fille {i}-{j}" for j in range(3)],
+                }
+                for i in range(wanted)
+            ]
+        }
+        r = client.post(f"/runs/{run_id}/validation", headers=head, json=decision)
+        ok &= _check(
+            "validation de 5 cocons avec 3 au solde → 402",
+            r.status_code == 402,
+            f"statut {r.status_code} {r.text[:150]}",
+        )
+        ok &= _check(
+            "… et le manque est chiffré (30 requis, 18 disponibles)",
+            r.json().get("required_units") == 30 and r.json().get("available_units") == 18,
+            f"{r.json()}",
+        )
+        ok &= _check(
+            "… et rien n'a été débité",
+            client.get("/billing/balance", headers=head).json()["balance_units"] == 18,
+        )
+    finally:
+        main.apply_decision, main.CoconBuilder = saved_decision, saved_builder
+
     return ok
 
 
