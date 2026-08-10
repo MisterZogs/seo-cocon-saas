@@ -759,6 +759,15 @@ inscription. Les outils gratuits érodent par le bas la formule Indépendant à 
    mais **YourTextGuru ou SEOQuantum ajoutant la génération d'articles** — ils
    ont déjà la marque et l'audience —, ou **Sedestral quittant l'e-commerce pour
    viser les agences**.
+   ⚠️ **Corrigé le 2026-08-10 : cette menace est déjà réalisée.** Hack the SEO
+   fait *aujourd'hui* cocon + génération + maillage + publication programmée +
+   score GEO, en français, avec un palier gratuit. Le scénario redouté n'est plus
+   hypothétique, il est sur le marché depuis février 2024.
+5. **Deux concurrents FR frontaux, tous deux bootstrappés sans salarié**
+   (Sedestral, Hack the SEO). Le créneau n'est ni vide ni protégé par un capital
+   qu'on n'aurait pas. Ce qui reste défendable est étroit et précis : le
+   **déterminisme du maillage** et le **Mode Brief**. Tout le reste est de la
+   parité fonctionnelle à rattraper.
 
 ### Concurrents vérifiés (anglophones)
 
