@@ -53,7 +53,10 @@ from auth import (  # noqa: E402
     validate_password_strength,
     verify_password,
 )
+import payments  # noqa: E402
 from billing import (  # noqa: E402
+    DEFAULT_PLAN,
+    PLANS,
     InsufficientBalance,
     cocoons_to_units,
     format_cocoons,
