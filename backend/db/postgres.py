@@ -287,6 +287,20 @@ class RunRepository:
         )
         return _row_to_dict(rows[0]) if rows else None
 
+    async def get_run_owner(self, run_id: str) -> str | None:
+        """`agency_id` du run, ou None si introuvable **ou** illisible.
+
+        Le contrôle d'accès qui s'appuie dessus est donc fermé par défaut : une
+        base injoignable interdit l'accès au lieu de l'ouvrir. Les runs créés
+        avant l'auth portent un `agency_id` saisi à la main (ou nul) et ne
+        correspondront à aucun compte — c'est le comportement voulu, ils sont
+        orphelins.
+        """
+        rows = await self._fetch(
+            "get_run_owner", "select agency_id from runs where id = $1::uuid", run_id
+        )
+        return rows[0]["agency_id"] if rows else None
+
     async def get_run_by_job(self, job_id: str) -> dict[str, Any] | None:
         rows = await self._fetch(
             "get_run_by_job", "select * from runs where job_id = $1", job_id
