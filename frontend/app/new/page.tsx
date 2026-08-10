@@ -764,3 +764,11 @@ function Row({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+export default function Page() {
+  return (
+    <AuthGuard>
+      <NewGenerationPage />
+    </AuthGuard>
+  );
+}

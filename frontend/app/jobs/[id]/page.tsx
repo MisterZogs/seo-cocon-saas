@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AuthGuard } from "@/components/auth-guard";
 import { jobStreamUrl, retryJob } from "@/lib/api";
 import type { JobProgress, PipelineStep } from "@/lib/types";
 
@@ -28,7 +29,7 @@ type StreamState =
   | { kind: "done" }
   | { kind: "error"; message: string; traceback?: string };
 
-export default function JobProgressPage({
+function JobProgressPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -249,5 +250,13 @@ export default function JobProgressPage({
         </Card>
       </main>
     </div>
+  );
+}
+
+export default function Page(props: { params: Promise<{ id: string }> }) {
+  return (
+    <AuthGuard>
+      <JobProgressPage {...props} />
+    </AuthGuard>
   );
 }

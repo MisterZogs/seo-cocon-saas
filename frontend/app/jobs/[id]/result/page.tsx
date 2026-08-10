@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AuthGuard } from "@/components/auth-guard";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchJobStatus } from "@/lib/api";
@@ -23,7 +24,7 @@ import type {
   PipelineResult,
 } from "@/lib/types";
 
-export default function ResultPage({
+function ResultPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -767,5 +768,13 @@ function ErrorLayout({ children }: { children: React.ReactNode }) {
       </header>
       <main className="max-w-2xl mx-auto px-6 py-16">{children}</main>
     </div>
+  );
+}
+
+export default function Page(props: { params: Promise<{ id: string }> }) {
+  return (
+    <AuthGuard>
+      <ResultPage {...props} />
+    </AuthGuard>
   );
 }

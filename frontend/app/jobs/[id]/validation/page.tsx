@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AuthGuard } from "@/components/auth-guard";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { fetchValidation, submitValidation } from "@/lib/api";
@@ -49,7 +50,7 @@ function volumeTone(v: number | null | undefined): string {
   return "text-foreground";
 }
 
-export default function ValidationPage({
+function ValidationPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -440,5 +441,13 @@ function Shell({
       </header>
       <main className="max-w-4xl mx-auto px-6 py-8">{children}</main>
     </div>
+  );
+}
+
+export default function Page(props: { params: Promise<{ id: string }> }) {
+  return (
+    <AuthGuard>
+      <ValidationPage {...props} />
+    </AuthGuard>
   );
 }
