@@ -256,7 +256,16 @@ function NewGenerationPage() {
       router.push(`/jobs/${job_id}`);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Erreur inconnue";
-      toast.error(msg);
+      if (e instanceof InsufficientBalanceError) {
+        // Cas distinct des autres erreurs : la demande est valide, il manque
+        // seulement des cocons. Sans le raccourci vers le solde, l'agence n'a
+        // aucun moyen de comprendre ce qu'elle doit faire.
+        toast.error(msg, {
+          action: { label: "Voir mon solde", onClick: () => router.push("/billing") },
+        });
+      } else {
+        toast.error(msg);
+      }
       setSubmitting(false);
     }
   }
