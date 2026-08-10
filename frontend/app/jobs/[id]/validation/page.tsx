@@ -146,9 +146,14 @@ function ValidationPage({
         const has = c.selected.includes(keyword);
         if (has) {
           const selected = c.selected.filter((k) => k !== keyword);
+          // La consigne part avec l'article : le backend refuse (422) une
+          // consigne rattachée à un mot-clé absent du cocon, et il a raison —
+          // une consigne orpheline serait ignorée en silence.
+          const { [keyword]: _removed, ...directives } = c.directives;
           return {
             ...c,
             selected,
+            directives,
             // Décocher la mère : la promotion revient au premier restant, sinon
             // le cocon n'aurait plus de pilier et le formulaire serait bloqué
             // sans que rien ne l'explique.
@@ -164,6 +169,16 @@ function ValidationPage({
   function setMother(coconIndex: number, keyword: string) {
     setCocoons((prev) =>
       prev.map((c) => (c.index === coconIndex ? { ...c, mother: keyword } : c)),
+    );
+  }
+
+  function setDirective(coconIndex: number, keyword: string, text: string) {
+    setCocoons((prev) =>
+      prev.map((c) =>
+        c.index === coconIndex
+          ? { ...c, directives: { ...c.directives, [keyword]: text } }
+          : c,
+      ),
     );
   }
 
