@@ -272,7 +272,15 @@ export default function NewGenerationPage() {
           <Link href="/" className="text-sm text-muted-foreground hover:text-foreground">
             ← Retour
           </Link>
-          <span className="text-sm font-medium">Nouvelle génération</span>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/runs"
+              className="text-sm text-muted-foreground hover:text-foreground"
+            >
+              Historique
+            </Link>
+            <span className="text-sm font-medium">Nouvelle génération</span>
+          </div>
         </div>
       </header>
 
