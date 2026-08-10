@@ -509,6 +509,42 @@ ruptures de silo) est un contenu de démonstration bien plus fort qu'un
 argumentaire produit — il prouve la thèse « un LLM ne tient pas un cocon » que
 tout le milieu soupçonne sans l'avoir chiffrée.
 
+### Calendrier des événements SEO FR (relevé le 2026-08-10)
+
+Ce sont des rendez-vous **annuels et récurrents** : les dates 2026 servent de
+repère pour caler la prospection 2027, même quand l'édition est passée.
+
+| Événement | Édition 2026 | Lieu | Format | Prix | Organisateur |
+|---|---|---|---|---|---|
+| **SEO & GEO Summit** | **15-16 oct.** | Disneyland Paris (Hotel New York – The Art of Marvel) | Présentiel, 2 jours | 250 € HT (1 j) / 400 € HT (2 j) — passe à 500 € le 1er oct. | — |
+| Digital Rise | mi-octobre | En ligne | En ligne | Gratuit | Agence WAM |
+| SEO Summit Paris | 13-14 oct. | Paris | Présentiel | n.c. | — |
+| Salon du Search Marketing (ex SEO CAMP'us) | 30 janv. | Paris (Arc de Triomphe) | Présentiel | Gratuit hors VIP | **FePSeM** |
+| SEO Garden Party | 19 févr. | En ligne | En ligne | Gratuit | Linksgarden |
+| SMX Paris | 9-10 mars | Paris 3e (Espace Saint-Martin) | Présentiel, 50+ speakers | 40-790 € | SMX |
+| Wizard Events | mars | Lyon | Présentiel | n.c. | ZalidanTV |
+| Search en Seine | 2026 | Paris | Présentiel | n.c. | FePSeM |
+| BIG SEO | printemps | En ligne | En ligne | Gratuit + payant | — |
+| SEO Square | printemps | En ligne | En ligne | n.c. | Semji |
+| NDDCamp | 2026 | Rennes | Présentiel | n.c. | — |
+| All for Content | début 2026 | Paris | Présentiel | n.c. | — |
+
+**Encore actionnable en 2026 : le SEO & GEO Summit (15-16 octobre).** C'est le
+seul rendez-vous présentiel majeur restant sur l'année, et le mieux ciblé —
+audience de praticiens, thème 2026 centré sur la visibilité organique dans les
+LLM. L'early bird (31 juillet) est passé ; réserver **avant le 1er octobre**
+évite le tarif last minute à 500 € HT pour le passe 2 jours.
+
+⚠️ Deux sources se contredisent sur cet événement : un calendrier agrégé le
+place les 18-20 mars à Paris, une autre mention parle du 14 octobre au Parc des
+Princes. Le site officiel (seo-summit.com) et les communications de
+l'organisateur donnent **15-16 octobre à Disneyland Paris** — c'est ce qui fait
+foi. Revérifier avant de payer quoi que ce soit.
+
+Les événements IA généralistes (Big Data & AI Paris, BIG Bpifrance, Data & AI
+Leaders Summit) ont été écartés : mauvaise audience, ce sont des acheteurs de
+plateformes data, pas des producteurs de contenu SEO.
+
 ---
 
 ## Paysage concurrentiel
