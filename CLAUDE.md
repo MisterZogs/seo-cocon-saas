@@ -592,18 +592,76 @@ divise en trois familles.
 | **Semji** | Plateforme premium orientée ROI (impact trafic par contenu), GEO natif. ~1 200 entreprises, 4,4/5 sur 180 avis Capterra. Ne couvre ni le technique ni le netlinking. | sur devis, essai 15 j |
 | **1.fr** | Entrée de gamme, version gratuite. | freemium |
 
-**C. 🔴 Sedestral — le seul vrai concurrent direct, et il était inconnu**
+**C. 🔴 Sedestral — le concurrent le plus dangereux (analysé en détail août 2026)**
 
-Français, **dès 59 €/mois**, 500+ e-commerçants. Fait la chaîne complète :
-recherche de mots-clés → silos thématiques → hiérarchie pilier/fille/petite-fille
-→ articles complets de 1 200-1 500 mots → FAQ → images (DALL-E / Stable
-Diffusion) → maillage interne → publication WordPress / PrestaShop / Shopify en
-moins de dix minutes. Agents IA nommés (Alya rédaction, Rémi optimisation, Nox
-technique). Audits mensuels automatisés.
+*(Les chiffres « 59 €/mois, 500 e-commerçants » d'une première passe venaient
+d'une source secondaire et étaient faux. Ce qui suit vient du site, de
+l'annuaire des entreprises et d'un test indépendant.)*
 
-Maillage annoncé : vertical **et** horizontal, détection de pages orphelines,
-distribution d'ancres (exact / partiel / générique), **« 4 à 6 liens pertinents
-par page maximum »**.
+**Société.** SEDESTRAL SAS, SIREN 982 531 956, 50 rue Germaine Tillion, 92700
+Colombes. NAF 58.29C (édition de logiciels). Immatriculée au RNE le 2023-12-18,
+créée le 2024-01-01. **Capital social : 100 €. Aucun salarié déclaré.**
+→ Micro-structure bootstrappée, sans levée de fonds. **Même catégorie de poids
+que nous.** Dangereux par l'étendue du produit, pas par les moyens.
+
+**Positionnement : « Agentic SEO »** — cinq agents IA nommés qui couvrent toute
+la chaîne, là où nous couvrons un axe en profondeur :
+
+| Agent | Rôle |
+|---|---|
+| **Alya** | Rédaction d'articles SEO + publication automatique sur le blog |
+| **Rémi** | Optimisation des contenus existants vs top 10 Google |
+| **Nox** | Audit technique continu (erreurs, vitesse, indexation) |
+| **Marc** | Suivi de positions et analyse concurrentielle |
+| **Maya** | Profil de liens, analyse concurrents, **acquisition de backlinks** |
+
+**Intégrations natives : 7 CMS** — WordPress, PrestaShop, Shopify, Wix, Webflow,
+Odoo, Joomla. Publication en moins de dix minutes, images générées incluses.
+
+**Tarifs (blogdumoderateur, les plus détaillés) :** 119 €/mois (20 articles) ·
+239 €/mois (60 articles) · 499 €/mois (200 articles) · option visuels +19 €/mois.
+Essai gratuit sans inscription. Code promo public « BDM » = -15 %.
+⚠️ Une autre source annonce 49 / 99 / 299 € — grille probablement ancienne ou
+différente. Revérifier avant tout comparatif public.
+
+**Comparaison au coût par article** (nos formules sont plus agressives à *tous*
+les paliers — mais c'est leur terrain, pas le nôtre, ne pas s'y battre) :
+
+| | Sedestral | Nous |
+|---|---|---|
+| Entrée | 119 € / 20 art. = **5,95 €** | 49 € / 18 art. = **2,72 €** |
+| Milieu | 239 € / 60 art. = **3,98 €** | 249 € / 120 art. = **2,08 €** |
+| Haut | 499 € / 200 art. = **2,50 €** | 690 € / 360 art. = **1,92 €** |
+
+**Revendication : 1 800+ marques et agences.** À prendre avec prudence : 1 800
+clients au tarif d'entrée feraient ~2,5 M€ d'ARR avec zéro salarié. Le chiffre
+compte très probablement les essais et inscriptions, pas les payants.
+
+**Maillage annoncé :** vertical **et** horizontal, détection de pages
+orphelines, distribution d'ancres (exact / partiel / générique), **« 4 à 6 liens
+pertinents par page maximum »**.
+
+**Faiblesses relevées par un test indépendant (Guillaume Guersan) :**
+- 🔴 **« Certaines informations commerciales étaient inventées »** — hallucinations
+  dans le contenu généré, relecture humaine systématique exigée. **C'est notre
+  meilleur angle d'attaque** : les blocs verbatim sont par construction les
+  seuls passages qu'aucun modèle n'a pu inventer.
+- La supervision nécessaire annule une partie du gain de temps promis.
+- Netlinking incomplet : « l'outil ne permet pas encore de créer des backlinks
+  directement ».
+- Choix des concurrents peu personnalisable.
+
+**Ce qu'ils n'ont pas :** aucun Mode Brief, aucune rigueur cocon (leur maillage
+est un plafond heuristique), aucun score E-E-A-T, aucune injection verbatim.
+
+⚠️ **Le vrai danger : ils ciblent explicitement les agences** (« accélérateur »
+pour agences marketing) alors qu'ils étaient e-commerce à l'origine. C'est
+exactement notre segment. À surveiller trimestriellement.
+
+⚠️ **À vérifier avant d'attaquer leur agent Maya publiquement :** « acquisition
+de backlinks » est ambigu — outreach white hat ou achat de liens ? Notre
+positionnement « pas de marketplace de liens » n'est un argument que si c'est
+le second. Ne pas l'affirmer sans preuve.
 
 **Où passe la différence, précisément.** « 4 à 6 liens par page maximum » est un
 plafond heuristique, pas une règle arithmétique. Le cocon de Bourrelly impose
