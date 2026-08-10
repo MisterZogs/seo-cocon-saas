@@ -45,6 +45,66 @@ type CoconState = {
   directives: Record<string, string>;
 };
 
+const DIRECTIVE_MAX = 2000; // miroir de ArticleStub.directives côté backend
+
+/**
+ * Consignes de l'agence pour un article, repliées par défaut.
+ *
+ * Une consigne déjà écrite reste visible même repliée (résumée) : sinon
+ * l'agence ne saurait plus lesquels de ses 24 articles portent une instruction.
+ */
+function DirectiveField({
+  value,
+  open,
+  onToggle,
+  onChange,
+}: {
+  value: string;
+  open: boolean;
+  onToggle: () => void;
+  onChange: (text: string) => void;
+}) {
+  const filled = value.trim() !== "";
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={onToggle}
+        className="mt-2 ml-9 block text-left text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+      >
+        {filled ? `Consigne : « ${value.trim().slice(0, 80)}… »` : "+ Ajouter une consigne"}
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-2 ml-9">
+      <Textarea
+        autoFocus
+        rows={3}
+        maxLength={DIRECTIVE_MAX}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Insister sur…, ne pas parler de…, angle à privilégier…"
+        className="text-sm"
+      />
+      <div className="mt-1 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          Éditorial uniquement — le maillage interne reste imposé par l&apos;outil.
+        </p>
+        <button
+          type="button"
+          onClick={onToggle}
+          className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        >
+          Replier
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function volumeLabel(v: number | null | undefined): string {
   if (v === null || v === undefined) return "volume inconnu";
   if (v === 0) return "0 recherche/mois";
