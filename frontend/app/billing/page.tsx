@@ -7,9 +7,21 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AccountMenu, AuthGuard } from "@/components/auth-guard";
-import { fetchBalance, fetchLedger } from "@/lib/api";
-import type { BalanceResponse, CocoonLot, LedgerEntry } from "@/lib/types";
+import {
+  fetchBalance,
+  fetchLedger,
+  fetchOffers,
+  openPortal,
+  startCheckout,
+} from "@/lib/api";
+import type {
+  BalanceResponse,
+  BillingOffers,
+  CocoonLot,
+  LedgerEntry,
+} from "@/lib/types";
 
 const DATE_FMT = new Intl.DateTimeFormat("fr-FR", {
   dateStyle: "medium",
