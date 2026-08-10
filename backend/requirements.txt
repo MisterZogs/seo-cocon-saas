@@ -4,6 +4,13 @@ uvicorn[standard]>=0.32.0
 python-dotenv>=1.0.0
 httpx>=0.28.0
 pydantic>=2.0.0
+email-validator>=2.2.0
+# Auth maison (cf. backend/auth.py) — PyJWT signe les jetons, argon2-cffi hashe
+# les mots de passe. cryptography n'est pas utilisé directement mais PyJWT le
+# réclame dès qu'on sort de HS256 ; il était déjà dans le venv sans être déclaré.
+PyJWT>=2.10.0
+argon2-cffi>=23.1.0
+cryptography>=44.0.0
 beautifulsoup4>=4.12.0
 lxml>=5.0.0
 rq>=1.16.0
