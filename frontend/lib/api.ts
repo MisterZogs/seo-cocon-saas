@@ -5,14 +5,89 @@ import type {
   ValidationDecision,
   ValidationSnapshot,
 } from "./types";
+import {
+  authHeaders,
+  getToken,
+  redirectToLogin,
+  type Session,
+} from "./auth";
 
 const API_URL =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+/**
+ * `fetch` + jeton d'agence + traitement uniforme du 401.
+ *
+ * Le 401 est le seul statut traité ici plutôt que remonté à l'appelant : une
+ * session expirée n'est pas une erreur métier que la page saurait afficher
+ * utilement, et la laisser passer produirait un message d'erreur technique là
+ * où l'utilisateur doit simplement se reconnecter.
+ */
+async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  const res = await fetch(`${API_URL}${path}`, {
+    ...init,
+    cache: "no-store",
+    headers: { ...authHeaders(), ...(init.headers || {}) },
+  });
+
+  if (res.status === 401) {
+    redirectToLogin();
+    throw new Error("Session expirée — reconnectez-vous.");
+  }
+  return res;
+}
+
+/** Message d'erreur du backend, quel que soit le format de la réponse. */
+async function errorMessage(res: Response, fallback: string): Promise<string> {
+  const detail = await res.json().catch(() => null);
+  if (typeof detail?.detail === "string") return detail.detail;
+  // FastAPI rend les erreurs de validation Pydantic sous forme de liste.
+  return detail?.detail?.[0]?.msg || fallback;
+}
+
+// ============================================================
+// Authentification
+// ============================================================
+
+export async function register(payload: {
+  email: string;
+  password: string;
+  name: string;
+}): Promise<Session> {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, `Inscription refusée (${res.status})`));
+  }
+  return res.json();
+}
+
+export async function login(payload: {
+  email: string;
+  password: string;
+}): Promise<Session> {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, `Connexion refusée (${res.status})`));
+  }
+  return res.json();
+}
+
+// ============================================================
+// Pipeline
+// ============================================================
+
 export async function createGeneration(
   form: ClientForm,
-): Promise<{ job_id: string; status: string }> {
-  const res = await fetch(`${API_URL}/generate`, {
+): Promise<{ job_id: string; run_id: string; status: string }> {
+  const res = await apiFetch("/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(form),
@@ -25,7 +100,7 @@ export async function createGeneration(
 }
 
 /**
- * Formulaire de la dernière demande soumise — sert à préremplir /new.
+ * Formulaire de la dernière demande soumise par l'agence — sert à préremplir /new.
  *
  * `form: null` est un cas normal (base vide ou non configurée), pas une erreur :
  * le formulaire s'ouvre alors vierge.
@@ -34,7 +109,7 @@ export async function fetchFormDefaults(): Promise<{
   enabled: boolean;
   form: ClientForm | null;
 }> {
-  const res = await fetch(`${API_URL}/form-defaults`, { cache: "no-store" });
+  const res = await apiFetch("/form-defaults");
   if (!res.ok) {
     throw new Error(`Valeurs par défaut indisponibles (${res.status})`);
   }
@@ -42,15 +117,24 @@ export async function fetchFormDefaults(): Promise<{
 }
 
 export async function fetchJobStatus(jobId: string): Promise<JobStatusResponse> {
-  const res = await fetch(`${API_URL}/jobs/${jobId}`, { cache: "no-store" });
+  const res = await apiFetch(`/jobs/${jobId}`);
   if (!res.ok) {
     throw new Error(`Job introuvable (${res.status})`);
   }
   return res.json();
 }
 
+/**
+ * URL du flux SSE, jeton compris.
+ *
+ * `EventSource` ne sait pas poser d'en-tête `Authorization` — c'est une limite
+ * de l'API navigateur. Le backend n'accepte le jeton en paramètre d'URL que sur
+ * cette route, et uniquement pour cette raison (cf. backend/auth.py).
+ */
 export function jobStreamUrl(jobId: string): string {
-  return `${API_URL}/jobs/${jobId}/stream`;
+  const token = getToken();
+  const query = token ? `?token=${encodeURIComponent(token)}` : "";
+  return `${API_URL}/jobs/${jobId}/stream${query}`;
 }
 
 /**
@@ -60,10 +144,9 @@ export function jobStreamUrl(jobId: string): string {
 export async function retryJob(
   jobId: string,
 ): Promise<{ job_id: string; run_id: string; status: string }> {
-  const res = await fetch(`${API_URL}/jobs/${jobId}/retry`, { method: "POST" });
+  const res = await apiFetch(`/jobs/${jobId}/retry`, { method: "POST" });
   if (!res.ok) {
-    const detail = await res.json().catch(() => null);
-    throw new Error(detail?.detail || `Reprise impossible (${res.status})`);
+    throw new Error(await errorMessage(res, `Reprise impossible (${res.status})`));
   }
   return res.json();
 }
@@ -72,12 +155,9 @@ export async function retryJob(
 export async function fetchValidation(
   runId: string,
 ): Promise<ValidationSnapshot> {
-  const res = await fetch(`${API_URL}/runs/${runId}/validation`, {
-    cache: "no-store",
-  });
+  const res = await apiFetch(`/runs/${runId}/validation`);
   if (!res.ok) {
-    const detail = await res.json().catch(() => null);
-    throw new Error(detail?.detail || `Sélection introuvable (${res.status})`);
+    throw new Error(await errorMessage(res, `Sélection introuvable (${res.status})`));
   }
   return res.json();
 }
@@ -96,19 +176,13 @@ export async function submitValidation(
   cocoons: number;
   articles: number;
 }> {
-  const res = await fetch(`${API_URL}/runs/${runId}/validation`, {
+  const res = await apiFetch(`/runs/${runId}/validation`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(decision),
   });
   if (!res.ok) {
-    const detail = await res.json().catch(() => null);
-    const message =
-      typeof detail?.detail === "string"
-        ? detail.detail
-        : // FastAPI rend les erreurs de validation Pydantic sous forme de liste.
-          detail?.detail?.[0]?.msg || `Validation refusée (${res.status})`;
-    throw new Error(message);
+    throw new Error(await errorMessage(res, `Validation refusée (${res.status})`));
   }
   return res.json();
 }
@@ -117,7 +191,7 @@ export async function fetchRuns(): Promise<{
   enabled: boolean;
   runs: RunSummary[];
 }> {
-  const res = await fetch(`${API_URL}/runs`, { cache: "no-store" });
+  const res = await apiFetch("/runs");
   if (!res.ok) {
     throw new Error(`Historique indisponible (${res.status})`);
   }
