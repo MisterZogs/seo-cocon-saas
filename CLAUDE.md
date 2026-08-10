@@ -383,6 +383,25 @@ au client le plus lourd.
 | Brief | ~$1 | $0,38 | $1,38 | **1,70 €** |
 | Génération complète | ~$3 | $0,38 | $3,38 | **4,00 €** |
 
+⚠️ **Mesure contradictoire à réconcilier (run du 2026-08-10, 2 cocons, mode
+Génération complète, 12 articles, 32 161 mots, 36 min).** Coût réel total :
+**$3,26** ($2,696 Claude + $0,567 DataForSEO), soit **$1,63 par cocon** — la
+moitié du chiffre ci-dessus, alors que le volume de sortie par cocon est
+identique à la mesure d'origine (72 853 tokens vs 72 006). Les paliers de prix
+restent donc valides et les marges sont **meilleures** que documenté, mais
+l'écart n'est pas expliqué : à investiguer avant de graver les coûts unitaires
+dans un business plan. Ne pas écraser la ligne d'origine tant que ce n'est pas
+tranché — deux mesures valent mieux qu'une moyenne inventée.
+
+🔴 **Le prompt caching ne fonctionne quasiment pas.** Sur ce même run :
+`cache_read_tokens` 14 184 pour 74 815 tokens d'entrée (19 %), et
+`cache_savings_usd` **$0,038 sur $2,70, soit 1,4 %**. Le présent document
+affirme pourtant que le caching est OBLIGATOIRE et que « sans caching = 4x plus
+cher ». L'un des deux est faux. À diagnostiquer dans
+`clients/anthropic_client.py` : contexte partagé probablement reconstruit à
+chaque appel, ou `cache_control` mal placé, ou blocs sous le seuil minimum de
+tokens cachables.
+
 Le coût n'est jamais la contrainte : les paliers se calibrent sur la valeur
 perçue et la segmentation. C'est confortable mais piégeux — sans contrainte de
 coût, on sous-tarife par prudence.
