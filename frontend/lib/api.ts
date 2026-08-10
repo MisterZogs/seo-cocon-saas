@@ -86,6 +86,19 @@ export async function login(payload: {
 // Pipeline
 // ============================================================
 
+/** Solde insuffisant (402) — distingué pour pouvoir proposer d'acheter. */
+export class InsufficientBalanceError extends Error {
+  readonly requiredUnits: number;
+  readonly availableUnits: number;
+
+  constructor(message: string, requiredUnits: number, availableUnits: number) {
+    super(message);
+    this.name = "InsufficientBalanceError";
+    this.requiredUnits = requiredUnits;
+    this.availableUnits = availableUnits;
+  }
+}
+
 export async function createGeneration(
   form: ClientForm,
 ): Promise<{ job_id: string; run_id: string; status: string }> {
@@ -94,9 +107,40 @@ export async function createGeneration(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(form),
   });
+  if (res.status === 402) {
+    const detail = await res.json().catch(() => null);
+    throw new InsufficientBalanceError(
+      detail?.detail || "Solde de cocons insuffisant.",
+      detail?.required_units ?? 0,
+      detail?.available_units ?? 0,
+    );
+  }
   if (!res.ok) {
     const text = await res.text();
     throw new Error(`Erreur ${res.status}: ${text}`);
+  }
+  return res.json();
+}
+
+// ============================================================
+// Facturation
+// ============================================================
+
+export async function fetchBalance(): Promise<BalanceResponse> {
+  const res = await apiFetch("/billing/balance");
+  if (!res.ok) {
+    throw new Error(`Solde indisponible (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function fetchLedger(): Promise<{
+  entries: LedgerEntry[];
+  units_per_cocoon: number;
+}> {
+  const res = await apiFetch("/billing/ledger");
+  if (!res.ok) {
+    throw new Error(`Journal indisponible (${res.status})`);
   }
   return res.json();
 }
