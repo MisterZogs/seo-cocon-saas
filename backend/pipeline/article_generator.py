@@ -529,6 +529,36 @@ def _serp_analysis_block(analysis: SerpAnalysis) -> str:
 {chr(10).join(f'  · {g}' for g in analysis.content_gaps[:5])}"""
 
 
+def _directives_block(stub: ArticleStub) -> str:
+    """Consignes de l'agence pour CET article, saisies à l'écran de validation.
+
+    Placées après le bloc SERP et juste avant la tâche, c'est-à-dire au plus
+    près de ce que le modèle doit produire : une instruction noyée en tête de
+    prompt derrière 3 000 mots d'analyse concurrentielle passe mal.
+
+    Le cadrage explicite « ne prime pas sur le maillage » est là parce que ce
+    champ est du texte libre : une agence écrira tôt ou tard « mets un lien vers
+    la page tarifs ». Les règles structurelles restent imposées en code par
+    `pipeline/maillage.py`, et le prompt ne doit pas laisser croire l'inverse.
+    """
+    directives = (stub.directives or "").strip()
+    if not directives:
+        return ""
+    return f"""
+
+# AGENCY INSTRUCTIONS FOR THIS SPECIFIC ARTICLE
+
+Written by the SEO agency after reviewing the keyword selection. Follow them
+closely — they reflect knowledge of the client that you do not have.
+
+They govern EDITORIAL choices only: angle, emphasis, what to develop, what to
+leave out, tone. They do NOT override the internal linking plan, the heading
+budget, or the verbatim experience rules — those are enforced after generation
+and any instruction contradicting them will simply be discarded.
+
+«{directives}»"""
+
+
 def _stub_block(stub: ArticleStub, cocon: CoconStructure) -> str:
     role = "MOTHER (pillar article)" if stub.article_type == ArticleType.MOTHER else "DAUGHTER (cluster article)"
     return f"""ARTICLE TO PRODUCE:
