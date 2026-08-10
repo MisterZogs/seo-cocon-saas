@@ -348,7 +348,26 @@ async def health() -> dict:
 
 @app.post("/generate")
 async def generate(form: ClientForm, agency: Agency = Depends(current_agency)) -> dict:
-    """Enqueue une génération de cocons. Retourne le job_id."""
+    """Enqueue une génération de cocons. Retourne le job_id.
+
+    **Le solde est vérifié ici, mais rien n'est débité.** La règle produit est
+    « débit à la génération, jamais à la soumission » : la recherche de mots-clés
+    est offerte, elle sert d'essai et de moment de validation. Vérifier sans
+    débiter évite quand même de lancer un run qu'on sait condamné à s'arrêter
+    après avoir dépensé $0,38 de notre poche.
+
+    Le contrôle porte sur `num_cocoons` du formulaire ; le débit réel, plus tard,
+    portera sur le nombre de cocons effectivement construits — l'agence peut en
+    retirer à l'écran de validation, et elle ne paiera que ce qu'elle garde.
+    """
+    billing = get_billing_repository()
+    available = await billing.balance_units(
+        agency.id, await billing.get_plan_for(agency.id)
+    )
+    required = cocoons_to_units(form.num_cocoons)
+    if available < required:
+        raise InsufficientBalance(required_units=required, available_units=available)
+
     form_dict = form.model_dump(mode="json")
     # Le propriétaire vient du jeton, jamais du formulaire : `agency_id` reste
     # un champ du ClientForm pour la compatibilité des runs déjà persistés, mais
