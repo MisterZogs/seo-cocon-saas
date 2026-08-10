@@ -16,6 +16,19 @@ const MIN_PASSWORD_LENGTH = 10;
 
 type Mode = "login" | "register";
 
+/**
+ * Destination post-connexion, ramenée à un chemin interne.
+ *
+ * `next` vient de l'URL, donc de l'utilisateur : le laisser passer tel quel
+ * ouvrirait une redirection arbitraire. `startsWith("/")` ne suffit pas —
+ * `//evil.example` est une URL protocole-relatif qui commence bien par « / » et
+ * sort pourtant du site.
+ */
+function safeNext(raw: string | null): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/new";
+  return raw;
+}
+
 export default function LoginPage() {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
