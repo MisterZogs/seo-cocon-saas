@@ -38,6 +38,14 @@ info "Vérification des prérequis locaux..."
 [ -f "$REPO_DIR/.env" ] || die "Fichier .env introuvable. Copie .env.production.example → .env et remplis-le."
 grep -q "^DOMAIN=" "$REPO_DIR/.env" || die ".env doit contenir DOMAIN=..."
 grep -q "^ANTHROPIC_API_KEY=sk-ant-" "$REPO_DIR/.env" || die ".env doit contenir ANTHROPIC_API_KEY=sk-ant-..."
+
+# JWT_SECRET : sans lui le backend refuse de démarrer (cf. backend/auth.py) et
+# docker compose refuse même de lancer le service. Autant échouer ici, avant le
+# rsync, plutôt que sur le VPS avec la prod à l'arrêt.
+JWT_LINE="$(grep '^JWT_SECRET=' "$REPO_DIR/.env" || true)"
+[ -n "$JWT_LINE" ] || die ".env doit contenir JWT_SECRET=... — générer avec :
+    python3 -c \"import secrets; print(secrets.token_urlsafe(48))\""
+[ "${#JWT_LINE}" -ge 43 ] || die "JWT_SECRET fait moins de 32 caractères — le backend le refusera."
 ok "Prérequis locaux OK"
 
 # ---- 2. rsync du repo vers le VPS ----
