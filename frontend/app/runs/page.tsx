@@ -63,7 +63,7 @@ type State =
   | { kind: "error"; message: string }
   | { kind: "ready"; runs: RunSummary[] };
 
-export default function RunsPage() {
+function RunsPage() {
   const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
