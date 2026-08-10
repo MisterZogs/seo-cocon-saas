@@ -222,7 +222,9 @@ function ValidationPage({
           // La consigne part avec l'article : le backend refuse (422) une
           // consigne rattachée à un mot-clé absent du cocon, et il a raison —
           // une consigne orpheline serait ignorée en silence.
-          const { [keyword]: _removed, ...directives } = c.directives;
+          const directives = Object.fromEntries(
+            Object.entries(c.directives).filter(([k]) => k !== keyword),
+          );
           return {
             ...c,
             selected,
