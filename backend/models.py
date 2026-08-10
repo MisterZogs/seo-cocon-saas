@@ -137,6 +137,40 @@ class ClientForm(BaseModel):
 
 
 # ============================================================
+# AUTH — comptes agences
+# ============================================================
+
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    # `min_length` est laissé volontairement large ici : la vraie règle vit dans
+    # `auth.validate_password_strength`, pour que le message d'erreur soit en
+    # français et unique, plutôt qu'une erreur Pydantic générique.
+    password: str = Field(..., min_length=1)
+    name: str = Field(..., min_length=2, max_length=120, description="Nom de l'agence")
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(..., min_length=1)
+
+
+class AgencyPublic(BaseModel):
+    """Ce qu'on renvoie d'un compte — jamais le hash."""
+
+    id: str
+    email: str
+    name: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+    expires_at: datetime
+    agency: AgencyPublic
+
+
+# ============================================================
 # KEYWORD RESEARCH
 # ============================================================
 
