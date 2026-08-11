@@ -135,6 +135,10 @@ async def _regenerate_async(
         outcome.maillage_intact,
     )
     return {
+        # Témoin de forme : le résultat d'un job de régénération n'est PAS un
+        # `PipelineResult`. Sans ce drapeau, l'écran de résultat tenterait de le
+        # rendre comme un livrable complet et n'afficherait rien.
+        "regeneration": True,
         "run_id": run_id,
         "slug": slug,
         "mode": outcome.mode.value,
