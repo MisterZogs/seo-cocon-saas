@@ -1089,6 +1089,18 @@ seo/
       par article (Mode Brief bidirectionnel) est bien reprise dans le brief.
       ⚠️ Après un rechargement de crédit Anthropic, la propagation n'est pas
       immédiate — tester la clé par un appel minimal avant de relancer un run.
+- [x] **Mode Génération complète prouvé en production** (2026-08-11). Run réel,
+      1 cocon, 6 articles, 19 100 mots, avec éléments d'expérience et échantillon
+      de style. Les quatre mécanismes jamais exécutés en prod fonctionnent :
+      **marqueurs `[[INTERNAL_LINK]]` dans le corps** (5 marqueurs pour 5 liens
+      sur chacun des 6 articles, 0 orphelin — c'est le code le plus délicat du
+      projet et il n'existe pas en Mode Brief) ; **injection verbatim exacte**,
+      caractère pour caractère, en bloc cité et attribué, chaque élément dans un
+      seul article ; **plafond E-E-A-T** tenu (55 avec verbatim, 20-30 sans) ;
+      **maillage** à 30 liens, 5 entrants et 5 sortants partout.
+      Le **caching s'est enfin déclenché** grâce aux `style_samples` (6 088
+      tokens lus) pour une économie de **1,1 %** — confirme que franchir le seuil
+      fonctionne et ne rapporte rien, la sortie dominant le coût.
 - [x] Test end-to-end avec DataForSEO réel — fait depuis le 2026-08-06
       (la case était restée décochée à tort)
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
