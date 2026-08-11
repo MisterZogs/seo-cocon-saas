@@ -422,7 +422,7 @@ async def test_garde_fous() -> bool:
     exp = [
         ExperienceElement(
             id="exp-1",
-            kind="case_study",
+            type="case_study",
             title="Intervention à Meudon",
             content="Nous sommes intervenus sur un nid de 40 cm en août 2025." * 3,
         )
