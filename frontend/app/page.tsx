@@ -52,6 +52,15 @@ export default function Home() {
                 {item.label}
               </a>
             ))}
+            {/* Outil gratuit : mis dans la nav principale et pas relégué en
+                pied de page — c'est la porte d'entrée sans friction, celle
+                qu'on donne en lien depuis LinkedIn. */}
+            <Link
+              href="/outils/cocon"
+              className="text-foreground/80 transition-colors hover:text-primary"
+            >
+              Outil gratuit
+            </Link>
             <Link
               href="/runs"
               className="hidden text-foreground/80 transition-colors hover:text-primary sm:block"
