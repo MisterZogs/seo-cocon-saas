@@ -80,7 +80,15 @@ function ResultPage({
   return <ResultView result={result} jobId={jobId} runId={status.run_id} />;
 }
 
-function ResultView({ result, jobId }: { result: PipelineResult; jobId: string }) {
+function ResultView({
+  result,
+  jobId,
+  runId,
+}: {
+  result: PipelineResult;
+  jobId: string;
+  runId: string | null;
+}) {
   const totalArticles =
     result.cocoons.reduce((acc, c) => acc + 1 + c.daughters.length, 0);
   const mode = result.form.mode;
