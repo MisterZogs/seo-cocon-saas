@@ -372,6 +372,7 @@ class BillingRepository:
             raise InsufficientBalance(required_units=units, available_units=available)
 
         left = units
+        entry_ids: list[str] = []
         for row in rows:
             if left <= 0:
                 break
@@ -381,10 +382,11 @@ class BillingRepository:
                 row["id"],
                 take,
             )
-            await conn.execute(
+            entry_id = await conn.fetchval(
                 """
                 insert into cocoon_ledger (agency_id, lot_id, run_id, kind, delta_units, note)
                 values ($1::uuid, $2, $3::uuid, $4, $5, $6)
+                returning id
                 """,
                 agency_id,
                 row["id"],
@@ -393,7 +395,9 @@ class BillingRepository:
                 -take,
                 note,
             )
+            entry_ids.append(str(entry_id))
             left -= take
+        return entry_ids
 
     # ------------------------------------------------------------------
     # Remboursement
