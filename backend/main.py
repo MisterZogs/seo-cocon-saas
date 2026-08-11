@@ -75,14 +75,21 @@ from models import (  # noqa: E402
     ClientForm,
     KeywordWithData,
     LoginRequest,
+    PipelineResult,
+    RegenerationRequest,
     RegisterRequest,
     TokenResponse,
     ValidationDecision,
     ValidationSnapshot,
 )
 from pipeline.cocon_builder import CoconBuilder  # noqa: E402
+from pipeline.regeneration import regenerable_slugs  # noqa: E402
 from pipeline.validation import apply_decision  # noqa: E402
 from workers.pipeline_job import VALIDATION_CHECKPOINT, run_pipeline_job  # noqa: E402
+from workers.regeneration_job import (  # noqa: E402
+    UNITS_PER_ARTICLE,
+    regenerate_article_job,
+)
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
