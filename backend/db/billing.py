@@ -343,13 +343,18 @@ class BillingRepository:
         run_id: str | None,
         kind: str,
         note: str,
-    ) -> None:
+    ) -> list[str]:
         """Consomme `units` sur les lots vivants, du plus proche de l'expiration.
 
         FIFO par expiration (les lots sans expiration en dernier) : on brûle
         d'abord ce qui allait être perdu. Le `for update` verrouille les lots de
         l'agence pour toute la transaction — sans lui, deux générations
         simultanées liraient le même solde et le dépasseraient toutes les deux.
+
+        Retourne les identifiants des écritures créées. Un débit peut s'étaler
+        sur plusieurs lots, donc plusieurs lignes : c'est ce qui permet
+        d'annuler *exactement* ce débit-là (cf. `reverse_entries`) sans toucher
+        aux autres débits du même run.
         """
         rows = await conn.fetch(
             """
