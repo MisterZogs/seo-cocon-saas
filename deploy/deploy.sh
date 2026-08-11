@@ -42,20 +42,30 @@ REMOTE_DIR="${REMOTE_DIR:-/opt/cocon}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# ---- 1. Vérifs préalables ----
-info "Vérification des prérequis locaux..."
-[ -f "$REPO_DIR/.env" ] || die "Fichier .env introuvable. Copie .env.production.example → .env et remplis-le."
-grep -q "^DOMAIN=" "$REPO_DIR/.env" || die ".env doit contenir DOMAIN=..."
-grep -q "^ANTHROPIC_API_KEY=sk-ant-" "$REPO_DIR/.env" || die ".env doit contenir ANTHROPIC_API_KEY=sk-ant-..."
+# ---- 1. Vérifs préalables, côté VPS ----
+# Les variables sont contrôlées là où elles servent. Échouer ici, avant le rsync,
+# plutôt que sur le VPS avec la prod à l'arrêt : sans JWT_SECRET le backend refuse
+# de démarrer (cf. backend/auth.py) et compose refuse même de lancer le service ;
+# sans DB_PASSWORD c'est le service `db` qui ne démarre pas.
+info "Vérification du .env sur $VPS_HOST..."
+REQUIRED_KEYS="DOMAIN ANTHROPIC_API_KEY DATAFORSEO_LOGIN DATAFORSEO_PASSWORD DB_PASSWORD JWT_SECRET"
 
-# JWT_SECRET : sans lui le backend refuse de démarrer (cf. backend/auth.py) et
-# docker compose refuse même de lancer le service. Autant échouer ici, avant le
-# rsync, plutôt que sur le VPS avec la prod à l'arrêt.
-JWT_LINE="$(grep '^JWT_SECRET=' "$REPO_DIR/.env" || true)"
-[ -n "$JWT_LINE" ] || die ".env doit contenir JWT_SECRET=... — générer avec :
-    python3 -c \"import secrets; print(secrets.token_urlsafe(48))\""
-[ "${#JWT_LINE}" -ge 43 ] || die "JWT_SECRET fait moins de 32 caractères — le backend le refusera."
-ok "Prérequis locaux OK"
+REMOTE_KEYS="$(ssh "$VPS_HOST" "grep -oE '^[A-Z_]+' $REMOTE_DIR/.env 2>/dev/null" || true)"
+[ -n "$REMOTE_KEYS" ] || die "$REMOTE_DIR/.env introuvable ou vide sur $VPS_HOST.
+    C'est lui la référence de la prod. Le créer depuis .env.production.example,
+    directement sur le VPS, puis relancer."
+
+MISSING=""
+for key in $REQUIRED_KEYS; do
+    echo "$REMOTE_KEYS" | grep -qx "$key" || MISSING="$MISSING $key"
+done
+[ -z "$MISSING" ] || die "Variables absentes de $REMOTE_DIR/.env :$MISSING
+    Les ajouter sur le VPS (jamais en local, jamais par scp) :
+      ssh $VPS_HOST 'printf \"JWT_SECRET=%s\\n\" \"\$(openssl rand -hex 32)\" >> $REMOTE_DIR/.env'"
+
+echo "$REMOTE_KEYS" | grep -qx "STRIPE_SECRET_KEY" \
+    || warn "STRIPE_SECRET_KEY absent : les routes de paiement répondront 503. Le reste fonctionne."
+ok "Prérequis VPS OK"
 
 # ---- 2. rsync du repo vers le VPS ----
 info "Sync du repo vers $VPS_HOST:$REMOTE_DIR ..."
