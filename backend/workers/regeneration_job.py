@@ -131,24 +131,32 @@ async def _regenerate_async(
         run_id,
         slug,
         outcome.mode.value,
-        debited,
+        bool(entry_ids),
         outcome.maillage_intact,
     )
     return {
         "run_id": run_id,
         "slug": slug,
         "mode": outcome.mode.value,
-        "billed_units": UNITS_PER_ARTICLE if debited else 0,
+        "billed_units": UNITS_PER_ARTICLE if entry_ids else 0,
         "maillage_intact": outcome.maillage_intact,
         "missing_links": outcome.missing_links,
     }
 
 
-async def _refund(billing, run_id: str, debited: bool, *, reason: str) -> None:
-    if not debited:
+async def _refund(billing, run_id: str, entry_ids: list[str], *, reason: str) -> None:
+    """Annule le débit de CETTE régénération, et lui seul.
+
+    Surtout pas `refund_run` : il ne cible que les `debit_generation`, donc il
+    rembourserait le cocon d'origine du run — un cocon offert à chaque
+    régénération ratée.
+    """
+    if not entry_ids:
         return
     try:
-        await billing.refund_run(run_id)
+        await billing.reverse_entries(
+            entry_ids, note="Remboursement — régénération d'article en échec"
+        )
         logger.info("Régénération du run %s remboursée (%s)", run_id, reason)
     except Exception as refund_error:
         # Ne jamais masquer l'erreur d'origine : c'est elle que l'agence doit
