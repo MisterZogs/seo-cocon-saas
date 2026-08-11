@@ -4,6 +4,7 @@ import type {
   ClientForm,
   JobStatusResponse,
   LedgerEntry,
+  RegenerationStarted,
   RunSummary,
   ValidationDecision,
   ValidationSnapshot,
