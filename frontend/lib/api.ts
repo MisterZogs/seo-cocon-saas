@@ -301,6 +301,32 @@ export async function regenerateArticle(
 }
 
 /**
+ * Générateur public — structure d'un cocon à partir d'un seul mot-clé.
+ *
+ * N'utilise **pas** `apiFetch` : cette route est la seule sans authentification,
+ * et y envoyer un jeton n'aurait aucun sens. Surtout, `apiFetch` redirige vers
+ * la connexion sur un 401 — comportement correct partout ailleurs, absurde sur
+ * une page dont l'intérêt est justement qu'on y arrive sans compte.
+ */
+export async function previewCocon(
+  keyword: string,
+  context?: string,
+): Promise<CoconPreviewResponse> {
+  const res = await fetch(`${API_URL}/public/cocon-preview`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ keyword, context: context ?? null }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      await errorMessage(res, `Génération impossible (${res.status})`),
+    );
+  }
+  return res.json();
+}
+
+/**
  * Publie le livrable dans le WordPress du client. Gratuit — l'agence a déjà
  * payé la génération.
  *
