@@ -73,14 +73,22 @@ export function WordPressExport({ runId }: { runId: string | null }) {
   const ready = siteUrl.trim() && username.trim() && appPassword;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="gap-1.5">
-          <UploadIcon className="h-3.5 w-3.5" />
-          Export WordPress
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+    <>
+      {/* Bouton hors du Dialog plutôt qu'un DialogTrigger : Base UI compose par
+          `render` et non par `asChild`, et piloter l'ouverture par l'état est
+          plus lisible que de deviner l'API de composition. */}
+      <Button
+        size="sm"
+        variant="outline"
+        className="gap-1.5"
+        onClick={() => setOpen(true)}
+      >
+        <UploadIcon className="h-3.5 w-3.5" />
+        Export WordPress
+      </Button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Publier dans le WordPress du client</DialogTitle>
           <DialogDescription>
