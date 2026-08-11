@@ -503,6 +503,9 @@ async def _run_db_tests(dsn: str) -> bool:
     from billing import get_plan
 
     plan = get_plan("trial")
+    # Le lot d'essai est posé par la route d'inscription, pas par l'insertion
+    # directe en base — ici on le pose à la main.
+    await billing.grant_trial(agency_id)
 
     async def solde() -> int:
         return await billing.balance_units(agency_id, plan)
