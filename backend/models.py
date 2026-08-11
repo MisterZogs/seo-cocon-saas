@@ -454,8 +454,32 @@ class ValidationDecision(BaseModel):
 
 
 # ============================================================
-# SERP ANALYSIS (Surfer-like)
+# RÉGÉNÉRATION D'UN ARTICLE
 # ============================================================
+#
+# Second sens du Mode Brief bidirectionnel : l'agence lit ce qui est sorti, donne
+# de nouvelles consignes sur UN article, et redemande la rédaction de celui-là
+# seul. La première génération est incluse dans le cocon débité ; chaque reprise
+# éditoriale ensuite se débite à l'article (1/6 de cocon).
+#
+# Ce n'est pas une reprise sur checkpoint, et la distinction est structurante :
+# une reprise répare un échec technique dont l'agence n'est pas responsable et ne
+# re-débite pas, une régénération est un travail qu'elle commande et se débite.
+
+
+class RegenerationRequest(BaseModel):
+    """Le corps du POST de régénération d'un article."""
+
+    directives: str | None = Field(
+        default=None,
+        max_length=2000,
+        description=(
+            "Nouvelles consignes pour cet article. Remplacent celles saisies à "
+            "l'écran de validation — l'agence corrige après lecture, elle "
+            "n'empile pas. `null` régénère sans consigne (utile quand c'est la "
+            "sortie elle-même qui a déçu, pas le cadrage)."
+        ),
+    )
 
 
 class ScrapedPage(BaseModel):
