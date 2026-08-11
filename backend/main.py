@@ -663,8 +663,17 @@ async def retry_job(job_id: str, agency: Agency = Depends(current_agency)) -> di
             detail=f"Ce job n'est pas en échec (statut : {job.get_status()}).",
         )
 
-    if not job.args:
-        raise HTTPException(status_code=422, detail="Job sans formulaire réutilisable.")
+    if not job.args or not isinstance(job.args[0], dict):
+        # Une régénération d'article a une autre signature et surtout une autre
+        # règle de facturation : la rejouer par ici la ferait passer pour une
+        # reprise gratuite. On la relance en redemandant la régénération.
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Ce job n'est pas une génération reprenable. S'il s'agit d'une "
+                "régénération d'article, relancez-la depuis le livrable."
+            ),
+        )
 
     form_dict = job.args[0]
     run_id = job.args[1] if len(job.args) > 1 else str(uuid.uuid4())
