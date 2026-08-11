@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from clients.anthropic_client import AnthropicClient
 from models import CoconStructure, InterCoconPolicy, MaillageMap
 from pipeline.cocon_builder import CoconBuilder
-from pipeline.maillage import assemble_maillage, audit_maillage
+from pipeline.maillage import audit_maillage, build_maillage_from_structure
 
 logger = logging.getLogger(__name__)
 
