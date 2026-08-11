@@ -129,9 +129,10 @@ async def generate_preview(
         )
 
     cocon = cocoons[0]
-    maillage = assemble_maillage(
-        briefs=[], articles=[], cocoons=[cocon], policy=InterCoconPolicy.STRICT
-    )
+    # Déduit de la structure : aucun contenu n'a été rédigé, et c'est le propos —
+    # le maillage d'un cocon est une conséquence de l'arbre, pas une sortie de
+    # modèle qu'on espère correcte.
+    maillage = build_maillage_from_structure([cocon], InterCoconPolicy.STRICT)
     total, inbound, outbound = _proof(maillage)
     audit = audit_maillage(maillage, [cocon])
 
