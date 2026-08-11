@@ -838,6 +838,80 @@ async def submit_validation(
 
 
 # ============================================================
+# Export WordPress
+# ============================================================
+
+
+@app.post("/runs/{run_id}/export/wordpress", response_model=WordPressExportReport)
+async def export_wordpress(
+    run_id: str,
+    request: WordPressExportRequest,
+    agency: Agency = Depends(current_agency),
+) -> WordPressExportReport:
+    """Publie le livrable dans le WordPress du client final. Gratuit.
+
+    **Synchrone, et c'est un choix de sécurité.** Passer par un job RQ mettrait
+    le mot de passe d'application du client dans les arguments du job, qui
+    dorment 24 h dans Redis (`failure_ttl`) — soit un accès en écriture à son
+    site, au repos, chez nous. Ici les identifiants ne survivent pas à la
+    requête. Le coût est une attente de quelques secondes : douze appels HTTP
+    pour un cocon, là où la génération en demande des dizaines de minutes.
+
+    Aucun débit : l'agence a déjà payé la génération, exporter ce qu'elle
+    possède ne se refacture pas.
+    """
+    await _require_run_access(run_id, agency)
+
+    repo = get_repository()
+    run = await repo.get_run(run_id) if repo.enabled else None
+    if not run or not run.get("result"):
+        raise HTTPException(
+            status_code=409,
+            detail="Ce run n'a pas de livrable à exporter — il n'est pas terminé.",
+        )
+
+    try:
+        result = PipelineResult.model_validate(run["result"])
+    except Exception:
+        raise HTTPException(
+            status_code=409,
+            detail="Le livrable de ce run est illisible (version antérieure).",
+        )
+
+    try:
+        client = WordPressClient(
+            request.credentials.site_url,
+            request.credentials.username,
+            request.credentials.app_password,
+        )
+    except WordPressError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+    try:
+        async with client:
+            report = await export_cocoons_to_wordpress(
+                result,
+                client=client,
+                cocon_ids=request.cocon_ids,
+                status=request.status,
+            )
+    except WordPressError as e:
+        # 502 et non 500 : la panne est chez le site distant, pas chez nous, et
+        # le message dit à l'agence quoi corriger sur le WordPress du client.
+        raise HTTPException(status_code=502, detail=str(e))
+
+    logger.info(
+        "Export WordPress run=%s site=%s → %d article(s), %d lien(s), %d erreur(s)",
+        run_id,
+        report.site_url,
+        len(report.posts),
+        report.internal_links_resolved,
+        len(report.errors),
+    )
+    return report
+
+
+# ============================================================
 # Régénération d'un article (Mode Brief bidirectionnel, second sens)
 # ============================================================
 
