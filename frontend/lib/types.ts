@@ -102,6 +102,12 @@ export interface ArticleStub {
   meta_description: string;
   slug: string;
   intent: SearchIntent;
+  /**
+   * Consignes de l'agence pour CET article. Portées par le stub côté backend
+   * parce qu'il traverse les checkpoints ; c'est aussi ce qui permet de les
+   * réafficher pré-remplies au moment de régénérer.
+   */
+  directives?: string | null;
 }
 
 export interface CoconStructure {
