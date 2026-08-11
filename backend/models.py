@@ -483,6 +483,85 @@ class RegenerationRequest(BaseModel):
 
 
 # ============================================================
+# EXPORT WORDPRESS
+# ============================================================
+#
+# ⚠️ Les identifiants ne sont **jamais persistés** : ils arrivent dans le corps
+# de la requête, servent le temps de l'appel, et disparaissent. C'est aussi la
+# raison pour laquelle l'export est une route synchrone et non un job RQ — les
+# arguments d'un job dorment 24 h dans Redis.
+
+
+class WordPressCredentials(BaseModel):
+    """Accès au WordPress du client final, par mot de passe d'application."""
+
+    site_url: str = Field(
+        ...,
+        description="URL du site (avec ou sans protocole). Ex. : client.fr",
+    )
+    username: str = Field(..., min_length=1, description="Identifiant WordPress")
+    app_password: str = Field(
+        ...,
+        min_length=1,
+        description=(
+            "Mot de passe d'application (Utilisateurs → Profil → Mots de passe "
+            "d'application). Ce n'est PAS le mot de passe du compte, et il se "
+            "révoque d'un clic sans changer ce dernier."
+        ),
+    )
+
+
+class WordPressExportRequest(BaseModel):
+    credentials: WordPressCredentials
+    cocon_ids: list[str] | None = Field(
+        default=None,
+        description="Cocons à exporter. Tous par défaut.",
+    )
+    status: Literal["draft", "publish", "pending", "private"] = Field(
+        default="draft",
+        description=(
+            "Statut des articles créés. `draft` par défaut : mettre six articles "
+            "en ligne d'un coup sur le site d'un client est une décision "
+            "d'agence, pas un défaut d'outil."
+        ),
+    )
+
+
+class ExportedPost(BaseModel):
+    """Une page publiée, telle que WordPress l'a enregistrée."""
+
+    slug: str
+    title: str
+    post_id: int
+    url: str
+    status: str
+    created: bool = Field(
+        ..., description="Faux si un article portant ce slug existait déjà et a été mis à jour"
+    )
+    is_mother: bool = False
+    linked: bool = Field(
+        default=False,
+        description="Vrai si la seconde passe a bien réécrit le contenu avec les URL réelles",
+    )
+    internal_links: int = Field(
+        default=0, description="Liens internes réellement transformés en URL"
+    )
+
+
+class WordPressExportReport(BaseModel):
+    site_url: str
+    account: str
+    status: str
+    posts: list[ExportedPost] = Field(default_factory=list)
+    internal_links_resolved: int = 0
+    errors: list[str] = Field(default_factory=list)
+
+    @property
+    def created_count(self) -> int:
+        return sum(1 for p in self.posts if p.created)
+
+
+# ============================================================
 # SERP ANALYSIS (Surfer-like)
 # ============================================================
 
