@@ -270,11 +270,13 @@ function ArticlesPanel({
   briefs,
   articles,
   mode,
+  runId,
 }: {
   cocon: CoconStructure;
   briefs: ArticleBrief[];
   articles: GeneratedArticle[];
   mode: "brief" | "full";
+  runId: string | null;
 }) {
   const stubs = [cocon.mother, ...cocon.daughters];
 
