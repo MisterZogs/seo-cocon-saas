@@ -268,7 +268,7 @@ async def export_cocoons_to_wordpress(
         account=str(account.get("name") or account.get("slug") or ""),
         status=status,
         posts=posts,
-        internal_links_resolved=relinked * 5,
+        internal_links_resolved=resolved_total,
         errors=errors,
     )
     logger.info(
