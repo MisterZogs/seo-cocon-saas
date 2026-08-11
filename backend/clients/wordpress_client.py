@@ -55,7 +55,18 @@ def normalize_site_url(raw: str) -> str:
     url = (raw or "").strip()
     if not url:
         raise WordPressError("L'URL du site WordPress est vide.")
-    if not url.startswith(("http://", "https://")):
+
+    # Préfixer sans regarder produisait `https://ftp://client.fr`, que `urlparse`
+    # accepte sans broncher (netloc = « ftp: »). On distingue donc « pas de
+    # protocole » de « mauvais protocole » avant d'ajouter quoi que ce soit.
+    if "://" in url:
+        scheme = url.split("://", 1)[0].lower()
+        if scheme not in ("http", "https"):
+            raise WordPressError(
+                f"« {raw} » n'est pas une URL de site valide : protocole « {scheme} » "
+                "non supporté, seuls http et https le sont."
+            )
+    else:
         url = f"https://{url}"
 
     parsed = urlparse(url)
@@ -78,9 +89,10 @@ class WordPressClient:
     def __init__(self, site_url: str, username: str, app_password: str) -> None:
         self.site_url = normalize_site_url(site_url)
         # WordPress affiche le mot de passe d'application par groupes de quatre
-        # caractères séparés par des espaces. Recopié tel quel, il échoue en
-        # 401 — et l'agence conclut que ses identifiants sont faux.
-        password = (app_password or "").replace(" ", "").replace(" ", "")
+        # caracteres separes par des espaces, parfois insecables selon le
+        # navigateur. Recopie tel quel il echoue en 401, et l'agence en conclut
+        # que ses identifiants sont faux. `split()` avale toutes les espaces.
+        password = "".join((app_password or "").split())
         if not username or not password:
             raise WordPressError(
                 "Identifiant et mot de passe d'application sont tous deux requis."
