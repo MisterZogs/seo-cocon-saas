@@ -298,6 +298,30 @@ export async function regenerateArticle(
   return res.json();
 }
 
+/**
+ * Publie le livrable dans le WordPress du client. Gratuit — l'agence a déjà
+ * payé la génération.
+ *
+ * Synchrone côté serveur, donc l'appel peut durer quelques secondes : les
+ * identifiants ne doivent transiter par aucune file d'attente, ils ne survivent
+ * pas à la requête. Ne jamais les mettre en cache ici non plus.
+ */
+export async function exportToWordPress(
+  runId: string,
+  credentials: WordPressCredentials,
+  options: { cocon_ids?: string[]; status?: string } = {},
+): Promise<WordPressExportReport> {
+  const res = await apiFetch(`/runs/${runId}/export/wordpress`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credentials, ...options }),
+  });
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, `Export impossible (${res.status})`));
+  }
+  return res.json();
+}
+
 export async function fetchRuns(): Promise<{
   enabled: boolean;
   runs: RunSummary[];
