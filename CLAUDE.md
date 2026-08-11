@@ -383,15 +383,24 @@ au client le plus lourd.
 | Brief | ~$1 | $0,38 | $1,38 | **1,70 €** |
 | Génération complète | ~$3 | $0,38 | $3,38 | **4,00 €** |
 
-⚠️ **Mesure contradictoire à réconcilier (run du 2026-08-10, 2 cocons, mode
-Génération complète, 12 articles, 32 161 mots, 36 min).** Coût réel total :
-**$3,26** ($2,696 Claude + $0,567 DataForSEO), soit **$1,63 par cocon** — la
-moitié du chiffre ci-dessus, alors que le volume de sortie par cocon est
-identique à la mesure d'origine (72 853 tokens vs 72 006). Les paliers de prix
-restent donc valides et les marges sont **meilleures** que documenté, mais
-l'écart n'est pas expliqué : à investiguer avant de graver les coûts unitaires
-dans un business plan. Ne pas écraser la ligne d'origine tant que ce n'est pas
-tranché — deux mesures valent mieux qu'une moyenne inventée.
+✅ **Écart résolu le 2026-08-11 : c'était une confusion d'échelle.** Le « ~$3 »
+du tableau ci-dessus était le **coût total d'un run de 2 cocons** ($2,696),
+consigné comme un coût unitaire. Trois mesures concordent :
+
+| Run | Cocons | Claude | Claude/cocon | DataForSEO | Total/cocon |
+|---|---|---|---|---|---|
+| 2026-08-10 | 2 | $2,696 | **$1,35** | $0,567 | **$1,63** |
+| 2026-08-11 | 1 | $1,461 | **$1,46** | $0,490 | **$1,95** |
+
+- **Claude coûte ~$1,35-1,46 par cocon en Mode FULL**, pas $3.
+- **DataForSEO n'est pas linéaire** : la recherche de mots-clés est un coût
+  **fixe par run** qui s'amortit — $0,49/cocon sur un run d'un cocon, $0,28 sur
+  un run de deux. Grouper les cocons fait baisser le coût unitaire.
+- **Coût réel ≈ 1,80 € le cocon en Mode FULL**, contre 4,00 € documentés. Les
+  marges sont donc bien meilleures qu'annoncé (palier Agence : ~86 %, pas 68 %).
+- ⚠️ **Ne pas re-tarifer à la baisse.** Le coût n'a jamais été la contrainte et
+  la grille se calibre sur la valeur perçue. Ce qui change, c'est la solidité du
+  business plan.
 
 ### Prompt caching — diagnostiqué le 2026-08-10, priorité revue à la baisse
 
