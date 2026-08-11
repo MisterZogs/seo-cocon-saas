@@ -149,7 +149,10 @@ export function WordPressExport({ runId }: { runId: string | null }) {
 
             <div className="space-y-1.5">
               <Label htmlFor="wp-status">Statut des articles</Label>
-              <Select value={status} onValueChange={setStatus}>
+              <Select
+                value={status}
+                onValueChange={(v) => setStatus(v ?? "draft")}
+              >
                 <SelectTrigger id="wp-status">
                   <SelectValue />
                 </SelectTrigger>
