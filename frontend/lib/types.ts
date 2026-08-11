@@ -292,8 +292,36 @@ export interface JobStatusResponse {
   started_at: string | null;
   ended_at: string | null;
   result?: PipelineResult;
+  /**
+   * Présent à la place de `result` quand le job était une régénération
+   * d'article : ce n'est pas un livrable, le livrable à jour est celui du run.
+   */
+  regeneration?: RegenerationResult;
   error?: string;
   error_traceback?: string | null;
+}
+
+/** Ce que rend `POST /runs/{id}/articles/{slug}/regenerate`. */
+export interface RegenerationStarted {
+  job_id: string;
+  run_id: string;
+  slug: string;
+  status: JobStatus;
+  billed_units: number;
+  /** Déjà formaté en français par le backend : « 1/6 de cocon ». */
+  billed_label: string;
+}
+
+/** Résultat d'un job de régénération terminé. */
+export interface RegenerationResult {
+  regeneration: true;
+  run_id: string;
+  slug: string;
+  mode: "brief" | "full";
+  billed_units: number;
+  /** Faux signale un maillage incomplet — ne doit jamais arriver. */
+  maillage_intact: boolean;
+  missing_links: string[];
 }
 
 // ============================================================
