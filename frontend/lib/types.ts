@@ -308,6 +308,36 @@ export interface JobStatusResponse {
 }
 
 // ============================================================
+// Générateur public (sans inscription)
+// ============================================================
+
+export interface PreviewArticle {
+  slug: string;
+  h1_title: string;
+  target_keyword: string;
+  meta_title: string;
+  meta_description: string;
+  intent: string;
+  is_mother: boolean;
+  outbound: number;
+  inbound: number;
+  links_to: { target_slug: string; anchor_text: string; link_type: string }[];
+}
+
+export interface CoconPreviewResponse {
+  theme: string;
+  main_keyword: string;
+  rationale: string;
+  articles: PreviewArticle[];
+  /** Mesuré sur la map, pas déduit de la formule — c'est le propos. */
+  total_links: number;
+  /** n × (n−1) : ce que la méthode impose. */
+  expected_links: number;
+  every_page_balanced: boolean;
+  orphans: string[];
+}
+
+// ============================================================
 // Export WordPress
 // ============================================================
 
