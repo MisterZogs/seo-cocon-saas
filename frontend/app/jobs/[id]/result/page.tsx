@@ -77,7 +77,7 @@ function ResultPage({
     );
   }
 
-  return <ResultView result={result} jobId={jobId} />;
+  return <ResultView result={result} jobId={jobId} runId={status.run_id} />;
 }
 
 function ResultView({ result, jobId }: { result: PipelineResult; jobId: string }) {
