@@ -271,15 +271,26 @@ async def _require_run_access(run_id: str, agency: Agency) -> None:
 
 
 def _job_agency_id(job: Job) -> str | None:
-    """Propriétaire d'un job RQ, lu dans le formulaire passé en argument.
+    """Propriétaire d'un job RQ, lu dans ses arguments.
 
-    On ne repasse pas par Postgres : le formulaire est déjà dans les args du job,
-    et cette lecture doit rester possible même sans base (le suivi de job vit
-    dans Redis).
+    On ne repasse pas par Postgres : les arguments sont déjà dans Redis, et cette
+    lecture doit rester possible même sans base (le suivi de job vit dans Redis).
+
+    Deux formes d'arguments coexistent, d'où le test sur le type plutôt qu'un
+    index en dur :
+      · `run_pipeline_job(form_dict, run_id)` → le propriétaire est dans le
+        formulaire ;
+      · `regenerate_article_job(run_id, slug, directives, agency_id)` → il est
+        passé explicitement, il n'y a pas de formulaire à porter.
+    Sans ce second cas, le suivi d'une régénération répondrait 404 à sa propre
+    agence.
     """
     args = job.args or ()
-    form = args[0] if args else None
-    return form.get("agency_id") if isinstance(form, dict) else None
+    if not args:
+        return None
+    if isinstance(args[0], dict):
+        return args[0].get("agency_id")
+    return args[3] if len(args) > 3 and isinstance(args[3], str) else None
 
 
 def _require_job_access(job: Job, agency: Agency) -> None:
