@@ -76,16 +76,15 @@ async def _regenerate_async(
     # deux commandes distinctes (cf. `debit_regeneration`). Débiter avant plutôt
     # qu'après, comme le pipeline le fait à l'étape 2bis, pour ne jamais livrer
     # un travail que le solde ne couvrait pas.
-    debited = False
+    entry_ids: list[str] = []
     if agency_id:
-        await billing.debit_regeneration(
+        entry_ids = await billing.debit_regeneration(
             agency_id=agency_id,
             run_id=run_id,
             articles=UNITS_PER_ARTICLE,
             plan=await billing.get_plan_for(agency_id),
             note=f"Régénération de l'article {slug}",
         )
-        debited = True
     else:
         logger.warning("Régénération non facturée (run=%s, agency_id absent)", run_id)
 
@@ -95,7 +94,7 @@ async def _regenerate_async(
             result, slug=slug, directives=directives
         )
     except ArticleNotFound:
-        await _refund(billing, run_id, debited, reason="article introuvable")
+        await _refund(billing, run_id, entry_ids, reason="article introuvable")
         raise
     except Exception as e:
         # Même règle que pour un run en échec : l'agence ne paie pas un travail
