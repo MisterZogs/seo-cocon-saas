@@ -14,6 +14,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchJobStatus } from "@/lib/api";
 import { GroupHeading, SectionHeading, TONE, type Tone } from "@/components/result/section";
 import { Markdown } from "@/components/result/markdown";
+import { RegenerateArticle } from "@/components/result/regenerate";
 import { cn } from "@/lib/utils";
 import type {
   ArticleBrief,
