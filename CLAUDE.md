@@ -1043,7 +1043,8 @@ seo/
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
       gratuit de Gaetan est épuisé)
 - [ ] Rapport de détection dans le livrable + argumentaire client
-- [ ] Auth multi-agences
+- [ ] Régénération d'un article après consignes (chantier 16b) — job RQ,
+      mutation du `result` stocké, re-normalisation du maillage
 
 ---
 
