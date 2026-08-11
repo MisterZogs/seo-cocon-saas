@@ -1036,8 +1036,14 @@ seo/
       ⚠️ **Le schéma SQL s'applique au premier accès à la base, pas au
       démarrage** : après un déploiement, les tables neuves n'existent qu'après
       une vraie requête.
-      🔴 **Jamais traversé en prod : le débit du ledger à l'étape 2bis.** Aucune
-      génération complète n'a encore été lancée depuis un compte réel.
+- [x] **Boucle facturation prouvée en production** (2026-08-11) — run réel en
+      Mode Brief, 1 cocon. Débit de 6 unités à l'étape 2bis, remboursement dans
+      le **lot d'origine** à l'échec, re-débit à la reprise, solde final juste.
+      **Maillage vérifié sur la sortie réelle : 30 liens, exactement 5 entrants
+      et 5 sortants par page, 0 lien non réciproque, 0 inter-cocon.** La consigne
+      par article (Mode Brief bidirectionnel) est bien reprise dans le brief.
+      ⚠️ Après un rechargement de crédit Anthropic, la propagation n'est pas
+      immédiate — tester la clé par un appel minimal avant de relancer un run.
 - [x] Test end-to-end avec DataForSEO réel — fait depuis le 2026-08-06
       (la case était restée décochée à tort)
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
