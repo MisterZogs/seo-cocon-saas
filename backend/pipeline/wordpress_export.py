@@ -164,6 +164,20 @@ def _render(item: Any, links: dict[str, str]) -> str:
     return brief_to_html(item, links)
 
 
+def _count_resolved(item: Any, links: dict[str, str]) -> int:
+    """Liens internes réellement transformés en URL sur cette page.
+
+    Compté, pas déduit d'un « 5 par page » : une cible dont la publication a
+    échoué reste en texte brut, et c'est précisément ce qu'il faut voir dans le
+    compte-rendu.
+    """
+    if isinstance(item, GeneratedArticle):
+        slugs = [m.group(1).strip() for m in _LINK_MARKER.finditer(item.content_markdown)]
+    else:
+        slugs = [l.target_slug for l in item.internal_links_plan]
+    return sum(1 for s in slugs if s in links)
+
+
 async def export_cocoons_to_wordpress(
     result: PipelineResult,
     *,
