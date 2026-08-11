@@ -105,9 +105,15 @@ ANALYSIS = SerpAnalysis(
     key_topics=["destruction de nid"],
     common_questions=["Combien coûte une intervention ?"],
     content_gaps=["Le coût réel"],
-    avg_word_count=1400,
-    competitive_angle="Angle terrain",
+    avg_word_count=1500,
     recommended_word_count=1600,
+    recommended_h2_count=6,
+    avg_h2_count=6,
+    avg_h3_count=5,
+    competitive_angle="Angle terrain",
+    top_result_format="guide long",
+    paa_questions=[],
+    serp_features=[],
 )
 
 
