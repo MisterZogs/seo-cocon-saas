@@ -335,6 +335,17 @@ function ArticlesPanel({
                   Contenu non disponible (analyse SERP peut avoir échoué).
                 </p>
               )}
+
+              {(brief || article) && (
+                <>
+                  <Separator />
+                  <RegenerateArticle
+                    runId={runId}
+                    slug={stub.slug}
+                    currentDirectives={stub.directives ?? null}
+                  />
+                </>
+              )}
             </CardContent>
           </Card>
         );
