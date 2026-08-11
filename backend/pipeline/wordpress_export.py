@@ -250,11 +250,14 @@ async def export_cocoons_to_wordpress(
     # Indispensable même quand tout est publié d'un bloc : le graphe du cocon
     # est cyclique, aucun ordre de création ne peut résoudre les liens seul.
     relinked = 0
+    resolved_total = 0
     for stub, item, post in pending:
         try:
             body = _render(item, links)
             await client.update_post(post.post_id, {"content": body})
             post.linked = True
+            post.internal_links = _count_resolved(item, links)
+            resolved_total += post.internal_links
             relinked += 1
         except WordPressError as e:
             errors.append(f"{stub.slug} (maillage) : {e}")
