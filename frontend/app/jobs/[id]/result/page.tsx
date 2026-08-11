@@ -191,6 +191,7 @@ function ResultView({
                 briefs={result.briefs}
                 articles={result.articles}
                 mode={mode}
+                runId={runId}
               />
               <BacklinkPanel
                 report={result.backlink_reports.find((r) => r.cocon_id === cocon.id)}
