@@ -310,6 +310,42 @@ précision token-level). Les blocs d'expérience cités ne feront donc pas bascu
 l'article en « humain », mais ressortiront comme segments humains identifiés — ce qui
 change entièrement la conversation avec le client final.
 
+## Filigrane Anthropic — vérifié le 2026-08-11
+
+Anthropic filigrane les sorties de Claude, en réponse aux obligations de marquage
+de l'**EU AI Act** applicables au **2 août 2026**. Filigrane **invisible tissé
+dans le texte au niveau du modèle** (biais statistique à la génération, *pas* des
+caractères invisibles) ; métadonnées C2PA pour les fichiers image. Portée
+mondiale, API comprise.
+
+🟢 **Rien ne change aujourd'hui pour ce produit.** Le marquage ne concerne que
+les modèles **lancés au 2 août ou après** ; aucun modèle disponible au 11 août ne
+l'est (Opus 5 est sorti neuf jours avant). Nos trois modèles sont antérieurs. Et
+**aucun détecteur public n'existe** — Anthropic promet une documentation « à
+venir », sans date pour l'extension aux modèles existants.
+
+⚠️ **Trois conséquences à intégrer aux décisions :**
+1. **Une montée de version de modèle porte désormais un effet de détection.**
+   Passer à la génération suivante fera entrer le filigrane dans les livrables :
+   ce n'est plus un arbitrage qualité/prix seulement.
+2. **La détection cesse d'être probabiliste.** Pangram *infère* ; un filigrane
+   *prouve*, avec l'autorité de l'éditeur du modèle. « Ne jamais promettre
+   indétectable » passe de prudence commerciale à impossibilité.
+3. **Le verbatim en sort renforcé** — les blocs d'expérience sont les seuls
+   passages que Claude n'a pas générés, donc les seuls sans filigrane **par
+   construction**. Le verdict « Mixed » visé devient déterministe.
+
+🔴 **Anthropic reconnaît que la réécriture profonde efface le signal. Ne pas y
+toucher.** Effacer le marquage laisserait le texte détecté statistiquement de
+toute façon (trois échecs mesurés), et retirer délibérément un marquage imposé
+par le règlement européen n'est pas une fonctionnalité — c'est un risque de
+conformité qu'on vendrait à des agences. **Ne jamais construire ni annoncer de
+retrait de filigrane.**
+
+Écarté comme sensationnaliste : l'affirmation qu'il « révèle l'utilisateur qui
+l'a créé » (journalduweb.org) — aucune source primaire, non étayée dans l'article
+lui-même.
+
 **Cadrage commercial.** Google ne pénalise pas le contenu IA en tant que tel et le
 score de détection n'est pas un facteur de ranking ; ce qui est sanctionné, c'est le
 *scaled content abuse*. Le problème de détection est donc un problème de **perception
