@@ -1080,6 +1080,23 @@ seo/
       (H2, points à couvrir, FAQ, plan de maillage).
       ⚠️ Le **meta title SEO** appartient à Yoast / Rank Math et n'est pas posé —
       seule la meta description part dans l'`excerpt` natif.
+      ⚠️ **Jamais testé contre un vrai WordPress**, seulement contre une
+      simulation en mémoire.
+- [x] **Générateur de cocon gratuit (chantier 12)** (2026-08-11). Page publique
+      `/outils/cocon`, sans inscription, + `POST /public/cocon-preview` —
+      **la seule route sans authentification du produit**.
+      On donne la structure ET la map de maillage complète (calculée par le vrai
+      code) ; on retient volumes DataForSEO, analyse SERP, briefs, articles et
+      backlinks. C'est la ligne de partage du positionnement : on montre
+      l'architecture, on facture le contenu.
+      Nouvelle fonction `build_maillage_from_structure()` dans `maillage.py` —
+      le maillage déduit de la seule structure, sans contenu ni LLM.
+      🔴 **Contrairement à ce que disait le backlog, ce n'est pas gratuit** :
+      un appel Haiku (~$0,005) par génération. D'où `ratelimit.py` — 3/h et 10/j
+      par IP, plus un **disjoncteur global à 300/jour** qui est le seul à borner
+      réellement la dépense. **Échec fermé** si Redis ne répond pas.
+      Limite par `X-Real-IP` (posé par notre nginx, non usurpable) et non par
+      `X-Forwarded-For`, que nginx *ajoute* et qu'un client peut préfixer.
 
 ---
 
