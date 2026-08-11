@@ -8,7 +8,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,90 +88,104 @@ export function WordPressExport({ runId }: { runId: string | null }) {
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Publier dans le WordPress du client</DialogTitle>
-          <DialogDescription>
-            Les articles sont créés en brouillon, puis leurs liens internes sont
-            réécrits avec les URL réelles une fois toutes les pages en place.
-          </DialogDescription>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle>Publier dans le WordPress du client</DialogTitle>
+            <DialogDescription>
+              Les articles sont créés en brouillon, puis leurs liens internes
+              sont réécrits avec les URL réelles une fois toutes les pages en
+              place.
+            </DialogDescription>
+          </DialogHeader>
 
-        {report ? (
-          <ExportReport report={report} onRestart={() => setReport(null)} />
-        ) : (
-          <div className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <TriangleAlertIcon className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {report ? (
+            <ExportReport report={report} onRestart={() => setReport(null)} />
+          ) : (
+            <div className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <TriangleAlertIcon className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
 
-            <div className="space-y-1.5">
-              <Label htmlFor="wp-url">URL du site</Label>
-              <Input
-                id="wp-url"
-                value={siteUrl}
-                onChange={(e) => setSiteUrl(e.target.value)}
-                placeholder="client.fr"
-                autoComplete="off"
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wp-url">URL du site</Label>
+                <Input
+                  id="wp-url"
+                  value={siteUrl}
+                  onChange={(e) => setSiteUrl(e.target.value)}
+                  placeholder="client.fr"
+                  autoComplete="off"
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="wp-user">Identifiant WordPress</Label>
-              <Input
-                id="wp-user"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                autoComplete="off"
-              />
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wp-user">Identifiant WordPress</Label>
+                <Input
+                  id="wp-user"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="wp-pass">Mot de passe d&apos;application</Label>
-              <Input
-                id="wp-pass"
-                type="password"
-                value={appPassword}
-                onChange={(e) => setAppPassword(e.target.value)}
-                placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"
-                autoComplete="new-password"
-              />
-              <p className="text-xs text-muted-foreground">
-                Dans WordPress : <strong>Utilisateurs → Profil → Mots de passe
-                d&apos;application</strong>. Ce n&apos;est pas le mot de passe du
-                compte, et il se révoque d&apos;un clic. Nous ne le stockons pas —
-                il faudra le ressaisir au prochain export.
-              </p>
-            </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="wp-pass">Mot de passe d&apos;application</Label>
+                <Input
+                  id="wp-pass"
+                  type="password"
+                  value={appPassword}
+                  onChange={(e) => setAppPassword(e.target.value)}
+                  placeholder="xxxx xxxx xxxx xxxx xxxx xxxx"
+                  autoComplete="new-password"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Dans WordPress :{" "}
+                  <strong>
+                    Utilisateurs → Profil → Mots de passe d&apos;application
+                  </strong>
+                  . Ce n&apos;est pas le mot de passe du compte, et il se
+                  révoque d&apos;un clic. Nous ne le stockons pas — il faudra le
+                  ressaisir au prochain export.
+                </p>
+              </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="wp-status">Statut des articles</Label>
-              <Select
-                value={status}
-                onValueChange={(v) => setStatus(v ?? "draft")}
+              <div className="space-y-1.5">
+                <Label htmlFor="wp-status">Statut des articles</Label>
+                <Select
+                  value={status}
+                  onValueChange={(v) => setStatus(v ?? "draft")}
+                >
+                  <SelectTrigger id="wp-status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">
+                      Brouillon (recommandé)
+                    </SelectItem>
+                    <SelectItem value="pending">
+                      En attente de relecture
+                    </SelectItem>
+                    <SelectItem value="private">Privé</SelectItem>
+                    <SelectItem value="publish">
+                      Publié immédiatement
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                onClick={submit}
+                disabled={!ready || busy}
+                className="w-full"
               >
-                <SelectTrigger id="wp-status">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Brouillon (recommandé)</SelectItem>
-                  <SelectItem value="pending">En attente de relecture</SelectItem>
-                  <SelectItem value="private">Privé</SelectItem>
-                  <SelectItem value="publish">Publié immédiatement</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Button onClick={submit} disabled={!ready || busy} className="w-full">
-              {busy ? "Publication en cours…" : "Publier"}
-            </Button>
-            {busy && (
-              <p className="text-xs text-muted-foreground text-center">
-                Deux passes sur chaque article — comptez quelques secondes.
-              </p>
-            )}
+                {busy ? "Publication en cours…" : "Publier"}
+              </Button>
+              {busy && (
+                <p className="text-xs text-muted-foreground text-center">
+                  Deux passes sur chaque article — comptez quelques secondes.
+                </p>
+              )}
             </div>
           )}
         </DialogContent>
@@ -200,9 +213,10 @@ function ExportReport({
           <CheckIcon className="h-4 w-4" />
         )}
         <AlertDescription>
-          {report.posts.length} article(s) sur {report.site_url} — {crees} créé(s),{" "}
-          {report.posts.length - crees} mis à jour,{" "}
-          <strong>{report.internal_links_resolved} liens internes posés</strong>.
+          {report.posts.length} article(s) sur {report.site_url} — {crees}{" "}
+          créé(s), {report.posts.length - crees} mis à jour,{" "}
+          <strong>{report.internal_links_resolved} liens internes posés</strong>
+          .
         </AlertDescription>
       </Alert>
 
@@ -248,7 +262,10 @@ function ExportReport({
               <Badge variant="outline" className="text-xs">
                 {post.internal_links} liens
               </Badge>
-              <Badge variant={post.created ? "secondary" : "outline"} className="text-xs">
+              <Badge
+                variant={post.created ? "secondary" : "outline"}
+                className="text-xs"
+              >
                 {post.created ? "créé" : "màj"}
               </Badge>
             </div>
