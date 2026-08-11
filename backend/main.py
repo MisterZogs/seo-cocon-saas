@@ -293,6 +293,22 @@ def _job_agency_id(job: Job) -> str | None:
     return args[3] if len(args) > 3 and isinstance(args[3], str) else None
 
 
+def _job_run_id(job: Job) -> str | None:
+    """Le run auquel se rattache un job, quelle que soit sa signature.
+
+    `run_pipeline_job(form_dict, run_id)` le place en 2ᵉ argument,
+    `regenerate_article_job(run_id, slug, ...)` en 1er. Lire `args[1]` sans
+    distinguer renvoyait le *slug* pour une régénération, donc un lien de retour
+    vers un run inexistant.
+    """
+    args = job.args or ()
+    if not args:
+        return None
+    if isinstance(args[0], dict):
+        return args[1] if len(args) > 1 else None
+    return args[0] if isinstance(args[0], str) else None
+
+
 def _require_job_access(job: Job, agency: Agency) -> None:
     if _job_agency_id(job) != agency.id:
         raise HTTPException(status_code=404, detail="Job introuvable")
