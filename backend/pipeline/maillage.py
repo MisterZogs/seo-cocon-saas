@@ -225,6 +225,39 @@ def _rewrite_markdown(
     return body
 
 
+def build_maillage_from_structure(
+    cocoons: list[CoconStructure],
+    policy: InterCoconPolicy = InterCoconPolicy.STRICT,
+) -> MaillageMap:
+    """Le maillage qu'un cocon **doit** porter, déduit de sa seule structure.
+
+    Aucun contenu, aucun LLM : les règles du cocon sont entièrement déterminées
+    par la place de chaque page dans l'arbre. C'est la définition même de la
+    méthode, et c'est ce qui rend la promesse vérifiable — le maillage n'est pas
+    une sortie de modèle qu'on espère correcte, c'est une conséquence de la
+    structure.
+
+    Passe par `_normalize_links` avec une liste vide plutôt que de reconstruire
+    la logique : ce qu'on obtient est exactement ce que la normalisation ajoute
+    quand le modèle n'a rien produit. Le générateur public (`free_preview.py`)
+    en dépend, et il doit montrer le vrai code, pas une imitation.
+    """
+    index = _Index(cocoons)
+    audit = MaillageAudit()
+    links_by_slug: dict[str, list[InternalLink]] = {}
+
+    for cocon in cocoons:
+        for stub in [cocon.mother, *cocon.daughters]:
+            kept, _ = _normalize_links(
+                index=index, source=stub.slug, links=[], policy=policy, audit=audit
+            )
+            links_by_slug[stub.slug] = kept
+
+    # `expected_targets` ne rend que de l'intra-cocon : par construction, un
+    # maillage déduit de la structure ne franchit jamais un silo.
+    return MaillageMap(links=links_by_slug, inter_cocon_links=[])
+
+
 def assemble_maillage(
     *,
     briefs: list[ArticleBrief],
