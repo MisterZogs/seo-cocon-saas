@@ -986,7 +986,7 @@ async def job_status(job_id: str, agency: Agency = Depends(current_agency)) -> d
 
     # Le run_id est stable d'un job à l'autre (une reprise ou une validation
     # crée un nouveau job sur le même run) : c'est lui qui adresse la validation.
-    payload["run_id"] = job.args[1] if len(job.args or ()) > 1 else None
+    payload["run_id"] = _job_run_id(job)
 
     if job.is_finished:
         result = job.result
@@ -994,6 +994,10 @@ async def job_status(job_id: str, agency: Agency = Depends(current_agency)) -> d
         if isinstance(result, dict) and result.get("awaiting_validation"):
             payload["status"] = "awaiting_validation"
             payload["run_id"] = result.get("run_id") or payload["run_id"]
+        elif isinstance(result, dict) and result.get("regeneration"):
+            # Le résultat d'une régénération n'est pas un livrable : le livrable
+            # à jour est celui du run, que le worker vient de réécrire en base.
+            payload["regeneration"] = result
         else:
             payload["result"] = result
     elif job.is_failed:
