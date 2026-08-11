@@ -2,6 +2,9 @@
 .env
 .env.local
 .env.*.local
+# Une sauvegarde de .env reste un fichier de secrets. Sans cette ligne elle
+# apparaît en « untracked » et finit committée par un `git add .` distrait.
+.env.bak*
 *.pem
 *.key
 
