@@ -173,10 +173,11 @@ export function WordPressExport({ runId }: { runId: string | null }) {
                 Deux passes sur chaque article — comptez quelques secondes.
               </p>
             )}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
