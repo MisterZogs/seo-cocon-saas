@@ -99,7 +99,7 @@ async def _regenerate_async(
     except Exception as e:
         # Même règle que pour un run en échec : l'agence ne paie pas un travail
         # qu'elle n'a pas reçu. Le remboursement retourne dans les lots d'origine.
-        await _refund(billing, run_id, debited, reason=str(e))
+        await _refund(billing, run_id, entry_ids, reason=str(e))
         await repo.save_progress(
             run_id,
             JobProgress(
