@@ -842,6 +842,96 @@ async def submit_validation(
 
 
 # ============================================================
+# Générateur public — sans inscription, sans jeton
+# ============================================================
+
+
+@app.post("/public/cocon-preview", response_model=CoconPreviewResponse)
+async def public_cocon_preview(
+    request: Request, payload: CoconPreviewRequest
+) -> CoconPreviewResponse:
+    """Structure d'un cocon + sa map de maillage, à partir d'un seul mot-clé.
+
+    **La seule route sans authentification du produit**, et la seule où un
+    inconnu nous coûte de l'argent (un appel Haiku, ~$0,01). Trois plafonds la
+    bornent — par IP à l'heure, par IP au jour, et un disjoncteur global
+    journalier. Voir `ratelimit.py`.
+
+    Ce qui est offert : l'architecture et la preuve arithmétique du maillage.
+    Ce qui ne l'est pas : volumes de recherche réels, analyse du top 10, briefs,
+    articles, backlinks. C'est la ligne de partage du positionnement — on ne
+    vend pas des articles, on vend une structure, donc on montre la structure.
+    """
+    try:
+        ip = enforce_public_quota(request, app.state.redis)
+    except RateLimitExceeded as e:
+        raise HTTPException(
+            status_code=429,
+            detail=str(e),
+            headers={"Retry-After": str(e.retry_after)},
+        )
+
+    try:
+        preview = await generate_preview(payload.keyword, context=payload.context)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error("Aperçu gratuit en échec (« %s ») : %s", payload.keyword, e)
+        raise HTTPException(
+            status_code=503,
+            detail="Le générateur est momentanément indisponible. Réessayez dans un instant.",
+        )
+
+    cocon = preview.cocon
+    stubs = [(cocon.mother, True)] + [(d, False) for d in cocon.daughters]
+    articles = [
+        PreviewArticle(
+            slug=stub.slug,
+            h1_title=stub.h1_title,
+            target_keyword=stub.target_keyword,
+            meta_title=stub.meta_title,
+            meta_description=stub.meta_description,
+            intent=stub.intent.value,
+            is_mother=is_mother,
+            outbound=preview.outbound_per_page.get(stub.slug, 0),
+            inbound=preview.inbound_per_page.get(stub.slug, 0),
+            links_to=[
+                {
+                    "target_slug": link.target_slug,
+                    "anchor_text": link.anchor_text,
+                    "link_type": link.link_type.value,
+                }
+                for link in preview.maillage.links.get(stub.slug, [])
+            ],
+        )
+        for stub, is_mother in stubs
+    ]
+
+    pages = len(articles)
+    logger.info(
+        "Aperçu gratuit servi — ip=%s kw=« %s » %d pages, %d liens, $%.4f",
+        ip,
+        payload.keyword,
+        pages,
+        preview.total_links,
+        preview.cost_usd,
+    )
+
+    return CoconPreviewResponse(
+        theme=cocon.theme,
+        main_keyword=cocon.main_keyword,
+        rationale=cocon.rationale,
+        articles=articles,
+        total_links=preview.total_links,
+        expected_links=pages * (pages - 1),
+        every_page_balanced=all(
+            a.inbound == a.outbound == pages - 1 for a in articles
+        ),
+        orphans=preview.orphans,
+    )
+
+
+# ============================================================
 # Export WordPress
 # ============================================================
 
