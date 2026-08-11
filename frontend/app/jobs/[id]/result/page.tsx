@@ -145,6 +145,7 @@ function ResultView({
             <Button size="sm" variant="outline" onClick={downloadJson}>
               Export JSON
             </Button>
+            <WordPressExport runId={runId} />
           </div>
         </div>
       </header>
