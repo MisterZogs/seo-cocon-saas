@@ -6,18 +6,27 @@
 #
 # Prérequis local :
 #   - clé SSH configurée pour le VPS
-#   - fichier ./.env (copié depuis .env.production.example, jamais commit)
 #
 # Prérequis VPS :
 #   - Docker + Docker Compose plugin installés
 #   - Ports 80 et 443 ouverts sur le firewall
 #   - Domaine (DOMAIN dans .env) pointant vers l'IP du VPS
+#   - /opt/cocon/.env complet (c'est LUI la référence, voir ci-dessous)
 #
 # Ce que fait le script :
-#   1. Vérifie que .env existe localement
-#   2. rsync le repo vers le VPS (exclut node_modules, .venv, .git, .next)
-#   3. Copie .env sur le VPS
-#   4. Sur le VPS : docker compose up -d --build
+#   1. Vérifie que le .env DU VPS contient toutes les variables requises
+#   2. rsync le repo vers le VPS (exclut node_modules, .venv, .git, .next, .env)
+#   3. Sur le VPS : docker compose up -d --build
+#
+# 🔴 Le script ne copie PLUS le .env local sur le VPS (il le faisait jusqu'au
+# 2026-08-11). Les deux fichiers avaient divergé — le VPS avait DB_PASSWORD sans
+# JWT_SECRET, le local l'inverse — et le scp aurait mis la prod à l'arrêt tout en
+# invalidant les sessions de toutes les agences (JWT_SECRET de dev en production).
+# Le .env de prod vit désormais sur le VPS et nulle part ailleurs : un secret de
+# production n'a aucune raison de séjourner sur un poste de développement. Le .env
+# local ne sert plus qu'au dev.
+# Pour ajouter une variable en prod, l'écrire sur le VPS :
+#   ssh <host> 'printf "CLE=valeur\n" >> /opt/cocon/.env'
 
 set -euo pipefail
 
