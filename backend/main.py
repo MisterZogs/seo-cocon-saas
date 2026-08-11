@@ -801,6 +801,110 @@ async def submit_validation(
     }
 
 
+# ============================================================
+# Régénération d'un article (Mode Brief bidirectionnel, second sens)
+# ============================================================
+
+
+@app.post("/runs/{run_id}/articles/{slug}/regenerate")
+async def regenerate_article_route(
+    run_id: str,
+    slug: str,
+    request: RegenerationRequest,
+    agency: Agency = Depends(current_agency),
+) -> dict:
+    """Réécrit UN article du livrable avec de nouvelles consignes. Débité 1/6 de cocon.
+
+    Ce n'est pas une reprise sur checkpoint et la distinction se paie : une
+    reprise répare un échec technique dont l'agence n'est pas responsable, une
+    régénération est un travail qu'elle commande après avoir lu la sortie.
+
+    Le solde est contrôlé ici pour que le manque se voie tout de suite ; le débit
+    lui-même a lieu dans le worker, juste avant l'appel au modèle, comme à
+    l'étape 2bis du pipeline.
+    """
+    await _require_run_access(run_id, agency)
+
+    repo = get_repository()
+    run = await repo.get_run(run_id) if repo.enabled else None
+    if not run or not run.get("result"):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Ce run n'a pas de livrable à réécrire — il n'est pas terminé, "
+                "ou sa génération a échoué."
+            ),
+        )
+
+    try:
+        result = PipelineResult.model_validate(run["result"])
+    except Exception:
+        raise HTTPException(
+            status_code=409,
+            detail="Le livrable de ce run est illisible (produit par une version antérieure).",
+        )
+
+    available_slugs = regenerable_slugs(result)
+    if slug not in available_slugs:
+        # 404 sur le slug, pas 422 : du point de vue de l'agence, cet article
+        # n'existe pas dans ce run.
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Aucun article « {slug} » dans ce run. "
+                f"Articles disponibles : {', '.join(available_slugs)}."
+            ),
+        )
+
+    # Une régénération pendant qu'un job tourne sur le même run se battrait avec
+    # lui pour l'écriture du résultat — le dernier à écrire gagnerait, et le
+    # travail de l'autre serait perdu sans trace.
+    if run.get("status") not in (None, "completed"):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Ce run est en cours (statut : {run.get('status')}). "
+                "Attendez qu'il soit terminé avant de régénérer un article."
+            ),
+        )
+
+    billing = get_billing_repository()
+    available = await billing.balance_units(
+        agency.id, await billing.get_plan_for(agency.id)
+    )
+    if available < UNITS_PER_ARTICLE:
+        raise InsufficientBalance(
+            required_units=UNITS_PER_ARTICLE, available_units=available
+        )
+
+    job = app.state.queue.enqueue(
+        regenerate_article_job,
+        run_id,
+        slug,
+        request.directives,
+        agency.id,
+        job_id=str(uuid.uuid4()),
+        job_timeout=JOB_TIMEOUT_SECONDS,
+        result_ttl=86400,
+        failure_ttl=86400,
+    )
+    logger.info(
+        "Régénération demandée — run=%s slug=%s consignes=%d car. job=%s",
+        run_id,
+        slug,
+        len(request.directives or ""),
+        job.id,
+    )
+    return {
+        "job_id": job.id,
+        "run_id": run_id,
+        "slug": slug,
+        "status": job.get_status(),
+        "billed_units": UNITS_PER_ARTICLE,
+        "billed_label": format_cocoons(UNITS_PER_ARTICLE),
+    }
+
+
 @app.get("/runs")
 async def list_runs(limit: int = 50, agency: Agency = Depends(current_agency)) -> dict:
     """Historique des générations de l'agence connectée.
