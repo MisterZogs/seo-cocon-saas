@@ -313,18 +313,25 @@ class BillingRepository:
 
     async def debit_regeneration(
         self, *, agency_id: str, run_id: str, articles: int, plan: Plan, note: str | None = None
-    ) -> int:
+    ) -> list[str]:
         """Débite une régénération d'article : 1/6 de cocon par article.
 
         Volontairement **non idempotent** : chaque régénération demandée est un
         travail distinct, y compris deux fois le même article. C'est l'inverse
         du débit de génération, et c'est voulu.
+
+        Retourne les identifiants des écritures créées, à conserver par
+        l'appelant : c'est la seule façon d'annuler *ce* débit si la
+        régénération échoue techniquement. `refund_run` ne convient pas — il ne
+        regarde que les `debit_generation`, donc l'appeler ici rembourserait le
+        cocon d'origine du run au lieu de la régénération, soit un cocon offert
+        à chaque échec.
         """
         await self.ensure_period_grant(agency_id, plan)
         pool = await self._pool()
         async with pool.acquire() as conn:
             async with conn.transaction():
-                await self._consume(
+                return await self._consume(
                     conn,
                     agency_id=agency_id,
                     units=articles,
@@ -332,7 +339,66 @@ class BillingRepository:
                     kind="debit_regeneration",
                     note=note or f"Régénération de {articles} article(s)",
                 )
-        return articles
+
+    async def reverse_entries(self, entry_ids: list[str], *, note: str) -> int:
+        """Annule des écritures de débit précises, par identifiant. Idempotent.
+
+        Sert au cas que `refund_run` ne peut pas traiter : une régénération qui
+        échoue techniquement. La règle produit reste « une régénération se paie »
+        — l'agence a commandé le travail —, mais elle ne paie pas un travail
+        qu'elle n'a **pas reçu**, ce qui est exactement la même distinction que
+        pour un run en échec.
+
+        Comme `refund_run`, les unités retournent dans les lots d'origine et
+        l'écriture annulée est marquée `reversed_at` pour que rejouer l'appel ne
+        rembourse pas deux fois.
+        """
+        if not entry_ids:
+            return 0
+        pool = await self._pool()
+        async with pool.acquire() as conn:
+            async with conn.transaction():
+                rows = await conn.fetch(
+                    """
+                    select id, agency_id, lot_id, run_id, delta_units
+                    from cocoon_ledger
+                    where id = any($1::uuid[]) and reversed_at is null and delta_units < 0
+                    for update
+                    """,
+                    entry_ids,
+                )
+                total = 0
+                for row in rows:
+                    units = -row["delta_units"]
+                    total += units
+                    if row["lot_id"] is not None:
+                        await conn.execute(
+                            """
+                            update cocoon_lots
+                            set remaining_units = least(remaining_units + $2, granted_units)
+                            where id = $1
+                            """,
+                            row["lot_id"],
+                            units,
+                        )
+                    await conn.execute(
+                        "update cocoon_ledger set reversed_at = now() where id = $1",
+                        row["id"],
+                    )
+                    await conn.execute(
+                        """
+                        insert into cocoon_ledger
+                            (agency_id, lot_id, run_id, kind, delta_units, note)
+                        values ($1, $2, $3, 'refund', $4, $5)
+                        """,
+                        row["agency_id"],
+                        row["lot_id"],
+                        row["run_id"],
+                        units,
+                        note,
+                    )
+        logger.info("Écritures annulées : %s (%d unité(s))", entry_ids, total)
+        return total
 
     async def _consume(
         self,
