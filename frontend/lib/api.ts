@@ -8,6 +8,8 @@ import type {
   RunSummary,
   ValidationDecision,
   ValidationSnapshot,
+  WordPressCredentials,
+  WordPressExportReport,
 } from "./types";
 import {
   authHeaders,
