@@ -483,6 +483,65 @@ class RegenerationRequest(BaseModel):
 
 
 # ============================================================
+# GÉNÉRATEUR PUBLIC (aimant à prospects, sans inscription)
+# ============================================================
+
+
+class CoconPreviewRequest(BaseModel):
+    keyword: str = Field(
+        ...,
+        min_length=2,
+        max_length=120,
+        description="Le mot-clé principal du cocon à structurer",
+    )
+    context: str | None = Field(
+        default=None,
+        max_length=300,
+        description="Activité ou secteur, pour orienter le découpage. Optionnel.",
+    )
+
+
+class PreviewArticle(BaseModel):
+    """Une page du cocon de démonstration, avec son compte de liens."""
+
+    slug: str
+    h1_title: str
+    target_keyword: str
+    meta_title: str
+    meta_description: str
+    intent: str
+    is_mother: bool
+    outbound: int
+    inbound: int
+    links_to: list[dict[str, str]] = Field(
+        default_factory=list,
+        description="Liens sortants : slug cible, ancre et type (mère/fille/sœur)",
+    )
+
+
+class CoconPreviewResponse(BaseModel):
+    """Le livrable gratuit : une structure et sa preuve arithmétique.
+
+    Les compteurs sont renvoyés **mesurés sur la map**, pas déduits de la
+    formule : c'est ce qui permet à un visiteur de vérifier au lieu de croire.
+    """
+
+    theme: str
+    main_keyword: str
+    rationale: str
+    articles: list[PreviewArticle]
+    total_links: int
+    expected_links: int = Field(
+        ..., description="n × (n−1) pour n pages — ce que la méthode impose"
+    )
+    every_page_balanced: bool = Field(
+        ...,
+        description="Vrai si chaque page émet et reçoit exactement le même nombre de liens",
+    )
+    orphans: list[str] = Field(default_factory=list)
+
+
+# ============================================================
 # EXPORT WORDPRESS
 # ============================================================
 #
