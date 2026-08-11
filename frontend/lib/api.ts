@@ -2,6 +2,7 @@ import type {
   BalanceResponse,
   BillingOffers,
   ClientForm,
+  CoconPreviewResponse,
   JobStatusResponse,
   LedgerEntry,
   RegenerationStarted,
