@@ -1062,6 +1062,24 @@ seo/
       d'origine du run — un cocon offert à chaque échec. D'où
       `reverse_entries(entry_ids)`, qui annule l'écriture exacte.
       ⚠️ Écrit et testé (40 contrôles), **pas encore exécuté en production**.
+- [x] **Export WordPress (chantier 9)** (2026-08-11). `clients/wordpress_client.py`
+      + `pipeline/wordpress_export.py` + `POST /runs/{id}/export/wordpress` +
+      bouton dans l'en-tête du livrable. Authentification par **mot de passe
+      d'application** (natif WP 5.6+), aucun plugin à installer chez le client.
+      🔴 **Les identifiants ne sont jamais persistés, ce qui impose une route
+      synchrone** : un job RQ les mettrait dans ses arguments, qui dorment 24 h
+      dans Redis — un accès en écriture au site d'un client, au repos, chez nous.
+      **Deux passes obligatoires, toujours.** Le graphe d'un cocon est cyclique
+      par construction, donc l'URL d'une cible n'existe jamais au moment d'écrire
+      le lien : on crée les six articles, puis on réécrit les six contenus avec
+      les URL réelles. **Conséquence pour le calendrier de publication : le
+      backfill n'est pas la contrepartie d'un étalement, il est nécessaire même
+      en publiant tout d'un bloc.**
+      Rejouable sans rien stocker (recherche par slug → mise à jour, pas de
+      doublon). Statut `draft` par défaut. En Mode Brief, publie un squelette
+      (H2, points à couvrir, FAQ, plan de maillage).
+      ⚠️ Le **meta title SEO** appartient à Yoast / Rank Math et n'est pas posé —
+      seule la meta description part dans l'`excerpt` natif.
 
 ---
 
