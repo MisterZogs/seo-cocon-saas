@@ -307,6 +307,40 @@ export interface JobStatusResponse {
   error_traceback?: string | null;
 }
 
+// ============================================================
+// Export WordPress
+// ============================================================
+
+export interface WordPressCredentials {
+  site_url: string;
+  username: string;
+  /** Mot de passe d'application WordPress — jamais stocké, ni ici ni côté serveur. */
+  app_password: string;
+}
+
+export interface ExportedPost {
+  slug: string;
+  title: string;
+  post_id: number;
+  url: string;
+  status: string;
+  /** Faux si un article portant ce slug existait déjà et a été mis à jour. */
+  created: boolean;
+  is_mother: boolean;
+  /** Vrai si la seconde passe a réécrit le contenu avec les URL réelles. */
+  linked: boolean;
+  internal_links: number;
+}
+
+export interface WordPressExportReport {
+  site_url: string;
+  account: string;
+  status: string;
+  posts: ExportedPost[];
+  internal_links_resolved: number;
+  errors: string[];
+}
+
 /** Ce que rend `POST /runs/{id}/articles/{slug}/regenerate`. */
 export interface RegenerationStarted {
   job_id: string;
