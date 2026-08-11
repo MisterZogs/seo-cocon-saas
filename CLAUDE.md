@@ -1026,6 +1026,18 @@ seo/
       le reste fonctionne** — essai de 3 cocons + formule attribuée à la main.
       ⚠️ Webhook à déclarer côté Stripe : `https://<DOMAIN>/api/billing/webhook`,
       événements `checkout.session.completed` et `customer.subscription.*`.
+- [x] **Mise en production des 4 chantiers** (2026-08-11). Auth, ledger,
+      consignes et paiement tournent sur https://cocon.178.104.70.16.sslip.io.
+      Vérifié en réel : inscription/connexion 200, 401 sans jeton, lot d'essai
+      de 18 unités (3 cocons), 503 Stripe explicite, 4 tables neuves créées.
+      `JWT_SECRET` généré **sur le VPS** — le `.env` de prod y vit désormais et
+      nulle part ailleurs ; `deploy.sh` ne le copie plus et vérifie à la place
+      les variables requises côté serveur avant de rsync.
+      ⚠️ **Le schéma SQL s'applique au premier accès à la base, pas au
+      démarrage** : après un déploiement, les tables neuves n'existent qu'après
+      une vraie requête.
+      🔴 **Jamais traversé en prod : le débit du ledger à l'étape 2bis.** Aucune
+      génération complète n'a encore été lancée depuis un compte réel.
 - [x] Test end-to-end avec DataForSEO réel — fait depuis le 2026-08-06
       (la case était restée décochée à tort)
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
