@@ -1049,8 +1049,19 @@ seo/
 - [ ] Mesurer le gain réel du few-shot sur Pangram (nécessite des crédits ; le compte
       gratuit de Gaetan est épuisé)
 - [ ] Rapport de détection dans le livrable + argumentaire client
-- [ ] Régénération d'un article après consignes (chantier 16b) — job RQ,
-      mutation du `result` stocké, re-normalisation du maillage
+- [x] **Régénération d'un article (16b)** (2026-08-11). `pipeline/regeneration.py`
+      + `workers/regeneration_job.py` + `POST /runs/{id}/articles/{slug}/regenerate`
+      + bouton sur chaque article du livrable. Débitée **1/6 de cocon**.
+      Deux choix structurants : la régénération travaille depuis le
+      `PipelineResult` **stocké** et non depuis les checkpoints (qui expirent à
+      7 jours) ; et le **stub est réutilisé tel quel**, donc les liens entrants
+      des sœurs ne sont jamais réécrits — une page orpheline devient impossible
+      par construction, pas par vérification.
+      🔴 **`refund_run` ne convient pas pour une régénération ratée** : il ne
+      cible que les `debit_generation`, donc il aurait remboursé le cocon
+      d'origine du run — un cocon offert à chaque échec. D'où
+      `reverse_entries(entry_ids)`, qui annule l'écriture exacte.
+      ⚠️ Écrit et testé (40 contrôles), **pas encore exécuté en production**.
 
 ---
 
