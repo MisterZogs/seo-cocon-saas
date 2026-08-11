@@ -82,14 +82,14 @@ rsync -az --delete \
     --exclude='.mypy_cache/' \
     --exclude='.env' \
     --exclude='.env.local' \
+    --exclude='.claude/' \
+    --exclude='.DS_Store' \
+    --exclude='tmp/' \
     --exclude='backend/tests/output/' \
     "$REPO_DIR/" "$VPS_HOST:$REMOTE_DIR/"
 
-# ---- 3. Copie de .env séparément (pour ne pas leaker en cas d'exclude) ----
-info "Copie du fichier .env..."
-scp "$REPO_DIR/.env" "$VPS_HOST:$REMOTE_DIR/.env"
 ssh "$VPS_HOST" "chmod 600 $REMOTE_DIR/.env"
-ok "Sync terminé"
+ok "Sync terminé (.env du VPS laissé intact)"
 
 # ---- 4. Build + start sur le VPS ----
 info "Build + démarrage des containers sur le VPS..."
