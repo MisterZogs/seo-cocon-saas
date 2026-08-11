@@ -99,6 +99,10 @@ ssh "$VPS_HOST" "cd $REMOTE_DIR && docker compose pull redis caddy 2>&1 | tail -
 info "État des services :"
 ssh "$VPS_HOST" "cd $REMOTE_DIR && docker compose ps"
 
-DOMAIN_FROM_ENV=$(grep '^DOMAIN=' "$REPO_DIR/.env" | cut -d'=' -f2)
+# Le domaine se lit sur le VPS, comme le reste de la configuration de prod.
+DOMAIN_FROM_ENV=$(ssh "$VPS_HOST" "grep '^DOMAIN=' $REMOTE_DIR/.env | cut -d'=' -f2")
 ok "Déploiement terminé. Ouvre : https://$DOMAIN_FROM_ENV"
 warn "Le premier démarrage prend 30-60s (Caddy provisionne le certificat Let's Encrypt)."
+warn "Le schéma SQL s'applique au PREMIER accès à la base, pas au démarrage :
+    tant qu'aucune requête n'a touché Postgres, les tables neuves n'existent pas.
+    Vérifier après un appel réel, pas juste après le up."
