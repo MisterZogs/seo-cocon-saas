@@ -272,6 +272,31 @@ export async function submitValidation(
   return res.json();
 }
 
+/**
+ * Réécrit UN article du livrable avec de nouvelles consignes. Débité 1/6 de cocon.
+ *
+ * Ce n'est pas `retryJob` : une reprise répare un échec technique et ne se
+ * facture pas, une régénération est un travail commandé après lecture. Le
+ * backend refuse (402) si le solde ne couvre pas l'article.
+ */
+export async function regenerateArticle(
+  runId: string,
+  slug: string,
+  directives: string | null,
+): Promise<RegenerationStarted> {
+  const res = await apiFetch(`/runs/${runId}/articles/${slug}/regenerate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ directives }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      await errorMessage(res, `Régénération impossible (${res.status})`),
+    );
+  }
+  return res.json();
+}
+
 export async function fetchRuns(): Promise<{
   enabled: boolean;
   runs: RunSummary[];
