@@ -482,6 +482,11 @@ class RegenerationRequest(BaseModel):
     )
 
 
+# ============================================================
+# SERP ANALYSIS (Surfer-like)
+# ============================================================
+
+
 class ScrapedPage(BaseModel):
     """Contenu d'une page top 10 scrapée."""
 
