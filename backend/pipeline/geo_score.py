@@ -368,7 +368,7 @@ def score_geo(article: GeneratedArticle) -> GEOScore:
     analysis = article.serp_analysis
 
     direct, f1 = _score_direct_answer(markdown, article.stub.target_keyword)
-    structure, f2 = _score_extractable_structure(markdown)
+    structure, f2 = _score_extractable_structure(markdown, analysis)
     entities, f3 = _score_entity_coverage(markdown, analysis)
     questions, f4 = _score_question_coverage(markdown, analysis)
     citations, f5 = _score_citations_and_data(article)
