@@ -292,6 +292,93 @@ def test_site_vide_et_plafond() -> bool:
     return ok
 
 
+class _FakeRedis:
+    """Compteurs en mémoire — suffit pour `_consume` (incr / expire / ttl)."""
+
+    def __init__(self) -> None:
+        self.counters: dict[str, int] = {}
+
+    def incr(self, key: str) -> int:
+        self.counters[key] = self.counters.get(key, 0) + 1
+        return self.counters[key]
+
+    def expire(self, key: str, seconds: int) -> None:
+        return None
+
+    def ttl(self, key: str) -> int:
+        return 3600
+
+
+def test_route() -> bool:
+    print("\n[9] Route /site-audit (TestClient)")
+    from fastapi.testclient import TestClient
+
+    import main
+    from tests.test_auth import (
+        FakeAgencyRepository,
+        FakeBillingRepository,
+        FakeQueue,
+        FakeRunRepository,
+    )
+
+    main.get_agency_repository = lambda: FakeAgencyRepository()
+    main.get_repository = lambda: FakeRunRepository()
+    main.get_billing_repository = lambda: FakeBillingRepository()
+    agencies = FakeAgencyRepository()
+    main.get_agency_repository = lambda: agencies
+
+    ok = True
+    with TestClient(main.app) as client:
+        queue = FakeQueue()
+        main.app.state.queue = queue
+        main.app.state.redis = _FakeRedis()
+
+        r = client.post("/site-audit", json={"start_url": "https://exemple.fr"})
+        ok = _check(r.status_code == 401, "sans jeton → 401", f"statut {r.status_code}")
+
+        r = client.post(
+            "/auth/register",
+            json={"email": "audit@agence.fr", "password": "motdepasse-solide", "name": "Agence"},
+        )
+        token = r.json()["access_token"]
+        head = {"Authorization": f"Bearer {token}"}
+
+        r = client.post("/site-audit", json={"start_url": "https://exemple.fr"}, headers=head)
+        ok &= _check(r.status_code == 200, "avec jeton → 200", f"{r.status_code} {r.text[:150]}")
+        job_id = r.json().get("job_id")
+        ok &= _check(bool(job_id), "un job est rendu")
+
+        # Le propriétaire doit être lisible par `_job_agency_id`, et le job ne
+        # doit PAS prétendre appartenir à un run : un audit n'en a pas, et lui
+        # en inventer un casserait le lien de retour du suivi.
+        job = queue.jobs[job_id]
+        ok &= _check(
+            isinstance(job.args[0], dict) and "agency_id" in job.args[0],
+            "l'agency_id voyage DANS le dict d'arguments",
+            str(job.args)[:120],
+        )
+        ok &= _check(
+            main._job_agency_id(job) == job.args[0]["agency_id"],
+            "_job_agency_id retrouve le propriétaire",
+        )
+        ok &= _check(main._job_run_id(job) is None, "_job_run_id rend None (pas de run)")
+
+        # Le plafond de pages est borné par le modèle, pas par la politesse :
+        # le worker est unique et un crawl l'occupe entièrement.
+        r = client.post(
+            "/site-audit", json={"start_url": "https://exemple.fr", "max_pages": 99999}, headers=head
+        )
+        ok &= _check(r.status_code == 422, "max_pages hors bornes → 422", f"statut {r.status_code}")
+
+        # Quota par agence : 5/h par défaut. Le premier appel en a consommé un.
+        for _ in range(4):
+            client.post("/site-audit", json={"start_url": "https://exemple.fr"}, headers=head)
+        r = client.post("/site-audit", json={"start_url": "https://exemple.fr"}, headers=head)
+        ok &= _check(r.status_code == 429, "6ᵉ audit dans l'heure → 429", f"statut {r.status_code}")
+        ok &= _check("Retry-After" in r.headers, "en-tête Retry-After posé")
+    return ok
+
+
 def main() -> int:
     print("=" * 62)
     print("AUDIT DE MAILLAGE D'UN SITE EXISTANT")
@@ -306,6 +393,7 @@ def main() -> int:
         test_liens_hors_perimetre(),
         test_profondeur(),
         test_site_vide_et_plafond(),
+        test_route(),
     ]
 
     print("\n" + "=" * 62)
