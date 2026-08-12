@@ -453,7 +453,13 @@ def test_route_publique() -> bool:
     from fastapi.testclient import TestClient
 
     import main
-    from models import PUBLIC_AUDIT_MAX_PAGES, PUBLIC_AUDIT_SAMPLE, SiteAuditReport
+    from models import PUBLIC_AUDIT_MAX_PAGES, PUBLIC_AUDIT_SAMPLE
+    from pipeline import site_audit as _sa
+
+    # `exemple.fr` ne résout pas, et le garde-fou SSRF échoue fermé — à raison.
+    # On pré-remplit le cache de résolution plutôt que de faire dépendre la
+    # suite de tests d'un vrai DNS.
+    _sa._dns_cache["exemple.fr"] = True
 
     # Faux rapport : 12 orphelines, pour vérifier que la version gratuite donne
     # le COMPTE exact et seulement un échantillon d'URL.
