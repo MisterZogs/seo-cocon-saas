@@ -604,6 +604,8 @@ function ArticleContent({ article }: { article: GeneratedArticle }) {
         </Alert>
       ) : null}
 
+      {article.geo_score && <GeoScoreBlock score={article.geo_score} />}
+
       {article.detection_report && <DetectionReportBlock report={article.detection_report} />}
 
       <div>
