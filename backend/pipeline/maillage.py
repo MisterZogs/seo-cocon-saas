@@ -359,9 +359,19 @@ def assemble_maillage(
 
 
 def audit_maillage(
-    maillage: MaillageMap, cocoons: list[CoconStructure]
+    maillage: MaillageMap,
+    cocoons: list[CoconStructure],
+    articles: list[GeneratedArticle] | None = None,
 ) -> dict[str, object]:
-    """Contrôle a posteriori — sert aux tests et au diagnostic."""
+    """Contrôle a posteriori — sert aux tests et au diagnostic.
+
+    `articles` est facultatif mais fortement recommandé en mode FULL. Sans lui,
+    l'audit ne voit que la map et **valide un livrable cassé** : c'est
+    exactement ce qui est arrivé le 2026-08-12, où il a rendu « maillage
+    complet, 0 orphelin » sur un cocon dont la mère ne portait aucun lien dans
+    son corps. La map disait vrai, le fichier livré non — et c'est le fichier
+    qu'on exporte.
+    """
     index = _Index(cocoons)
     targets_by_source = {
         s: {l.target_slug for l in links} for s, links in maillage.links.items()
