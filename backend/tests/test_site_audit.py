@@ -448,6 +448,97 @@ def test_route() -> bool:
     return ok
 
 
+def test_route_publique() -> bool:
+    print("\n[12] Route publique /public/site-audit")
+    from fastapi.testclient import TestClient
+
+    import main
+    from models import PUBLIC_AUDIT_MAX_PAGES, PUBLIC_AUDIT_SAMPLE, SiteAuditReport
+
+    # Faux rapport : 12 orphelines, pour vérifier que la version gratuite donne
+    # le COMPTE exact et seulement un échantillon d'URL.
+    faux = build_report(
+        start_url=ROOT + "/",
+        sitemap_url=None,
+        pages_discovered=140,
+        truncated=True,
+        titles={f"{ROOT}/p{i}": f"Page {i}" for i in range(14)},
+        words={},
+        outgoing={f"{ROOT}/p{i}": ({f"{ROOT}/p0"} if i < 2 else set()) for i in range(14)},
+        failed={},
+    )
+
+    async def _fake_audit(request, **kw):
+        # Le plafond gratuit doit être imposé par la route, pas par l'appelant.
+        assert request.max_pages == PUBLIC_AUDIT_MAX_PAGES, request.max_pages
+        return faux
+
+    original = main.audit_site
+    main.audit_site = _fake_audit
+    ok = True
+    try:
+        with TestClient(main.app) as client:
+            main.app.state.redis = _FakeRedis()
+            r = client.post("/public/site-audit", json={"start_url": "https://exemple.fr"})
+            ok = _check(r.status_code == 200, "sans jeton → 200 (route publique)", r.text[:150])
+            body = r.json()
+
+            ok &= _check(
+                body["orphans_count"] == len(faux.orphans),
+                "le COMPTE d'orphelines est complet et exact",
+                f'{body["orphans_count"]} vs {len(faux.orphans)}',
+            )
+            ok &= _check(
+                len(body["orphans_sample"]) == PUBLIC_AUDIT_SAMPLE,
+                f"la LISTE est tronquée à {PUBLIC_AUDIT_SAMPLE}",
+                str(len(body["orphans_sample"])),
+            )
+            ok &= _check(
+                body["orphans_count"] > len(body["orphans_sample"]),
+                "l'écart compte/échantillon est ce qui motive l'inscription",
+            )
+            # Rien qui ressemble au livrable payant ne doit fuiter.
+            ok &= _check("pages" not in body, "aucune table page par page")
+            ok &= _check("failed_urls" not in body, "aucune liste d'URL en échec")
+            ok &= _check(body["truncated"] is True, "le plafond gratuit est annoncé")
+            ok &= _check(body["limited_to"] == PUBLIC_AUDIT_MAX_PAGES, "plafond exposé")
+    finally:
+        main.audit_site = original
+
+    # Un site dont aucune page n'est lisible ne doit pas rendre un rapport vide
+    # et rassurant : c'est un échec, et le message doit orienter.
+    async def _rien(request, **kw):
+        return build_report(
+            start_url=ROOT, sitemap_url=None, pages_discovered=0, truncated=False,
+            titles={}, words={}, outgoing={}, failed={"HTTP 403": 5},
+        )
+
+    main.audit_site = _rien
+    try:
+        with TestClient(main.app) as client:
+            main.app.state.redis = _FakeRedis()
+            r = client.post("/public/site-audit", json={"start_url": "https://exemple.fr"})
+            ok &= _check(r.status_code == 422, "0 page lisible → 422", f"statut {r.status_code}")
+            ok &= _check(
+                "robots" in r.json().get("detail", "").lower(),
+                "le message oriente vers la cause probable",
+            )
+    finally:
+        main.audit_site = original
+
+    # SSRF : la route publique doit refuser une adresse interne, comme l'autre.
+    with TestClient(main.app) as client:
+        main.app.state.redis = _FakeRedis()
+        r = client.post("/public/site-audit", json={"start_url": "http://127.0.0.1:8000"})
+        ok &= _check(r.status_code == 422, "adresse interne → 422", f"statut {r.status_code}")
+        ok &= _check(
+            "non autorisée" in r.json().get("detail", ""),
+            "message explicite",
+            r.json().get("detail", ""),
+        )
+    return ok
+
+
 def main() -> int:
     print("=" * 62)
     print("AUDIT DE MAILLAGE D'UN SITE EXISTANT")
