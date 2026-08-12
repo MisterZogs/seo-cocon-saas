@@ -516,6 +516,7 @@ async def audit_site(
         words: dict[str, int] = {}
         raw_links: dict[str, list[str]] = {}
         failed: Counter[str] = Counter()
+        failed_urls: dict[str, str] = {}
 
         queue = deque(targets)
         queued: set[str] = set(targets)
