@@ -17,6 +17,7 @@ import { Markdown } from "@/components/result/markdown";
 import { RegenerateArticle } from "@/components/result/regenerate";
 import { WordPressExport } from "@/components/result/wordpress-export";
 import { DetectionReportBlock } from "@/components/result/detection-report";
+import { GeoScoreBlock } from "@/components/result/geo-score";
 import { cn } from "@/lib/utils";
 import type {
   ArticleBrief,
