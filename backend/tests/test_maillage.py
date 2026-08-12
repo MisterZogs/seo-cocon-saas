@@ -11,6 +11,7 @@ Usage :
 
 from __future__ import annotations
 
+import re
 import sys
 
 from models import (
@@ -24,7 +25,7 @@ from models import (
     SearchIntent,
     SerpAnalysis,
 )
-from pipeline.maillage import assemble_maillage, audit_maillage
+from pipeline.maillage import _RELATED_HEADING, assemble_maillage, audit_maillage
 
 
 def _stub(cocon_id: str, slug: str, kind: ArticleType) -> ArticleStub:
@@ -232,6 +233,16 @@ def main() -> int:
             ok &= _check(
                 f"{art.stub.slug} : aucun marqueur vers slug inexistant",
                 "slug-fantome" not in art.content_markdown,
+            )
+            # Les comparaisons d'ensembles ci-dessus ne voient pas un doublon.
+            # Le rattrapage des liens déclarés-mais-absents a justement failli
+            # écrire deux fois chaque lien ajouté (il est absent du corps par
+            # définition, puisqu'il est sur le point d'y être écrit).
+            marks = re.findall(r"\[\[INTERNAL_LINK:([^|\]]+)\|", art.content_markdown)
+            ok &= _check(
+                f"{art.stub.slug} : aucune cible en double",
+                len(marks) == len(set(marks)),
+                f"doublons={[s for s in set(marks) if marks.count(s) > 1]}",
             )
 
     print("\n" + "=" * 60)
