@@ -380,13 +380,41 @@ def score_geo(article: GeneratedArticle) -> GEOScore:
     questions, f4 = _score_question_coverage(markdown, analysis)
     citations, f5 = _score_citations_and_data(article)
 
-    overall = round(
-        direct * _WEIGHTS["direct_answer"]
-        + structure * _WEIGHTS["extractable_structure"]
-        + entities * _WEIGHTS["entity_coverage"]
-        + questions * _WEIGHTS["question_coverage"]
-        + citations * _WEIGHTS["citations_and_data"]
+    axes: dict[str, int | None] = {
+        "direct_answer": direct,
+        "extractable_structure": structure,
+        "entity_coverage": entities,
+        "question_coverage": questions,
+        "citations_and_data": citations,
+    }
+
+    # Moyenne renormalisée sur les seuls axes mesurables : un axe écarté ne
+    # rapporte ni ne coûte rien, au lieu de valoir 100 par défaut.
+    measured = {k: v for k, v in axes.items() if v is not None}
+    total_weight = sum(_WEIGHTS[k] for k in measured)
+    overall = (
+        round(sum(v * _WEIGHTS[k] for k, v in measured.items()) / total_weight)
+        if total_weight
+        else 0
     )
+
+    unmeasured: list[str] = []
+    if entities is None:
+        unmeasured.append(
+            "Couverture d'entités : l'analyse SERP n'a extrait aucune entité de "
+            f"référence ({analysis.scraped_pages_count} page(s) exploitée(s)). "
+            "Axe écarté du calcul plutôt que crédité."
+        )
+    if questions is None:
+        unmeasured.append(
+            "Couverture des questions : la SERP n'a fourni aucune question fréquente. "
+            "Axe écarté du calcul plutôt que crédité."
+        )
+    if analysis.low_sample:
+        unmeasured.append(
+            "Échantillon SERP faible : les axes calibrés sur le top 10 sont à lire "
+            "avec prudence."
+        )
 
     return GEOScore(
         direct_answer=direct,
@@ -396,6 +424,7 @@ def score_geo(article: GeneratedArticle) -> GEOScore:
         citations_and_data=citations,
         overall=overall,
         findings=[*f1, *f2, *f3, *f4, *f5],
+        unmeasured=unmeasured,
     )
 
 
