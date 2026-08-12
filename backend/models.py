@@ -745,12 +745,30 @@ class GEOScore(BaseModel):
 
     direct_answer: int = Field(..., ge=0, le=100, description="Réponse dans les 100 premiers mots")
     extractable_structure: int = Field(..., ge=0, le=100, description="Listes, tableaux, FAQ, H2")
-    entity_coverage: int = Field(..., ge=0, le=100, description="Entités du top 10 nommées")
-    question_coverage: int = Field(..., ge=0, le=100, description="Questions PAA reprises en titre")
+    entity_coverage: int | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Entités du top 10 nommées. None si l'analyse SERP n'en a extrait aucune.",
+    )
+    question_coverage: int | None = Field(
+        default=None,
+        ge=0,
+        le=100,
+        description="Questions PAA reprises en titre. None si la SERP n'en a fourni aucune.",
+    )
     citations_and_data: int = Field(..., ge=0, le=100, description="Sources citées et chiffres")
     overall: int = Field(..., ge=0, le=100)
     findings: list[str] = Field(
         default_factory=list, description="Ce qu'il faut corriger, contrôle par contrôle"
+    )
+    unmeasured: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Axes qu'on n'a PAS pu mesurer, faute de référence SERP. Ils sont exclus "
+            "de la moyenne au lieu d'être crédités : un axe non mesurable noté 100 "
+            "gonflerait le score d'un run dont le scrape a échoué."
+        ),
     )
 
 
