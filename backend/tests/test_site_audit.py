@@ -453,6 +453,7 @@ def main() -> int:
         test_liens_hors_perimetre(),
         test_profondeur(),
         test_site_vide_et_plafond(),
+        test_ssrf(),
         test_route(),
     ]
 
