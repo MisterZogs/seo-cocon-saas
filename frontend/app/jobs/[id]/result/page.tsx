@@ -81,6 +81,23 @@ function ResultPage({
     );
   }
 
+  // Un job d'audit de site n'est pas un livrable de cocon : le rendre ici
+  // planterait sur le premier `result.cocoons`.
+  if ("site_audit" in result) {
+    return (
+      <ErrorLayout>
+        <Alert>
+          <AlertDescription>
+            Ce job est un audit de maillage, pas une génération de cocons.{" "}
+            <Link href="/outils/audit" className="underline">
+              Ouvrir l&apos;audit
+            </Link>
+          </AlertDescription>
+        </Alert>
+      </ErrorLayout>
+    );
+  }
+
   return <ResultView result={result} jobId={jobId} runId={status.run_id} />;
 }
 
