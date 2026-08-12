@@ -528,13 +528,26 @@ def test_route_publique() -> bool:
 
     # SSRF : la route publique doit refuser une adresse interne, comme l'autre.
     with TestClient(main.app) as client:
-        main.app.state.redis = _FakeRedis()
+        fake = _FakeRedis()
+        main.app.state.redis = fake
         r = client.post("/public/site-audit", json={"start_url": "http://127.0.0.1:8000"})
         ok &= _check(r.status_code == 422, "adresse interne → 422", f"statut {r.status_code}")
         ok &= _check(
             "non autorisée" in r.json().get("detail", ""),
             "message explicite",
             r.json().get("detail", ""),
+        )
+
+        # 🔴 L'ordre compte : une URL refusée ne déclenche AUCUN crawl, donc ne
+        # doit consommer aucun quota. Constaté en production — trois adresses
+        # refusées épuisaient l'allocation horaire d'un visiteur qui n'avait
+        # rien analysé, ce qui condamne l'entonnoir pour une faute de frappe.
+        for mauvaise in ["http://10.0.0.1", "pas-une-url", "http://192.168.1.1"]:
+            client.post("/public/site-audit", json={"start_url": mauvaise})
+        ok &= _check(
+            not fake.counters,
+            "aucune URL refusée n'a consommé de quota",
+            str(fake.counters),
         )
     return ok
 
