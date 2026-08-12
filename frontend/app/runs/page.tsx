@@ -149,9 +149,19 @@ function RunsPage() {
                 {state.runs.length} génération
                 {state.runs.length > 1 ? "s" : ""}
               </p>
-              <Link href="/new" className={buttonVariants({ size: "sm" })}>
-                Nouvelle génération
-              </Link>
+              <div className="flex items-center gap-2">
+                {/* L'audit ne consomme aucun cocon : il vit à côté des
+                    générations, pas dedans. */}
+                <Link
+                  href="/outils/audit"
+                  className={buttonVariants({ size: "sm", variant: "outline" })}
+                >
+                  Auditer un site existant
+                </Link>
+                <Link href="/new" className={buttonVariants({ size: "sm" })}>
+                  Nouvelle génération
+                </Link>
+              </div>
             </div>
 
             <ul className="space-y-3">
