@@ -521,6 +521,28 @@ function EeatBadge({ score }: { score: number }) {
   );
 }
 
+/** Même code couleur que l'E-E-A-T : le lecteur n'a qu'une échelle à apprendre. */
+function GeoBadge({ score }: { score: number }) {
+  const tone =
+    score >= 80
+      ? "bg-success-soft text-success-strong"
+      : score >= 60
+        ? "bg-warning-soft text-warning-strong"
+        : "bg-destructive-soft text-destructive-strong";
+  return (
+    <span
+      className={cn(
+        "inline-flex items-baseline gap-1.5 rounded-md px-2 py-1 text-xs font-semibold",
+        tone,
+      )}
+      title="Optimisation pour être cité par les moteurs génératifs (AI Overviews, ChatGPT, Perplexity)"
+    >
+      GEO
+      <span className="tabular-nums">{score}/100</span>
+    </span>
+  );
+}
+
 /**
  * Copie le markdown source — y compris depuis la « Vue lisible ». C'est le
  * livrable que l'agence colle dans son CMS ; copier le rendu perdrait les
