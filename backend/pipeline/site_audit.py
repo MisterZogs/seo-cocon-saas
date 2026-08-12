@@ -581,8 +581,20 @@ async def audit_site(
 
     crawler = _Crawler(root, respect_robots=request.respect_robots)
 
+    # Refusé d'emblée, pour que l'agence ait un message clair plutôt qu'un
+    # rapport vide. Le hook ci-dessous reste la vraie défense : il couvre les
+    # redirections, que ce contrôle-ci ne voit pas.
+    if not _is_public_host(urlparse(root).hostname or ""):
+        raise ValueError(
+            f"Adresse non autorisée : {urlparse(root).hostname}. L'audit ne peut "
+            "viser qu'un site accessible publiquement."
+        )
+
     async with httpx.AsyncClient(
-        follow_redirects=True, timeout=SCRAPE_TIMEOUT, headers=SCRAPE_HEADERS
+        follow_redirects=True,
+        timeout=SCRAPE_TIMEOUT,
+        headers=SCRAPE_HEADERS,
+        event_hooks={"request": [_block_internal_requests]},
     ) as client:
         await crawler.load_robots(client)
 
