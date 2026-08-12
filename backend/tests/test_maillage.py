@@ -175,6 +175,26 @@ def test_liens_declares_mais_absents_du_corps() -> bool:
     )
     # Ce que voit l'export : les marqueurs, rien d'autre.
     ok &= _check("l'export en résoudrait bien 5", len(in_body) == 5, f"{len(in_body)}")
+
+    # L'audit doit désormais VOIR ce genre de trou. Sans les articles il ne
+    # regarde que la map et validerait un livrable cassé — c'est précisément ce
+    # qu'il a fait en production.
+    ok &= _check(
+        "l'audit avec les corps ne signale rien sur un maillage sain",
+        not audit_maillage(m, [a], articles)["body_mismatch"],
+    )
+    troue = _article(a.mother, [(d.slug, f"vers {d.slug}") for d in a.daughters])
+    troue.content_markdown = "# Titre\n\nAucun marqueur.\n"
+    detecte = audit_maillage(m, [a], [troue])["body_mismatch"]
+    ok &= _check(
+        "… et signale les 5 liens absents du corps",
+        len(detecte) == 5,
+        f"détecté={detecte}",
+    )
+    ok &= _check(
+        "l'audit SANS les corps reste aveugle (d'où la panne)",
+        not audit_maillage(m, [a])["body_mismatch"],
+    )
     return ok
 
 
