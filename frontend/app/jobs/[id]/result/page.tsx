@@ -602,6 +602,8 @@ function ArticleContent({ article }: { article: GeneratedArticle }) {
         </Alert>
       ) : null}
 
+      {article.detection_report && <DetectionReportBlock report={article.detection_report} />}
+
       <div>
         <div className="flex items-center justify-between">
           <SectionHeading tone="article" className="mb-0">
