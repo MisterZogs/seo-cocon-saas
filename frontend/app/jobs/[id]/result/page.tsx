@@ -16,6 +16,7 @@ import { GroupHeading, SectionHeading, TONE, type Tone } from "@/components/resu
 import { Markdown } from "@/components/result/markdown";
 import { RegenerateArticle } from "@/components/result/regenerate";
 import { WordPressExport } from "@/components/result/wordpress-export";
+import { DetectionReportBlock } from "@/components/result/detection-report";
 import { cn } from "@/lib/utils";
 import type {
   ArticleBrief,
