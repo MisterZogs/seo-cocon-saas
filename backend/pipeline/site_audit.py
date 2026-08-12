@@ -353,7 +353,7 @@ class _Crawler:
         try:
             r = await client.get(urljoin(self.root, "/robots.txt"))
             parser.parse(r.text.splitlines() if r.status_code < 400 else [])
-        except httpx.HTTPError:
+        except (httpx.HTTPError, BlockedAddress):
             # Pas de robots.txt lisible = pas d'interdiction connue. On ne
             # bloque pas l'audit pour ça, mais on le note.
             parser.parse([])
