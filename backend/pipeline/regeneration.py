@@ -200,6 +200,11 @@ async def regenerate_article(
         policy=result.form.inter_cocon_policy,
     )
 
+    # Comme pour le maillage, on renote TOUS les articles et pas seulement celui
+    # qu'on vient de réécrire : la normalisation a pu toucher le markdown des
+    # sœurs, et le calcul ne coûte rien.
+    score_articles_geo(result.articles)
+
     audit = audit_maillage(result.maillage_map, result.cocoons)
     missing = list(audit["missing_required"])
     orphans = list(audit["orphans"])
