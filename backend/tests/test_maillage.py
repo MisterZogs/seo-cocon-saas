@@ -234,15 +234,19 @@ def main() -> int:
                 f"{art.stub.slug} : aucun marqueur vers slug inexistant",
                 "slug-fantome" not in art.content_markdown,
             )
-            # Les comparaisons d'ensembles ci-dessus ne voient pas un doublon.
-            # Le rattrapage des liens déclarés-mais-absents a justement failli
-            # écrire deux fois chaque lien ajouté (il est absent du corps par
-            # définition, puisqu'il est sur le point d'y être écrit).
-            marks = re.findall(r"\[\[INTERNAL_LINK:([^|\]]+)\|", art.content_markdown)
+            # Un même lien peut légitimement apparaître deux fois dans la prose
+            # (les articles réels le font). Ce qui ne doit JAMAIS arriver, c'est
+            # que la section de rattrapage réécrive un lien déjà présent : le
+            # correctif des liens déclarés-mais-absents a failli le faire, car
+            # un lien ajouté est lui aussi « absent du corps » au moment du test.
+            corps, _, section = art.content_markdown.partition(f"## {_RELATED_HEADING}")
+            avant = set(re.findall(r"\[\[INTERNAL_LINK:([^|\]]+)\|", corps))
+            apres = re.findall(r"\[\[INTERNAL_LINK:([^|\]]+)\|", section)
             ok &= _check(
-                f"{art.stub.slug} : aucune cible en double",
-                len(marks) == len(set(marks)),
-                f"doublons={[s for s in set(marks) if marks.count(s) > 1]}",
+                f"{art.stub.slug} : la section de rattrapage ne duplique rien",
+                len(apres) == len(set(apres)) and not (set(apres) & avant),
+                f"interne={[s for s in set(apres) if apres.count(s) > 1]} "
+                f"déjà-dans-le-corps={sorted(set(apres) & avant)}",
             )
 
     print("\n" + "=" * 60)
