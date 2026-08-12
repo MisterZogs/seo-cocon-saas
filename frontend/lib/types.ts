@@ -313,6 +313,46 @@ export interface JobProgress {
   current_item?: string | null;
 }
 
+// ============================================================
+// Audit de maillage d'un site existant (chantier 14)
+// ============================================================
+
+export interface PageLinkStats {
+  url: string;
+  title: string | null;
+  inbound: number;
+  outbound: number;
+  /** null = aucun chemin de liens ne mène à cette page depuis l'accueil. */
+  depth: number | null;
+  word_count: number | null;
+}
+
+export interface SiteAuditReport {
+  start_url: string;
+  sitemap_url: string | null;
+  pages_discovered: number;
+  pages_crawled: number;
+  pages_failed: Record<string, number>;
+  failed_urls: Record<string, string>;
+  truncated: boolean;
+  total_internal_links: number;
+  orphans: string[];
+  dead_ends: string[];
+  unreachable: string[];
+  reciprocity_rate: number;
+  avg_inbound: number;
+  avg_outbound: number;
+  depth_distribution: Record<string, number>;
+  pages: PageLinkStats[];
+  findings: string[];
+}
+
+/** Résultat d'un job d'audit — `site_audit` le distingue d'un livrable de cocon. */
+export interface SiteAuditJobResult {
+  site_audit: true;
+  report: SiteAuditReport;
+}
+
 export interface JobStatusResponse {
   job_id: string;
   /** Stable d'un job à l'autre : c'est lui qui adresse la validation. */
