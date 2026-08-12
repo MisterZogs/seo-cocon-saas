@@ -322,11 +322,10 @@ def _extract_json(text: str) -> dict | list:
     if match:
         try:
             return _loads(match.group(1))
-        except json.JSONDecodeError:
-            pass
+        except json.JSONDecodeError as e:
+            last_error = e
 
     # Cas 3 : du premier { ou [ jusqu'au dernier } ou ]
-    last_error: json.JSONDecodeError | None = None
     for open_char, close_char in [("{", "}"), ("[", "]")]:
         start = text.find(open_char)
         end = text.rfind(close_char)
