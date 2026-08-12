@@ -807,6 +807,7 @@ class GeneratedArticle(BaseModel):
         description="IDs des ExperienceElement repris verbatim dans cet article",
     )
     detection_report: AIDetectionReport | None = None
+    geo_score: GEOScore | None = None
     word_count: int
 
 
