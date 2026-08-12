@@ -231,7 +231,11 @@ def _rewrite_markdown(
 
     body = _LINK_MARKER.sub(_replace, markdown)
 
+    # Les liens `added` sont eux aussi absents du corps — c'est leur définition,
+    # ils sont sur le point d'y être écrits. Les exclure, sinon chacun serait
+    # ajouté deux fois à la section de fin.
     present = {m.group(1).strip() for m in _LINK_MARKER.finditer(body)}
+    present |= {l.target_slug for l in added}
     declared_but_absent = [l for l in kept if l.target_slug not in present]
     if declared_but_absent:
         logger.warning(
