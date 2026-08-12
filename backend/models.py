@@ -729,6 +729,42 @@ class EEATScore(BaseModel):
     warnings: list[str] = Field(default_factory=list, description="Points à améliorer avant publication")
 
 
+class AIDetectionVerdict(str, Enum):
+    """Verdict attendu si l'agence ou son client passe l'article dans un détecteur.
+
+    Ce n'est jamais une mesure — aucun appel à Pangram/Originality n'est fait à
+    la génération (payant par tranche de 100 mots, non maîtrisé côté produit).
+    C'est une prédiction fondée sur ce qui est vérifiable en code : la présence
+    de blocs verbatim. Voir [[ai-detection-pangram]] et [[pangram-ab-test]] —
+    le seul levier mesuré est l'injection verbatim (92 % IA / 8 % humain sur le
+    segment testé), jamais le texte généré lui-même (100 % IA à chaque essai,
+    y compris après humanizer et réécriture manuelle par un modèle fort).
+    """
+
+    MIXED = "mixed"
+    GENERATED = "generated"
+
+
+class AIDetectionReport(BaseModel):
+    """Rapport de détection IA + argumentaire — pas une mesure, une prédiction.
+
+    Construit uniquement à partir de ce que le pipeline sait déjà (blocs
+    verbatim placés, longueur de l'article). Ne promet jamais « indétectable » :
+    voir CLAUDE.md section « Détection IA ».
+    """
+
+    verbatim_word_count: int = Field(..., ge=0)
+    verbatim_share: float = Field(..., ge=0, le=1, description="Part du texte en verbatim client")
+    expected_verdict: AIDetectionVerdict
+    summary: str
+    talking_points: list[str] = Field(
+        ..., description="Argumentaire prêt à transmettre au client final"
+    )
+    caveats: list[str] = Field(
+        default_factory=list, description="Mises en garde — ne jamais promettre l'indétectable"
+    )
+
+
 class GeneratedArticle(BaseModel):
     """Article complet généré — sortie du mode FULL."""
 
@@ -745,6 +781,7 @@ class GeneratedArticle(BaseModel):
         default_factory=list,
         description="IDs des ExperienceElement repris verbatim dans cet article",
     )
+    detection_report: AIDetectionReport | None = None
     word_count: int
 
 
