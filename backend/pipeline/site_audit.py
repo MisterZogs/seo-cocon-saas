@@ -538,11 +538,14 @@ async def audit_site(
             for url, res in zip(batch, results):
                 done += 1
                 if isinstance(res, Exception):
-                    failed[f"exception {type(res).__name__}"] += 1
+                    motif = f"exception {type(res).__name__}"
+                    failed[motif] += 1
+                    failed_urls[url] = motif
                     continue
                 title, links, reason, wc, final = res
                 if reason:
                     failed[reason] += 1
+                    failed_urls[url] = reason
                     continue
                 key = final or url
                 titles[key] = title
