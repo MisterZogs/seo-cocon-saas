@@ -90,6 +90,22 @@ def _consume(redis, key: str, quota: Quota) -> None:
 
 
 def _message(quota: Quota, retry_after: int) -> str:
+    # L'appelant est déjà authentifié : lui proposer de « créer un compte »
+    # comme le fait la variante publique n'a aucun sens, et ce qu'on protège
+    # ici n'est pas la dépense mais la file de jobs. Constaté en production le
+    # 2026-08-12 — le 429 renvoyait « créez un compte » à une agence connectée.
+    if quota.scope == "agency":
+        minutes = max(1, retry_after // 60)
+        if quota.window_seconds >= 86400:
+            return (
+                "Vous avez atteint la limite quotidienne d'audits. Elle protège la "
+                "file de génération, qui est partagée : un crawl l'occupe entièrement. "
+                "Réessayez demain, ou écrivez-nous si votre usage la dépasse."
+            )
+        return (
+            f"Trop d'audits lancés d'affilée. Réessayez dans {minutes} minute(s) — "
+            "un crawl occupe la file de génération pendant toute sa durée."
+        )
     if quota.scope == "global":
         return (
             "L'outil gratuit a atteint son quota du jour — il tourne à nos frais. "
