@@ -279,36 +279,71 @@ class AnthropicClient:
         return parsed, result
 
 
+def _loads(candidate: str) -> dict | list:
+    """`json.loads`, puis `strict=False` en second essai.
+
+    🔴 Le second essai n'est pas une coquetterie : il a fait échouer un run réel
+    en production le 2026-08-12, sur une réponse de 41 335 caractères. Ce produit
+    demande au modèle de placer un article Markdown ENTIER dans une chaîne JSON
+    (`content_markdown`) ; un modèle qui recopie du markdown y laisse tôt ou tard
+    un saut de ligne littéral au lieu de `\\n`, et `json.loads` refuse par défaut
+    tout caractère de contrôle dans une chaîne (« Invalid control character »).
+    `strict=False` les accepte, ce qui est exactement le bon compromis ici : on
+    récupère un article complet et lisible au lieu de jeter un appel Opus payé.
+    """
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        return json.loads(candidate, strict=False)
+
+
 def _extract_json(text: str) -> dict | list:
     """Extrait du JSON même si Claude entoure de ```json ... ```."""
     text = text.strip()
 
     # Cas 1 : JSON direct
     try:
-        return json.loads(text)
+        return _loads(text)
     except json.JSONDecodeError:
         pass
 
-    # Cas 2 : markdown code block
-    match = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
+    # Cas 2 : bloc de code markdown.
+    # ⚠️ Gourmand, et c'est délibéré. Une capture non gourmande (`.*?`) s'arrête
+    # au PREMIER ``` rencontré — or `content_markdown` contient régulièrement un
+    # bloc de code (un article « cocon sémantique WordPress » montre du PHP), ce
+    # qui coupait le JSON en plein milieu. On veut la dernière clôture, donc la
+    # capture la plus large.
+    match = re.search(r"```(?:json)?\s*(.*)\s*```", text, re.DOTALL)
     if match:
         try:
-            return json.loads(match.group(1))
+            return _loads(match.group(1))
         except json.JSONDecodeError:
             pass
 
-    # Cas 3 : trouver le premier { ou [ jusqu'au dernier } ou ]
+    # Cas 3 : du premier { ou [ jusqu'au dernier } ou ]
+    last_error: json.JSONDecodeError | None = None
     for open_char, close_char in [("{", "}"), ("[", "]")]:
         start = text.find(open_char)
         end = text.rfind(close_char)
         if start != -1 and end > start:
-            candidate = text[start : end + 1]
             try:
-                return json.loads(candidate)
-            except json.JSONDecodeError:
+                return _loads(text[start : end + 1])
+            except json.JSONDecodeError as e:
+                last_error = e
                 continue
 
+    # Le message d'origine ne montrait que les 200 premiers caractères — donc
+    # jamais l'endroit qui casse, qui est presque toujours au milieu. On donne
+    # la position et son voisinage, seule information qui permette de trancher
+    # entre « tronqué », « caractère de contrôle » et « guillemet non échappé ».
+    context = ""
+    if last_error is not None:
+        pos = last_error.pos
+        context = (
+            f"\n  → {last_error.msg} à la position {pos}"
+            f"\n  → voisinage : ...{text[max(0, pos - 120):pos + 120]!r}..."
+        )
     raise ValueError(
         f"Impossible d'extraire du JSON valide de : {text[:200]}..."
-        f" (longueur totale {len(text)} caractères)"
+        f" (longueur totale {len(text)} caractères){context}"
     )
