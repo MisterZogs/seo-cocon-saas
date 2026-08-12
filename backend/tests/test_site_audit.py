@@ -17,7 +17,14 @@ Usage :
 from __future__ import annotations
 
 import gzip
+import os
 import sys
+
+# Comme dans test_auth : `main` refuse de démarrer sans secret, et on l'importe
+# plus bas pour tester la route.
+os.environ.setdefault(
+    "JWT_SECRET", "secret-de-test-suffisamment-long-pour-passer-le-plancher"
+)
 
 from pipeline.site_audit import (
     build_report,
