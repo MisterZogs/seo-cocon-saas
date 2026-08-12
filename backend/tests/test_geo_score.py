@@ -259,18 +259,45 @@ def test_sans_sources_ni_chiffres() -> bool:
 
 
 def test_serp_sans_reference() -> bool:
-    print("\n[8] Analyse SERP sans entité ni question (défensif)")
-    # Sans référence, on ne peut rien mesurer : accuser l'article d'un défaut qui
-    # vient de l'analyse SERP serait malhonnête, et c'est précisément le travers
-    # que ce score est censé éviter.
+    print("\n[8] Analyse SERP sans entité ni question — axes ÉCARTÉS, pas crédités")
+    # Le vrai piège du chantier. Sans référence SERP, l'axe n'est pas mesurable.
+    # Le noter 0 accuserait l'article d'un défaut qui vient de l'analyse ; le
+    # noter 100 offrirait 40 % du score à un run dont le scrape a échoué —
+    # exactement l'auto-flatterie que ce score est censé éviter. Mesuré sur deux
+    # runs à SERP simulée : 4 articles sortaient à 100/100 pour cette seule raison.
     article = _article(GOOD_MARKDOWN)
     article.serp_analysis = SERP.model_copy(update={"key_entities": [], "common_questions": []})
     score = score_geo(article)
-    ok = _check(score.entity_coverage == 100, "pas de pénalité sans entité de référence")
-    ok &= _check(score.question_coverage == 100, "pas de pénalité sans question de référence")
+    ok = _check(score.entity_coverage is None, "couverture d'entités non mesurée")
+    ok &= _check(score.question_coverage is None, "couverture des questions non mesurée")
+    ok &= _check(len(score.unmeasured) == 2, "les deux axes écartés sont annoncés")
     ok &= _check(
-        not any("entité" in f for f in score.findings), "et aucune correction inventée"
+        not any("entité" in f for f in score.findings), "aucune correction inventée"
     )
+    # Les trois axes restants sont parfaits : la moyenne renormalisée vaut 100.
+    ok &= _check(score.overall == 100, f"moyenne sur les axes mesurables (obtenu {score.overall})")
+
+    # Et surtout : un article médiocre ne doit PAS être sauvé par les axes écartés.
+    mediocre = _article(GOOD_MARKDOWN, links=0, experience=False)
+    mediocre.serp_analysis = article.serp_analysis
+    plein = _article(GOOD_MARKDOWN, links=0, experience=False)
+    ok &= _check(
+        score_geo(mediocre).overall <= score_geo(plein).overall,
+        "écarter un axe ne gonfle jamais le score d'un article médiocre",
+    )
+    return ok
+
+
+def test_low_sample_signale() -> bool:
+    print("\n[8b] Échantillon SERP faible signalé")
+    article = _article(GOOD_MARKDOWN)
+    article.serp_analysis = SERP.model_copy(update={"low_sample": True})
+    score = score_geo(article)
+    ok = _check(
+        any("faible" in u for u in score.unmeasured),
+        "la faiblesse de l'échantillon est annoncée",
+    )
+    ok &= _check(score.entity_coverage == 100, "les axes restent mesurés pour autant")
     return ok
 
 
