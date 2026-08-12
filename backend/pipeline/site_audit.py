@@ -371,6 +371,11 @@ class _Crawler:
         async with self._semaphore:
             try:
                 r = await client.get(url)
+            except BlockedAddress:
+                # Typiquement une redirection vers une adresse interne : la
+                # requête n'est pas partie. On le dit dans le rapport plutôt
+                # que de le maquiller en erreur réseau.
+                return None, [], "adresse interne refusée", 0, None
             except httpx.TimeoutException:
                 return None, [], "timeout", 0, None
             except httpx.HTTPError as e:
