@@ -287,6 +287,21 @@ async def run_pipeline(
         len(maillage_map.inter_cocon_links),
     )
 
+    # Le run nominal ne s'auditait pas — seules la régénération et l'aperçu
+    # public le faisaient. C'est ce qui a laissé passer, le 2026-08-12, une mère
+    # dont le corps ne portait aucun lien : rien ne regardait le livrable. Un
+    # défaut ici vient du code de maillage, pas du modèle, donc il doit crier
+    # dans les logs plutôt que de partir chez un client.
+    maillage_audit = audit_maillage(maillage_map, cocoons, articles)
+    if any(maillage_audit[k] for k in ("missing_required", "orphans", "body_mismatch")):
+        logger.error(
+            "Maillage NON conforme après normalisation — manquants: %s, orphelins: %s, "
+            "divergences corps/map: %s",
+            maillage_audit["missing_required"],
+            maillage_audit["orphans"],
+            maillage_audit["body_mismatch"],
+        )
+
     # Score GEO — après la normalisation, qui a pu ajouter des marqueurs de lien
     # et une section « Sur le même sujet » au markdown. Déterministe, sans appel
     # LLM ni coût : voir pipeline/geo_score.py.
