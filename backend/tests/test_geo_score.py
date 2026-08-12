@@ -58,11 +58,13 @@ y est calculé, jamais improvisé : chaque page reçoit exactement 5 liens.
 
 ## Qu'est-ce qu'un cocon sémantique ?
 
-Le principe repose sur trois éléments :
+Le principe repose sur cinq éléments :
 
 - une page mère qui porte le sujet principal
 - cinq pages filles qui traitent chacune un sous-sujet
 - un maillage interne réciproque entre toutes les filles
+- une étanchéité stricte entre les cocons du site
+- des ancres choisies pour le lecteur avant le moteur
 
 Google évalue la cohérence de l'ensemble, pas des pages isolées.
 
