@@ -446,6 +446,13 @@ async def test_garde_fous() -> bool:
         == ["exp-1"],
     )
     ok &= _check("le maillage FULL reste à 30 liens", _maillage_stats(out.result)["total"] == 30)
+    # Le score GEO est recalculé sur TOUS les articles après régénération, pas
+    # seulement sur celui qu'on vient de réécrire : la normalisation du maillage
+    # a pu toucher le markdown des sœurs.
+    ok &= _check(
+        "tous les articles sont renotés GEO",
+        all(a.geo_score is not None for a in out.result.articles),
+    )
     return ok
 
 
