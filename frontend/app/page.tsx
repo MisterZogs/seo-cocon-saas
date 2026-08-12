@@ -55,9 +55,18 @@ export default function Home() {
             {/* Outil gratuit : mis dans la nav principale et pas relégué en
                 pied de page — c'est la porte d'entrée sans friction, celle
                 qu'on donne en lien depuis LinkedIn. */}
+            {/* L'audit passe DEVANT le générateur de cocons : il travaille sur
+                le site du visiteur, donc sur des chiffres qu'il vérifie
+                lui-même. C'est une démonstration, pas une promesse. */}
+            <Link
+              href="/outils/audit-site"
+              className="font-medium text-foreground transition-colors hover:text-primary"
+            >
+              Auditer mon site
+            </Link>
             <Link
               href="/outils/cocon"
-              className="text-foreground/80 transition-colors hover:text-primary"
+              className="hidden text-foreground/80 transition-colors hover:text-primary sm:block"
             >
               Outil gratuit
             </Link>
