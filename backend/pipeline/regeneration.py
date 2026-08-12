@@ -206,10 +206,11 @@ async def regenerate_article(
     # sœurs, et le calcul ne coûte rien.
     score_articles_geo(result.articles)
 
-    audit = audit_maillage(result.maillage_map, result.cocoons)
+    audit = audit_maillage(result.maillage_map, result.cocoons, result.articles)
     missing = list(audit["missing_required"])
     orphans = list(audit["orphans"])
-    intact = not missing and not orphans
+    mismatch = list(audit["body_mismatch"])
+    intact = not missing and not orphans and not mismatch
     if not intact:
         # Ne doit jamais arriver : la normalisation complète justement ce qui
         # manque. Si ça arrive, c'est un défaut du code de maillage, pas du LLM —
