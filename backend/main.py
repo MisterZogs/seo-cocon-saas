@@ -101,7 +101,7 @@ from ratelimit import (  # noqa: E402
 from pipeline.cocon_builder import CoconBuilder  # noqa: E402
 from pipeline.free_preview import generate_preview  # noqa: E402
 from pipeline.regeneration import regenerable_slugs  # noqa: E402
-from pipeline.site_audit import audit_site  # noqa: E402
+from pipeline.site_audit import audit_site, validate_target  # noqa: E402
 from pipeline.wordpress_export import export_cocoons_to_wordpress  # noqa: E402
 from pipeline.validation import apply_decision  # noqa: E402
 from workers.pipeline_job import VALIDATION_CHECKPOINT, run_pipeline_job  # noqa: E402
