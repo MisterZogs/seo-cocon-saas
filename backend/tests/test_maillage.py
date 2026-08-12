@@ -178,7 +178,7 @@ def test_liens_declares_mais_absents_du_corps() -> bool:
 
 
 def main() -> int:
-    ok = True
+    ok = test_liens_declares_mais_absents_du_corps()
 
     # Le fixture contient 3 liens inter-cocons : a-mere→b-mere (mère↔mère),
     # a-fille-1→b-fille-1 et a-fille-5→b-mere (les deux partant d'une fille).
