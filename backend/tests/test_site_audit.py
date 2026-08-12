@@ -555,6 +555,7 @@ def main() -> int:
         test_site_vide_et_plafond(),
         test_ssrf(),
         test_route(),
+        test_route_publique(),
     ]
 
     print("\n" + "=" * 62)

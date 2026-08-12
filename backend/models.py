@@ -1090,3 +1090,58 @@ class SiteAuditReport(BaseModel):
     findings: list[str] = Field(
         default_factory=list, description="Ce qui cloche, formulé pour l'agence"
     )
+
+
+# ============================================================
+# AUDIT PUBLIC — version sans compte du chantier 14
+# ============================================================
+#
+# Aimant à prospects bien plus fort que le générateur de cocons : il travaille
+# sur le site DU VISITEUR, donc sur des chiffres qu'il peut vérifier lui-même.
+# « Vous avez 47 pages orphelines » se constate en trente secondes ; « voici une
+# structure de cocon » demande de nous croire.
+#
+# La ligne de partage est la même qu'au chantier 12, appliquée à l'audit :
+# **on donne le diagnostic, on garde le détail actionnable.** Le nombre
+# d'orphelines est ce qui alarme ; la liste complète, page par page, est ce
+# qu'on facture.
+
+PUBLIC_AUDIT_MAX_PAGES = 20
+PUBLIC_AUDIT_SAMPLE = 5
+
+
+class PublicSiteAuditRequest(BaseModel):
+    start_url: str = Field(..., description="URL du site à auditer")
+
+
+class PublicSiteAuditResponse(BaseModel):
+    """Diagnostic chiffré, listes tronquées.
+
+    Les compteurs sont **complets et exacts sur le périmètre exploré** : les
+    tronquer aussi rendrait la démonstration invérifiable, donc sans valeur.
+    Seules les listes d'URL sont réduites à un échantillon.
+    """
+
+    start_url: str
+    pages_crawled: int
+    pages_discovered: int
+    limited_to: int = Field(
+        ..., description="Plafond appliqué à la version gratuite"
+    )
+    truncated: bool = Field(
+        ..., description="Vrai si le site dépasse le plafond gratuit"
+    )
+
+    total_internal_links: int
+    reciprocity_rate: float = Field(..., ge=0, le=1)
+    avg_outbound: float
+
+    orphans_count: int
+    dead_ends_count: int
+    unreachable_count: int
+    deep_pages_count: int = Field(..., description="Pages à 4 clics ou plus de l'accueil")
+
+    orphans_sample: list[str] = Field(default_factory=list)
+    dead_ends_sample: list[str] = Field(default_factory=list)
+    findings: list[str] = Field(default_factory=list)
+    depth_distribution: dict[str, int] = Field(default_factory=dict)

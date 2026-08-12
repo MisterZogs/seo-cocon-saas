@@ -6,6 +6,7 @@ import type {
   JobStatusResponse,
   LedgerEntry,
   RegenerationStarted,
+  PublicSiteAuditResponse,
   RunSummary,
   SiteAuditRequest,
   ValidationDecision,
@@ -384,6 +385,32 @@ export async function startSiteAudit(
     throw new Error(
       await errorMessage(res, `Audit impossible (${res.status})`),
     );
+  }
+  return res.json();
+}
+
+
+/**
+ * Audit public — sans compte, sur le site du visiteur.
+ *
+ * Comme `previewCocon`, n'utilise **pas** `apiFetch` : le 401 y déclenche une
+ * redirection vers la connexion, ce qui n'a aucun sens sur une page dont
+ * l'intérêt est justement d'être atteinte sans compte.
+ *
+ * L'appel est long (le crawl est synchrone côté serveur, plafonné à 20 pages) :
+ * l'appelant doit afficher un état d'attente explicite.
+ */
+export async function publicSiteAudit(
+  startUrl: string,
+): Promise<PublicSiteAuditResponse> {
+  const res = await fetch(`${API_URL}/public/site-audit`, {
+    method: "POST",
+    cache: "no-store",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ start_url: startUrl }),
+  });
+  if (!res.ok) {
+    throw new Error(await errorMessage(res, `Audit impossible (${res.status})`));
   }
   return res.json();
 }

@@ -605,3 +605,28 @@ export interface SiteAuditRequest {
   max_pages?: number;
   respect_robots?: boolean;
 }
+
+/**
+ * Version gratuite de l'audit : les COMPTEURS sont complets et exacts (sinon la
+ * démonstration serait invérifiable, donc sans valeur), seules les listes d'URL
+ * sont réduites à un échantillon. L'écart entre le compte et l'échantillon est
+ * ce qui motive l'inscription.
+ */
+export interface PublicSiteAuditResponse {
+  start_url: string;
+  pages_crawled: number;
+  pages_discovered: number;
+  limited_to: number;
+  truncated: boolean;
+  total_internal_links: number;
+  reciprocity_rate: number;
+  avg_outbound: number;
+  orphans_count: number;
+  dead_ends_count: number;
+  unreachable_count: number;
+  deep_pages_count: number;
+  orphans_sample: string[];
+  dead_ends_sample: string[];
+  findings: string[];
+  depth_distribution: Record<string, number>;
+}
