@@ -81,6 +81,7 @@ from models import (  # noqa: E402
     PipelineResult,
     RegenerationRequest,
     RegisterRequest,
+    SiteAuditRequest,
     TokenResponse,
     ValidationDecision,
     ValidationSnapshot,
@@ -88,13 +89,18 @@ from models import (  # noqa: E402
     WordPressExportRequest,
 )
 from clients.wordpress_client import WordPressClient, WordPressError  # noqa: E402
-from ratelimit import RateLimitExceeded, enforce_public_quota  # noqa: E402
+from ratelimit import (  # noqa: E402
+    RateLimitExceeded,
+    enforce_agency_quota,
+    enforce_public_quota,
+)
 from pipeline.cocon_builder import CoconBuilder  # noqa: E402
 from pipeline.free_preview import generate_preview  # noqa: E402
 from pipeline.regeneration import regenerable_slugs  # noqa: E402
 from pipeline.wordpress_export import export_cocoons_to_wordpress  # noqa: E402
 from pipeline.validation import apply_decision  # noqa: E402
 from workers.pipeline_job import VALIDATION_CHECKPOINT, run_pipeline_job  # noqa: E402
+from workers.site_audit_job import run_site_audit_job  # noqa: E402
 from workers.regeneration_job import (  # noqa: E402
     UNITS_PER_ARTICLE,
     regenerate_article_job,
@@ -1008,6 +1014,63 @@ async def export_wordpress(
         len(report.errors),
     )
     return report
+
+
+# ============================================================
+# Audit de maillage d'un site existant (chantier 14)
+# ============================================================
+
+
+@app.post("/site-audit")
+async def start_site_audit(
+    payload: SiteAuditRequest, agency: Agency = Depends(current_agency)
+) -> dict:
+    """Lance l'audit du maillage interne d'un site en ligne. **Non débité.**
+
+    Le choix de ne pas facturer est délibéré : l'audit n'appelle ni Claude ni
+    DataForSEO, il ne coûte que de la bande passante. Et c'est le mouvement
+    d'entrée du produit — une agence l'essaie sur un site client qu'elle gère
+    déjà, donc sur des chiffres qu'elle peut vérifier, ce qu'aucune démo sur une
+    niche inventée ne permet.
+
+    Ce qui est protégé n'est donc pas la dépense mais **la file de jobs** : le
+    worker est unique, un crawl l'occupe entièrement. D'où un quota par agence
+    (`ratelimit.enforce_agency_quota`) et le plafond `max_pages`.
+
+    Asynchrone comme le pipeline : un crawl de 200 pages dépasse largement le
+    délai d'une requête HTTP. Le suivi passe par `/jobs/{id}`, et le résultat
+    porte `site_audit: true` pour être distingué d'un livrable de cocon.
+    """
+    try:
+        enforce_agency_quota(agency.id, app.state.redis)
+    except RateLimitExceeded as e:
+        raise HTTPException(
+            status_code=429,
+            detail=str(e),
+            headers={"Retry-After": str(e.retry_after)},
+        )
+
+    # L'agency_id va DANS le dict : `_job_agency_id` le lit là, et `_job_run_id`
+    # rend alors None — un audit ne se rattache à aucun run, et lui en inventer
+    # un casserait le lien de retour du suivi.
+    job_payload = {**payload.model_dump(mode="json"), "agency_id": agency.id}
+    job_id = str(uuid.uuid4())
+    job = app.state.queue.enqueue(
+        run_site_audit_job,
+        job_payload,
+        job_id=job_id,
+        job_timeout=JOB_TIMEOUT_SECONDS,
+        result_ttl=86400,
+        failure_ttl=86400,
+    )
+    logger.info(
+        "Audit de site lancé: %s (agence %s, %s, max %d pages)",
+        job.id,
+        agency.id,
+        payload.start_url,
+        payload.max_pages,
+    )
+    return {"job_id": job.id, "status": job.get_status()}
 
 
 # ============================================================
