@@ -206,6 +206,22 @@ def _rewrite_markdown(
       reste lisible
     - liens ajoutés → regroupés dans une section de fin, faute de pouvoir les
       insérer naturellement dans une prose déjà rédigée
+    - 🔴 lien **déclaré mais jamais placé** dans le corps → traité exactement
+      comme un lien ajouté
+
+    Ce dernier cas vient d'une panne réelle (run de prod du 2026-08-12) : la
+    mère avait déclaré ses 5 liens dans `internal_links`, avec les bonnes cibles
+    et de bonnes ancres, mais n'avait posé **aucun** marqueur dans le markdown.
+    Rien n'était donc à *ajouter*, la section de repli ne se déclenchait pas, et
+    le trou passait tous les contrôles : la map annonçait 5 liens sortants et
+    l'audit ne voyait ni manque ni orphelin, puisque tous deux raisonnent sur la
+    liste `internal_links`, pas sur le corps.
+
+    Or l'export WordPress dérive les liens des **marqueurs du corps** et de rien
+    d'autre. La mère serait partie chez le client sans un seul lien vers ses
+    filles — en contradiction directe avec la seule promesse vérifiable du
+    produit. D'où la vérification ici : la liste de liens ne fait foi que si le
+    corps la porte.
     """
     kept_targets = {l.target_slug for l in kept}
 
@@ -215,10 +231,19 @@ def _rewrite_markdown(
 
     body = _LINK_MARKER.sub(_replace, markdown)
 
-    if added:
+    present = {m.group(1).strip() for m in _LINK_MARKER.finditer(body)}
+    declared_but_absent = [l for l in kept if l.target_slug not in present]
+    if declared_but_absent:
+        logger.warning(
+            "Liens déclarés mais absents du corps, rattrapés en fin d'article : %s",
+            ", ".join(l.target_slug for l in declared_but_absent),
+        )
+
+    to_append = [*added, *declared_but_absent]
+    if to_append:
         lines = [f"\n\n## {_RELATED_HEADING}\n"]
         lines += [
-            f"- [[INTERNAL_LINK:{l.target_slug}|{l.anchor_text}]]" for l in added
+            f"- [[INTERNAL_LINK:{l.target_slug}|{l.anchor_text}]]" for l in to_append
         ]
         body = body.rstrip() + "\n".join(lines) + "\n"
 
