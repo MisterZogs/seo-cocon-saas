@@ -31,6 +31,7 @@ from pipeline.article_generator import ArticleGenerator
 from pipeline.backlink_analyzer import BacklinkAnalyzer
 from pipeline.cocon_builder import CoconBuilder
 from pipeline.keyword_research import KeywordResearcher
+from pipeline.geo_score import score_articles_geo
 from pipeline.maillage import assemble_maillage
 from pipeline.serp_analyzer import SerpAnalyzer
 from pipeline.validation import build_snapshot
