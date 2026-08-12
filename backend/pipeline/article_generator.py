@@ -977,6 +977,9 @@ class ArticleGenerator:
                     ", ".join(unplaced),
                 )
         eeat = _cap_experience_score(eeat, placed)
+        # Recompté après injection : les blocs verbatim changent le total.
+        word_count = len(markdown.split())
+        detection_report = build_detection_report(placed, experience, word_count)
 
         return GeneratedArticle(
             stub=stub,
@@ -989,8 +992,8 @@ class ArticleGenerator:
             schema_jsonld=parsed.get("schema_jsonld", {}),
             content_markdown=markdown,
             experience_used=placed,
-            # Recompté après injection : les blocs verbatim changent le total.
-            word_count=len(markdown.split()),
+            detection_report=detection_report,
+            word_count=word_count,
         )
 
 
