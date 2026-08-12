@@ -1118,7 +1118,7 @@ def build_detection_report(
     placed_experience_ids: list[str],
     experience: list[ExperienceElement],
     word_count: int,
-) -> "AIDetectionReport":
+) -> AIDetectionReport:
     """Construit l'argumentaire de détection IA à partir des blocs verbatim placés.
 
     Ne mesure rien : Pangram facture ~1 crédit par 100 mots et son verdict ne
