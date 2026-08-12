@@ -19,8 +19,10 @@ from __future__ import annotations
 
 import asyncio
 import gzip
+import ipaddress
 import logging
 import re
+import socket
 from collections import Counter, defaultdict, deque
 from urllib.parse import urldefrag, urljoin, urlparse, urlunparse
 from urllib.robotparser import RobotFileParser
