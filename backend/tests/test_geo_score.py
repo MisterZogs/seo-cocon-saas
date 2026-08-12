@@ -100,6 +100,10 @@ Six : une mère et cinq filles.
 ### Le cocon fonctionne-t-il encore en 2026 ?
 
 Oui, la méthode reste pertinente.
+
+### Faut-il relier deux cocons entre eux ?
+
+Non : l'étanchéité des silos est le principe central de la méthode.
 """
 
 
