@@ -243,5 +243,5 @@ async def regenerate_article(
         previous_directives=previous_directives,
         new_directives=directives,
         maillage_intact=intact,
-        missing_links=missing + [f"orphelin: {o}" for o in orphans],
+        missing_links=missing + [f"orphelin: {o}" for o in orphans] + mismatch,
     )
