@@ -300,12 +300,17 @@ def _loads(candidate: str) -> dict | list:
 def _extract_json(text: str) -> dict | list:
     """Extrait du JSON même si Claude entoure de ```json ... ```."""
     text = text.strip()
+    # On retient l'erreur de CHAQUE tentative : le cas 3 ne s'exécute pas quand
+    # la réponse est tronquée avant son accolade fermante, et sans cette mémoire
+    # le message final n'aurait alors aucune position à donner — exactement le
+    # cas le plus fréquent.
+    last_error: json.JSONDecodeError | None = None
 
     # Cas 1 : JSON direct
     try:
         return _loads(text)
-    except json.JSONDecodeError:
-        pass
+    except json.JSONDecodeError as e:
+        last_error = e
 
     # Cas 2 : bloc de code markdown.
     # ⚠️ Gourmand, et c'est délibéré. Une capture non gourmande (`.*?`) s'arrête
