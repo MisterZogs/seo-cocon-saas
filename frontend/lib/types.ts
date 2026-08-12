@@ -197,6 +197,17 @@ export interface EEATScore {
   warnings: string[];
 }
 
+export type AIDetectionVerdict = "mixed" | "generated";
+
+export interface AIDetectionReport {
+  verbatim_word_count: number;
+  verbatim_share: number;
+  expected_verdict: AIDetectionVerdict;
+  summary: string;
+  talking_points: string[];
+  caveats: string[];
+}
+
 export interface GeneratedArticle {
   stub: ArticleStub;
   serp_analysis: SerpAnalysis;
@@ -207,6 +218,7 @@ export interface GeneratedArticle {
   eeat_score: EEATScore | null;
   schema_jsonld: Record<string, unknown>;
   content_markdown: string;
+  detection_report: AIDetectionReport | null;
   word_count: number;
 }
 
