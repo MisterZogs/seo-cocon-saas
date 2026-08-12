@@ -330,6 +330,7 @@ def build_report(
     words: dict[str, int],
     outgoing: dict[str, set[str]],
     failed: dict[str, int],
+    failed_urls: dict[str, str] | None = None,
 ) -> SiteAuditReport:
     """Calcule les métriques du graphe. Fonction pure — testable sans réseau.
 
