@@ -21,6 +21,8 @@ from itertools import zip_longest
 from clients.anthropic_client import AnthropicClient, ModelTier, ResponseTruncated
 from db.checkpoints import CheckpointStore
 from models import (
+    AIDetectionReport,
+    AIDetectionVerdict,
     ArticleBrief,
     ArticleSection,
     ArticleStub,
