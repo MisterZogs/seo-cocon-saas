@@ -63,6 +63,95 @@ _TRACKING_PARAMS = re.compile(
 
 
 # ============================================================
+# GARDE-FOU SSRF — l'audit fait crawler une URL choisie par l'utilisateur
+# ============================================================
+#
+# 🔴 Cette route est la seule du produit où un utilisateur décide de l'adresse
+# que NOTRE serveur va appeler. Sans contrôle, elle transforme le backend en
+# proxy vers tout ce qu'il peut joindre et que l'appelant ne peut pas :
+# `http://127.0.0.1:8000` (nos propres routes internes), `http://cocon-db-1:5432`
+# (les noms de services Docker résolvent dans le réseau du conteneur),
+# `http://169.254.169.254` (métadonnées cloud), et le réseau privé du VPS — qui
+# héberge aussi d'autres projets.
+#
+# Le contrôle porte sur l'**adresse IP résolue**, jamais sur le nom : `localtest.me`
+# et mille autres domaines publics résolvent vers 127.0.0.1.
+
+
+class BlockedAddress(Exception):
+    """L'URL vise une adresse que le serveur n'a pas à joindre pour un tiers."""
+
+
+_dns_cache: dict[str, bool] = {}
+
+
+def _is_public_host(host: str) -> bool:
+    """Vrai si TOUTES les IP derrière ce nom sont publiquement routables.
+
+    « Toutes » et non « au moins une » : un nom qui résout vers une IP publique
+    *et* vers 127.0.0.1 servirait exactement à contourner le contrôle.
+    """
+    if not host:
+        return False
+    if host in _dns_cache:
+        return _dns_cache[host]
+
+    try:
+        infos = socket.getaddrinfo(host, None)
+    except socket.gaierror:
+        # Nom introuvable : le crawl échouera de toute façon, mais on refuse
+        # explicitement plutôt que de laisser passer un cas non résolu.
+        _dns_cache[host] = False
+        return False
+
+    ok = True
+    for info in infos:
+        addr = info[4][0]
+        try:
+            ip = ipaddress.ip_address(addr.split("%")[0])  # %scope des IPv6 locales
+        except ValueError:
+            ok = False
+            break
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local  # 169.254.0.0/16 : métadonnées cloud
+            or ip.is_reserved
+            or ip.is_multicast
+            or ip.is_unspecified
+        ):
+            ok = False
+            break
+
+    _dns_cache[host] = ok
+    return ok
+
+
+async def _block_internal_requests(request) -> None:
+    """Hook httpx exécuté avant CHAQUE requête, redirections comprises.
+
+    Posé sur le client plutôt qu'à l'entrée de la fonction, et c'est le point
+    important : un contrôle uniquement sur l'URL de départ se contourne par une
+    page publique qui redirige vers `http://127.0.0.1`. Ici la requête n'est
+    même pas émise — le hook lève avant l'envoi, sur chaque saut, et couvre
+    aussi robots.txt et les sitemaps.
+
+    ⚠️ Résiduel assumé : le DNS est résolu ici puis à nouveau par la pile
+    réseau, donc un rebinding DNS reste théoriquement possible. Le fermer
+    demanderait d'épingler l'IP résolue au niveau du transport. Contre notre
+    modèle de menace — des agences authentifiées, pas un attaquant dédié — le
+    contrôle par résolution est un gain net ; ne pas le présenter comme
+    étanche pour autant.
+    """
+    host = request.url.host
+    if not _is_public_host(host):
+        raise BlockedAddress(
+            f"Adresse non autorisée : {host}. L'audit ne peut viser qu'un site "
+            "accessible publiquement, jamais une adresse interne ou privée."
+        )
+
+
+# ============================================================
 # NORMALISATION D'URL — la base de tout le reste
 # ============================================================
 
