@@ -292,6 +292,61 @@ def test_site_vide_et_plafond() -> bool:
     return ok
 
 
+def test_ssrf() -> bool:
+    print("\n[10] 🔴 SSRF — l'audit fait crawler une URL choisie par l'utilisateur")
+    import asyncio
+
+    from pipeline.site_audit import BlockedAddress, _block_internal_requests, _is_public_host
+
+    ok = True
+    # Ce qui doit être refusé. Sur ce VPS, `cocon-db-1` résout dans le réseau
+    # Docker et les autres projets (lifaia, archi) sont sur le même hôte.
+    for host, label in [
+        ("localhost", "localhost"),
+        ("127.0.0.1", "boucle locale"),
+        ("10.0.0.5", "réseau privé 10/8"),
+        ("192.168.1.1", "réseau privé 192.168/16"),
+        ("172.16.0.1", "réseau privé 172.16/12"),
+        ("169.254.169.254", "métadonnées cloud"),
+        ("0.0.0.0", "adresse non spécifiée"),
+        ("::1", "boucle locale IPv6"),
+        ("nom-qui-nexiste-pas-du-tout-42.invalid", "nom non résolu"),
+        ("", "hôte vide"),
+    ]:
+        ok &= _check(not _is_public_host(host), f"refusé : {label}")
+
+    ok &= _check(_is_public_host("example.com"), "un vrai domaine public passe")
+
+    # Le hook est la vraie défense : il tourne avant CHAQUE requête, donc aussi
+    # sur les sauts de redirection. Un contrôle limité à l'URL de départ se
+    # contourne par une page publique qui redirige vers 127.0.0.1.
+    class _Req:
+        def __init__(self, host):
+            self.url = type("U", (), {"host": host})()
+
+    async def _essaie(host):
+        try:
+            await _block_internal_requests(_Req(host))
+            return False
+        except BlockedAddress:
+            return True
+
+    ok &= _check(asyncio.run(_essaie("127.0.0.1")), "le hook bloque la boucle locale")
+    ok &= _check(asyncio.run(_essaie("192.168.0.1")), "le hook bloque le réseau privé")
+    ok &= _check(not asyncio.run(_essaie("example.com")), "le hook laisse passer le public")
+
+    # Et la porte d'entrée refuse tout de suite, pour un message clair.
+    from models import SiteAuditRequest as _R
+    from pipeline.site_audit import audit_site
+
+    try:
+        asyncio.run(audit_site(_R(start_url="http://127.0.0.1:8000")))
+        ok &= _check(False, "audit_site aurait dû refuser")
+    except ValueError as e:
+        ok &= _check("non autorisée" in str(e), "audit_site refuse avec un message clair", str(e))
+    return ok
+
+
 class _FakeRedis:
     """Compteurs en mémoire — suffit pour `_consume` (incr / expire / ttl)."""
 
