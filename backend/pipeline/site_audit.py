@@ -524,9 +524,12 @@ async def audit_site(
 
         while queue and len(titles) < request.max_pages:
             batch = [queue.popleft() for _ in range(min(MAX_CONCURRENT, len(queue)))]
-            batch = [u for u in batch if crawler.allowed(u)]
-            if not batch:
+            blocked = [u for u in batch if not crawler.allowed(u)]
+            for u in blocked:
                 failed["interdit par robots.txt"] += 1
+                failed_urls[u] = "interdit par robots.txt"
+            batch = [u for u in batch if u not in set(blocked)]
+            if not batch:
                 continue
 
             results = await asyncio.gather(
