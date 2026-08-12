@@ -268,7 +268,12 @@ def _score_question_coverage(markdown: str, analysis: SerpAnalysis) -> tuple[int
         words = _content_words(question)
         if not words:
             continue
-        needed = max(1, round(len(words) * 0.6))
+        # Deux mots porteurs au minimum. « Qu'est-ce qu'un cocon sémantique ? »
+        # se réduit à {cocon, sémantique} : un seuil de 60 % y vaudrait UN seul
+        # mot commun, et n'importe quel titre contenant « cocon » suffirait à
+        # déclarer la question couverte. Mesuré : le score restait à 100 sur un
+        # article dont tous les titres avaient été réécrits.
+        needed = max(2, ceil(len(words) * 0.6)) if len(words) >= 2 else 1
         if any(len(words & hw) >= needed for hw in heading_words):
             continue
         missing.append(question)
