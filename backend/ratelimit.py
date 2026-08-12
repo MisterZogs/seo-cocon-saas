@@ -143,3 +143,39 @@ def enforce_public_quota(request: Request, redis, *, bucket: str = "cocon-previe
         ) from e
 
     return ip
+
+
+def enforce_agency_quota(agency_id: str, redis, *, bucket: str = "site-audit") -> None:
+    """Plafonne une route gratuite mais coûteuse en TEMPS, pour une agence connectée.
+
+    Différent d'`enforce_public_quota` sur deux points, et la distinction est
+    voulue :
+
+    · **La ressource protégée n'est pas l'argent, c'est le worker.** L'audit
+      n'appelle ni Claude ni DataForSEO ; ce qu'il consomme, c'est la file RQ,
+      qui est unique. Trois crawls de 200 pages lancés d'affilée retardent
+      toutes les générations en cours — celles-là facturées.
+    · **La clé est l'agence, pas l'IP.** L'appelant est authentifié : brider par
+      IP pénaliserait une agence entière derrière un NAT et n'arrêterait pas un
+      compte qui change de réseau.
+
+    Volontairement large : ce n'est pas un anti-abus, c'est un garde-fou contre
+    la boucle involontaire.
+    """
+    quotas = [
+        Quota(_int_env("AUDIT_HOURLY_LIMIT", 5), 3600, "agency"),
+        Quota(_int_env("AUDIT_DAILY_LIMIT", 20), 86400, "agency"),
+    ]
+    try:
+        for quota in quotas:
+            _consume(redis, f"rl:{bucket}:{agency_id}:{quota.window_seconds}", quota)
+    except RateLimitExceeded:
+        raise
+    except Exception as e:
+        # Échec fermé, comme pour la route publique : sans compteur, plus rien
+        # ne protège la file de jobs.
+        logger.error("Limiteur indisponible (%s) — audit refusé.", e)
+        raise RateLimitExceeded(
+            "Le service est momentanément indisponible. Réessayez dans un instant.",
+            60,
+        ) from e

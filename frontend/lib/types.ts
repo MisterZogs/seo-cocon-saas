@@ -599,3 +599,9 @@ export interface BillingOffers {
   current_plan: string;
   plans: BillingPlanOffer[];
 }
+
+export interface SiteAuditRequest {
+  start_url: string;
+  max_pages?: number;
+  respect_robots?: boolean;
+}

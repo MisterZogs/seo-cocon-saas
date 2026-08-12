@@ -7,6 +7,7 @@ import type {
   LedgerEntry,
   RegenerationStarted,
   RunSummary,
+  SiteAuditRequest,
   ValidationDecision,
   ValidationSnapshot,
   WordPressCredentials,
@@ -358,6 +359,31 @@ export async function fetchRuns(): Promise<{
   const res = await apiFetch("/runs");
   if (!res.ok) {
     throw new Error(`Historique indisponible (${res.status})`);
+  }
+  return res.json();
+}
+
+
+/**
+ * Lance un audit de maillage sur un site en ligne. **Non débité** — l'audit
+ * n'appelle ni Claude ni DataForSEO. Ce qu'il consomme, c'est le worker, d'où
+ * un quota par agence côté serveur (429 avec `Retry-After`).
+ *
+ * Asynchrone : un crawl dépasse largement le délai d'une requête HTTP. On rend
+ * un `job_id` que l'appelant suit via `fetchJobStatus`.
+ */
+export async function startSiteAudit(
+  payload: SiteAuditRequest,
+): Promise<{ job_id: string; status: string }> {
+  const res = await apiFetch("/site-audit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(
+      await errorMessage(res, `Audit impossible (${res.status})`),
+    );
   }
   return res.json();
 }
