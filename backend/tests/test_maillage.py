@@ -121,6 +121,62 @@ def _check(label: str, cond: bool, detail: str = "") -> bool:
     return cond
 
 
+def test_liens_declares_mais_absents_du_corps() -> bool:
+    """🔴 Le cas qui a échappé à tout, en production, le 2026-08-12.
+
+    La mère avait déclaré ses 5 liens dans `internal_links` — bonnes cibles,
+    bonnes ancres — sans poser un seul marqueur dans le markdown. La
+    normalisation n'avait donc rien à *ajouter*, la section de repli ne se
+    déclenchait pas, et ni la map ni l'audit ne voyaient de trou : tous deux
+    raisonnent sur la liste, pas sur le corps. Mais l'export WordPress dérive
+    les liens des marqueurs du corps et de rien d'autre — la mère serait partie
+    chez le client sans un seul lien vers ses filles.
+
+    La fixture générale ne pouvait pas l'attraper : elle construit toujours le
+    corps À PARTIR des liens déclarés, donc les deux ne divergent jamais.
+    """
+    print("\n=== liens déclarés mais jamais placés dans le corps ===")
+    ok = True
+    cocoons, _ = _build_case()
+    a = cocoons[0]
+
+    # Mère A : les 5 liens déclarés, zéro marqueur dans le corps.
+    mere = _article(a.mother, [(d.slug, f"vers {d.slug}") for d in a.daughters])
+    mere.content_markdown = "# Titre\n\nUn article sans le moindre marqueur.\n"
+    ok &= _check(
+        "fixture : 5 liens déclarés, 0 marqueur",
+        len(mere.internal_links) == 5 and "[[INTERNAL_LINK" not in mere.content_markdown,
+    )
+
+    articles = [mere] + [
+        _article(d, [(a.mother.slug, "mere")] + [
+            (s.slug, f"soeur {s.slug}") for s in a.daughters if s.slug != d.slug
+        ])
+        for d in a.daughters
+    ]
+
+    m = assemble_maillage(
+        briefs=[], articles=articles, cocoons=[a], policy=InterCoconPolicy.STRICT
+    )
+
+    ok &= _check("la map annonce toujours 5 liens sortants", len(m.links[a.mother.slug]) == 5)
+
+    in_body = set(re.findall(r"\[\[INTERNAL_LINK:([^|\]]+)\|", mere.content_markdown))
+    declared = {l.target_slug for l in mere.internal_links}
+    ok &= _check(
+        "les 5 liens sont désormais RÉELLEMENT dans le corps",
+        in_body == declared,
+        f"corps={sorted(in_body)}",
+    )
+    ok &= _check(
+        "rattrapés sous une section dédiée",
+        _RELATED_HEADING in mere.content_markdown,
+    )
+    # Ce que voit l'export : les marqueurs, rien d'autre.
+    ok &= _check("l'export en résoudrait bien 5", len(in_body) == 5, f"{len(in_body)}")
+    return ok
+
+
 def main() -> int:
     ok = True
 
