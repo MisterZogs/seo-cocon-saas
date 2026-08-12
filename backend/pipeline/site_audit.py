@@ -584,4 +584,5 @@ async def audit_site(
         words=words,
         outgoing=outgoing,
         failed=dict(failed),
+        failed_urls=failed_urls,
     )
