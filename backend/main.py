@@ -970,6 +970,16 @@ async def public_site_audit(
     Ce qui est donné : le diagnostic chiffré, complet et exact sur le périmètre
     exploré. Ce qui est retenu : la liste page par page, qui est le livrable.
     """
+    # Validation AVANT le quota, et l'ordre compte : une URL invalide ou interne
+    # ne déclenche aucun crawl, donc ne coûte rien. Mesuré en production —
+    # trois adresses refusées épuisaient l'allocation horaire d'un visiteur qui
+    # n'avait encore rien analysé, ce qui condamne l'entonnoir pour une faute de
+    # frappe. Ce qu'on protège est le crawl, pas la validation.
+    try:
+        validate_target(payload.start_url)
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
     try:
         ip = enforce_public_quota(request, app.state.redis, bucket="site-audit-public")
     except RateLimitExceeded as e:
