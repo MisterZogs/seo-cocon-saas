@@ -224,7 +224,9 @@ def _score_extractable_structure(markdown: str, analysis: SerpAnalysis) -> tuple
     return _tally(checks)
 
 
-def _score_entity_coverage(markdown: str, analysis: SerpAnalysis) -> tuple[int, list[str]]:
+def _score_entity_coverage(
+    markdown: str, analysis: SerpAnalysis
+) -> tuple[int | None, list[str]]:
     """Part des entités du top 10 réellement nommées dans l'article.
 
     Mesuré contre `SerpAnalysis.key_entities`, extraites des pages qui se
@@ -233,9 +235,12 @@ def _score_entity_coverage(markdown: str, analysis: SerpAnalysis) -> tuple[int, 
     """
     entities = [e for e in analysis.key_entities if e.strip()]
     if not entities:
-        # Sans entité de référence, il n'y a rien à mesurer. Rendre 0 serait
-        # accuser l'article d'un défaut qui vient de l'analyse SERP.
-        return 100, []
+        # Sans entité de référence, l'axe n'est pas mesurable. Rendre 0 serait
+        # accuser l'article d'un défaut qui vient de l'analyse SERP ; rendre 100
+        # serait pire — 20 % du score offerts à un run dont le scrape a échoué.
+        # Mesuré : sur deux runs à SERP simulée, quatre articles sortaient à
+        # 100/100 uniquement pour cette raison. L'axe est donc écarté du calcul.
+        return None, []
 
     text = _normalize(_plain_text(markdown))
     text_words = set(text.split())
