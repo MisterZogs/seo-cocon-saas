@@ -310,8 +310,12 @@ def _score_question_coverage(markdown: str, analysis: SerpAnalysis) -> tuple[int
 def _score_citations_and_data(article: GeneratedArticle) -> tuple[int, list[str]]:
     """Sources externes citées et données chiffrées attribuables."""
     text = _plain_text(article.content_markdown)
-    numeric_tokens = [t for t in text.split() if _NUMERIC.search(t)]
+    words = text.split()
+    numeric_tokens = [t for t in words if _NUMERIC.search(t)]
     sourced_links = [l for l in article.external_links if l.url_suggestion]
+    # Mis à l'échelle de l'article : 8 chiffres sont anecdotiques dans 2 000 mots
+    # et exigeants dans 400. Le seuil suit donc la longueur réellement livrée.
+    expected_numeric = max(8, round(len(words) / 150))
 
     checks = [
         _Check(
@@ -322,15 +326,16 @@ def _score_citations_and_data(article: GeneratedArticle) -> tuple[int, list[str]
         ),
         _Check(
             25,
-            len(sourced_links) >= 1,
-            "Aucune source externe avec une URL : une source sans lien n'est pas "
+            len(sourced_links) >= 2,
+            "Moins de 2 sources externes avec une URL : une source sans lien n'est pas "
             "vérifiable par un moteur.",
         ),
         _Check(
             25,
-            len(numeric_tokens) >= 8,
-            "Moins de 8 valeurs chiffrées dans l'article : les moteurs génératifs "
-            "reprennent en priorité les passages qui portent des chiffres datés.",
+            len(numeric_tokens) >= expected_numeric,
+            f"Moins de {expected_numeric} valeurs chiffrées pour {len(words)} mots : les "
+            "moteurs génératifs reprennent en priorité les passages qui portent des "
+            "chiffres datés.",
         ),
         _Check(
             15,
