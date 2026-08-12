@@ -197,6 +197,18 @@ export interface EEATScore {
   warnings: string[];
 }
 
+export interface GEOScore {
+  direct_answer: number;
+  extractable_structure: number;
+  /** null = axe non mesurable (aucune entité extraite de la SERP), pas 0 ni 100. */
+  entity_coverage: number | null;
+  question_coverage: number | null;
+  citations_and_data: number;
+  overall: number;
+  findings: string[];
+  unmeasured: string[];
+}
+
 export type AIDetectionVerdict = "mixed" | "generated";
 
 export interface AIDetectionReport {
