@@ -583,6 +583,7 @@ function ArticleContent({ article }: { article: GeneratedArticle }) {
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <Metric label="Longueur" value={`${article.word_count} mots`} />
         {article.eeat_score && <EeatBadge score={article.eeat_score.overall} />}
+        {article.geo_score && <GeoBadge score={article.geo_score.overall} />}
       </div>
 
       {article.eeat_score?.warnings.length ? (
