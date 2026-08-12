@@ -286,6 +286,11 @@ async def run_pipeline(
         len(maillage_map.inter_cocon_links),
     )
 
+    # Score GEO — après la normalisation, qui a pu ajouter des marqueurs de lien
+    # et une section « Sur le même sujet » au markdown. Déterministe, sans appel
+    # LLM ni coût : voir pipeline/geo_score.py.
+    score_articles_geo(articles)
+
     # ============ 6. Backlink Analysis ============
     await emit(
         JobProgress(
