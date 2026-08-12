@@ -46,6 +46,7 @@ from pipeline.article_generator import (
     _build_cached_context,
     assign_experience_elements,
 )
+from pipeline.geo_score import score_articles_geo
 from pipeline.maillage import assemble_maillage, audit_maillage
 
 logger = logging.getLogger(__name__)
