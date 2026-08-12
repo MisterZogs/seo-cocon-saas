@@ -407,6 +407,7 @@ def build_report(
         pages_crawled=n,
         pages_failed=failed,
         truncated=truncated,
+        failed_urls=dict(sorted((failed_urls or {}).items())),
         total_internal_links=total_links,
         orphans=orphans,
         dead_ends=dead_ends,
