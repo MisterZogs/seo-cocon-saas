@@ -76,6 +76,10 @@ from models import (  # noqa: E402
     CoconPreviewRequest,
     CoconPreviewResponse,
     PreviewArticle,
+    PublicSiteAuditRequest,
+    PublicSiteAuditResponse,
+    PUBLIC_AUDIT_MAX_PAGES,
+    PUBLIC_AUDIT_SAMPLE,
     KeywordWithData,
     LoginRequest,
     PipelineResult,
@@ -939,6 +943,95 @@ async def public_cocon_preview(
             a.inbound == a.outbound == pages - 1 for a in articles
         ),
         orphans=preview.orphans,
+    )
+
+
+@app.post("/public/site-audit", response_model=PublicSiteAuditResponse)
+async def public_site_audit(
+    request: Request, payload: PublicSiteAuditRequest
+) -> PublicSiteAuditResponse:
+    """Audit de maillage sans compte, sur le site du visiteur. Plafonné à 20 pages.
+
+    **Le meilleur aimant du produit**, et de loin : contrairement au générateur
+    de cocons, il travaille sur le site DU VISITEUR, donc sur des chiffres qu'il
+    vérifie lui-même. « Vous avez 12 pages orphelines » se constate en trente
+    secondes ; « voici une structure de cocon » demande de nous croire.
+
+    **Synchrone, et pour une raison différente de l'export WordPress.** Un job RQ
+    ferait attendre les générations *payées* derrière un crawl anonyme : le
+    worker est unique. Ici le crawl vit dans le processus API, où il ne bloque
+    que lui-même. C'est aussi ce qui impose un plafond bas — 20 pages tiennent
+    dans le délai d'une requête HTTP, 200 non.
+
+    🔴 **La protection SSRF de `site_audit` est le prérequis de cette route.**
+    Sans elle, on offrirait à un anonyme un proxy vers le réseau interne du VPS.
+
+    Ce qui est donné : le diagnostic chiffré, complet et exact sur le périmètre
+    exploré. Ce qui est retenu : la liste page par page, qui est le livrable.
+    """
+    try:
+        ip = enforce_public_quota(request, app.state.redis, bucket="site-audit-public")
+    except RateLimitExceeded as e:
+        raise HTTPException(
+            status_code=429,
+            detail=str(e),
+            headers={"Retry-After": str(e.retry_after)},
+        )
+
+    try:
+        report = await audit_site(
+            SiteAuditRequest(
+                start_url=payload.start_url, max_pages=PUBLIC_AUDIT_MAX_PAGES
+            )
+        )
+    except ValueError as e:
+        # URL invalide ou adresse interne refusée : faute de saisie, pas panne.
+        raise HTTPException(status_code=422, detail=str(e))
+    except Exception as e:
+        logger.error("Audit public en échec (« %s ») : %s", payload.start_url, e)
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Impossible d'analyser ce site pour le moment. Il bloque peut-être "
+                "les robots, ou ne répond pas."
+            ),
+        )
+
+    if report.pages_crawled == 0:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "Aucune page n'a pu être lue sur ce site. Il bloque probablement "
+                "les robots (Cloudflare), ou l'adresse est incorrecte."
+            ),
+        )
+
+    deep = sum(int(v) for k, v in report.depth_distribution.items() if int(k) >= 4)
+    logger.info(
+        "Audit public %s (ip %s) — %d pages, %d orphelines",
+        report.start_url,
+        ip,
+        report.pages_crawled,
+        len(report.orphans),
+    )
+
+    return PublicSiteAuditResponse(
+        start_url=report.start_url,
+        pages_crawled=report.pages_crawled,
+        pages_discovered=report.pages_discovered,
+        limited_to=PUBLIC_AUDIT_MAX_PAGES,
+        truncated=report.truncated or report.pages_discovered > report.pages_crawled,
+        total_internal_links=report.total_internal_links,
+        reciprocity_rate=report.reciprocity_rate,
+        avg_outbound=report.avg_outbound,
+        orphans_count=len(report.orphans),
+        dead_ends_count=len(report.dead_ends),
+        unreachable_count=len(report.unreachable),
+        deep_pages_count=deep,
+        orphans_sample=report.orphans[:PUBLIC_AUDIT_SAMPLE],
+        dead_ends_sample=report.dead_ends[:PUBLIC_AUDIT_SAMPLE],
+        findings=report.findings,
+        depth_distribution=report.depth_distribution,
     )
 
 
