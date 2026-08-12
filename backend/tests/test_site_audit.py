@@ -436,6 +436,15 @@ def test_route() -> bool:
         r = client.post("/site-audit", json={"start_url": "https://exemple.fr"}, headers=head)
         ok &= _check(r.status_code == 429, "6ᵉ audit dans l'heure → 429", f"statut {r.status_code}")
         ok &= _check("Retry-After" in r.headers, "en-tête Retry-After posé")
+        # L'appelant est authentifié : lui dire de créer un compte est absurde.
+        # Constaté en production avant correction.
+        detail = r.json().get("detail", "")
+        ok &= _check(
+            "créez un compte" not in detail and "Créez un compte" not in detail,
+            "le message ne propose pas de créer un compte à qui est déjà connecté",
+            detail,
+        )
+        ok &= _check("audit" in detail.lower(), "le message parle bien d'audits", detail)
     return ok
 
 
