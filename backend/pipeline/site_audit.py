@@ -296,7 +296,7 @@ async def discover_sitemap_urls(
                 candidates += re.findall(
                     r"(?im)^\s*sitemap:\s*(\S+)\s*$", r.text
                 )
-        except httpx.HTTPError:
+        except (httpx.HTTPError, BlockedAddress):
             pass
         candidates += [
             urljoin(root, "/sitemap.xml"),
@@ -322,7 +322,7 @@ async def discover_sitemap_urls(
             if r.status_code >= 400:
                 continue
             xml = _decode_sitemap(r.content[:SITEMAP_MAX_BYTES])
-        except (httpx.HTTPError, UnicodeDecodeError):
+        except (httpx.HTTPError, UnicodeDecodeError, BlockedAddress):
             continue
 
         pages, nested = parse_sitemap(xml)
