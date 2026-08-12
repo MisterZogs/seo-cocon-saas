@@ -259,11 +259,19 @@ def test_site_vide_et_plafond() -> bool:
     vide = build_report(
         start_url=ROOT, sitemap_url=None, pages_discovered=0, truncated=False,
         titles={}, words={}, outgoing={}, failed={"HTTP 403": 3},
+        failed_urls={f"{ROOT}/x": "HTTP 403", f"{ROOT}/y": "HTTP 403", f"{ROOT}/z": "HTTP 403"},
     )
     ok = _check(vide.pages_crawled == 0, "0 page crawlée")
     ok &= _check(vide.reciprocity_rate == 0.0, "pas de division par zéro")
     ok &= _check(vide.avg_inbound == 0.0 and vide.avg_outbound == 0.0, "moyennes à 0")
     ok &= _check(vide.pages_failed == {"HTTP 403": 3}, "les échecs sont rapportés")
+    # Un décompte par motif ne suffit pas dans un livrable : sans les URL,
+    # l'agence ne peut ni vérifier ni corriger.
+    ok &= _check(
+        len(vide.failed_urls) == 3 and f"{ROOT}/y" in vide.failed_urls,
+        "les URL en échec sont nommées, pas seulement comptées",
+        str(vide.failed_urls),
+    )
 
     tronque = build_report(
         start_url=ROOT, sitemap_url=None, pages_discovered=5000, truncated=True,
