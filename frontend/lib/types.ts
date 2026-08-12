@@ -231,6 +231,7 @@ export interface GeneratedArticle {
   schema_jsonld: Record<string, unknown>;
   content_markdown: string;
   detection_report: AIDetectionReport | null;
+  geo_score: GEOScore | null;
   word_count: number;
 }
 
