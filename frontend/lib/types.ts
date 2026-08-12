@@ -362,7 +362,12 @@ export interface JobStatusResponse {
   created_at: string | null;
   started_at: string | null;
   ended_at: string | null;
-  result?: PipelineResult;
+  /**
+   * Union discriminée : un job d'audit de site rend un `SiteAuditJobResult`,
+   * pas un livrable de cocon. Sans ce typage, l'écran de résultat tenterait de
+   * rendre un rapport d'audit comme un cocon et planterait.
+   */
+  result?: PipelineResult | SiteAuditJobResult;
   /**
    * Présent à la place de `result` quand le job était une régénération
    * d'article : ce n'est pas un livrable, le livrable à jour est celui du run.
