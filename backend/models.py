@@ -729,6 +729,31 @@ class EEATScore(BaseModel):
     warnings: list[str] = Field(default_factory=list, description="Points à améliorer avant publication")
 
 
+class GEOScore(BaseModel):
+    """Score GEO par article — calculé EN CODE, jamais proposé par le modèle.
+
+    GEO = optimiser pour être *cité* par les moteurs génératifs (AI Overviews,
+    ChatGPT, Perplexity), pas pour être classé. Contrairement à `EEATScore`, qui
+    sort du LLM et doit être plafonné a posteriori parce qu'il se flatte, chaque
+    point est ici justifié par un contrôle déterministe sur le markdown livré —
+    voir `pipeline/geo_score.py`.
+
+    ⚠️ Une note élevée n'est pas une garantie de citation : aucun moteur ne
+    publie son critère de sélection. Ne jamais l'annoncer autrement que comme
+    une optimisation vérifiée.
+    """
+
+    direct_answer: int = Field(..., ge=0, le=100, description="Réponse dans les 100 premiers mots")
+    extractable_structure: int = Field(..., ge=0, le=100, description="Listes, tableaux, FAQ, H2")
+    entity_coverage: int = Field(..., ge=0, le=100, description="Entités du top 10 nommées")
+    question_coverage: int = Field(..., ge=0, le=100, description="Questions PAA reprises en titre")
+    citations_and_data: int = Field(..., ge=0, le=100, description="Sources citées et chiffres")
+    overall: int = Field(..., ge=0, le=100)
+    findings: list[str] = Field(
+        default_factory=list, description="Ce qu'il faut corriger, contrôle par contrôle"
+    )
+
+
 class AIDetectionVerdict(str, Enum):
     """Verdict attendu si l'agence ou son client passe l'article dans un détecteur.
 
