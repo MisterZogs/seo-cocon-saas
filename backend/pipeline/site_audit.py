@@ -574,6 +574,26 @@ def _findings(r: SiteAuditReport) -> list[str]:
     return out
 
 
+def validate_target(start_url: str) -> str:
+    """Rend l'URL canonique, ou lève `ValueError`. Ne touche pas au réseau cible.
+
+    Extrait d'`audit_site` pour pouvoir être appelé **avant** de consommer un
+    quota : une URL invalide ou interne ne déclenche aucun crawl, donc ne coûte
+    rien, et la faire payer un jeton punit surtout les fautes de frappe. Mesuré
+    sur la route publique : trois adresses refusées épuisaient l'allocation
+    horaire d'un visiteur qui n'avait encore rien analysé.
+    """
+    root = normalize_url(start_url)
+    if root is None:
+        raise ValueError(f"URL invalide : {start_url!r}")
+    if not _is_public_host(urlparse(root).hostname or ""):
+        raise ValueError(
+            f"Adresse non autorisée : {urlparse(root).hostname}. L'audit ne peut "
+            "viser qu'un site accessible publiquement."
+        )
+    return root
+
+
 async def audit_site(
     request: SiteAuditRequest,
     *,
