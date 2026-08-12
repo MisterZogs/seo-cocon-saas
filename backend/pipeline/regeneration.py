@@ -217,10 +217,11 @@ async def regenerate_article(
         # et il faut le voir dans les logs plutôt que de livrer un cocon percé.
         logger.error(
             "Maillage incomplet APRÈS régénération de %s — liens manquants: %s, "
-            "orphelins: %s",
+            "orphelins: %s, divergences corps/map: %s",
             slug,
             missing,
             orphans,
+            mismatch,
         )
 
     result.usage = _merge_usage(result.usage, anthropic)
