@@ -308,6 +308,11 @@ class _FakeRedis:
     def ttl(self, key: str) -> int:
         return 3600
 
+    def close(self) -> None:
+        """Appelé par le lifespan à l'arrêt — sans lui, la fermeture du
+        TestClient lève et masque un test par ailleurs vert."""
+        return None
+
 
 def test_route() -> bool:
     print("\n[9] Route /site-audit (TestClient)")
