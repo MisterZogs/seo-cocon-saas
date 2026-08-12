@@ -344,6 +344,7 @@ def main() -> int:
         test_structure_pauvre(),
         test_sans_sources_ni_chiffres(),
         test_serp_sans_reference(),
+        test_low_sample_signale(),
         test_marqueurs_de_maillage_ignores(),
         test_notation_sur_place(),
     ]
