@@ -31,6 +31,7 @@ import logging
 import re
 import unicodedata
 from dataclasses import dataclass
+from math import ceil
 
 from models import GEOScore, GeneratedArticle, SerpAnalysis
 
