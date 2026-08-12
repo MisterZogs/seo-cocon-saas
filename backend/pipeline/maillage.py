@@ -387,9 +387,20 @@ def audit_maillage(
         for link in links:
             inbound[link.target_slug] += 1
 
+    # Divergence map ↔ corps. L'export ne lit que le corps : un lien présent
+    # dans la map mais absent du markdown n'existe pas pour le client.
+    body_mismatch: list[str] = []
+    for article in articles or []:
+        source = article.stub.slug
+        in_body = {m.group(1).strip() for m in _LINK_MARKER.finditer(article.content_markdown)}
+        in_map = targets_by_source.get(source, set())
+        body_mismatch += [f"{source} → {t} (dans la map, absent du corps)" for t in sorted(in_map - in_body)]
+        body_mismatch += [f"{source} → {t} (dans le corps, absent de la map)" for t in sorted(in_body - in_map)]
+
     return {
         "missing_required": missing,
         "cross_cocon_count": len(maillage.inter_cocon_links),
         "orphans": sorted(s for s in index.cocon_of if inbound[s] == 0),
         "inbound": dict(inbound),
+        "body_mismatch": body_mismatch,
     }
