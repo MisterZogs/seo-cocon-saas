@@ -1080,6 +1080,82 @@ def _cap_experience_score(eeat: EEATScore | None, used_experience: list[str]) ->
     )
 
 
+_MIXED_TALKING_POINTS = [
+    "Cet article contient du contenu client repris mot pour mot (encadré en citation, "
+    "attribué) — ce ne sont pas des propos reformulés par l'IA.",
+    "Les détecteurs publics (Pangram, Originality.ai) identifient ce type de passage "
+    "comme écrit par un humain : c'est un signal vérifiable, mesuré sur nos tests.",
+    "Un verdict « Mixte » est donc l'attendu normal, pas un défaut de l'article — le "
+    "reste du texte est rédigé par IA, comme la quasi-totalité du contenu publié en 2026.",
+    "Google ne pénalise pas le contenu généré par IA en tant que tel : c'est le contenu "
+    "produit en masse et sans valeur ajoutée (« scaled content abuse ») qui est sanctionné, "
+    "pas le score d'un détecteur.",
+]
+
+_GENERATED_TALKING_POINTS = [
+    "Aucun élément d'expérience n'a été fourni pour cet article : il n'y a pas de passage "
+    "attribuable au client, donc pas de segment qu'un détecteur peut créditer comme humain.",
+    "Un détecteur public le classera très probablement 100 % IA — c'est mesuré, pas une "
+    "hypothèse : aucun post-traitement (relecture, réécriture, humanizer) ne fait bouger ce "
+    "verdict une fois le texte généré.",
+    "Pour un article plus robuste, fournir au prochain cocon un élément d'expérience "
+    "(étude de cas, donnée propriétaire, capture d'écran, citation) : c'est le seul levier "
+    "qui déplace réellement le verdict, mesuré à 92 % IA / 8 % humain sur un test isolé.",
+]
+
+_COMMON_CAVEATS = [
+    "Ce rapport est une prédiction fondée sur ce qui est vérifiable dans le texte "
+    "(présence de blocs verbatim), pas une mesure : aucun détecteur tiers n'est appelé "
+    "à la génération. Le score obtenu sur un détecteur public peut varier.",
+    "Ne jamais promettre au client final un article « indétectable » — ni comme argument "
+    "commercial, ni comme garantie contractuelle.",
+]
+
+
+def build_detection_report(
+    placed_experience_ids: list[str],
+    experience: list[ExperienceElement],
+    word_count: int,
+) -> "AIDetectionReport":
+    """Construit l'argumentaire de détection IA à partir des blocs verbatim placés.
+
+    Ne mesure rien : Pangram facture ~1 crédit par 100 mots et son verdict ne
+    peut pas être maîtrisé par le produit. Ce qui EST vérifiable, c'est ce que
+    le code contrôle — le texte client injecté verbatim, jamais paraphrasé.
+    """
+    by_id = {e.id: e for e in experience}
+    verbatim_word_count = sum(
+        len(by_id[eid].content.split()) for eid in placed_experience_ids if eid in by_id
+    )
+    share = min(verbatim_word_count / word_count, 1.0) if word_count else 0.0
+
+    if placed_experience_ids:
+        return AIDetectionReport(
+            verbatim_word_count=verbatim_word_count,
+            verbatim_share=share,
+            expected_verdict=AIDetectionVerdict.MIXED,
+            summary=(
+                f"{len(placed_experience_ids)} élément(s) d'expérience repris verbatim, "
+                f"soit environ {share:.0%} du texte. Verdict attendu sur un détecteur "
+                f"public : Mixte."
+            ),
+            talking_points=list(_MIXED_TALKING_POINTS),
+            caveats=list(_COMMON_CAVEATS),
+        )
+
+    return AIDetectionReport(
+        verbatim_word_count=0,
+        verbatim_share=0.0,
+        expected_verdict=AIDetectionVerdict.GENERATED,
+        summary=(
+            "Aucun bloc verbatim dans cet article : la totalité du texte est générée "
+            "par IA. Verdict attendu sur un détecteur public : IA à 100 %."
+        ),
+        talking_points=list(_GENERATED_TALKING_POINTS),
+        caveats=list(_COMMON_CAVEATS),
+    )
+
+
 def _parse_eeat(raw: dict | None) -> EEATScore | None:
     if not raw:
         return None
