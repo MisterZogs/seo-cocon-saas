@@ -268,7 +268,9 @@ def _score_entity_coverage(
     return score, fixes
 
 
-def _score_question_coverage(markdown: str, analysis: SerpAnalysis) -> tuple[int, list[str]]:
+def _score_question_coverage(
+    markdown: str, analysis: SerpAnalysis
+) -> tuple[int | None, list[str]]:
     """Part des questions PAA reprises en titre ou en FAQ.
 
     Une question posée telle quelle dans un H2/H3 est la forme la plus
@@ -277,7 +279,7 @@ def _score_question_coverage(markdown: str, analysis: SerpAnalysis) -> tuple[int
     """
     questions = [q for q in analysis.common_questions if q.strip()]
     if not questions:
-        return 100, []
+        return None, []
 
     headings = _H2.findall(markdown) + _H3.findall(markdown)
     heading_words = [_content_words(h) for h in headings]
