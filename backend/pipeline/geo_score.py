@@ -174,38 +174,51 @@ def _score_direct_answer(markdown: str, target_keyword: str) -> tuple[int, list[
     return _tally(checks)
 
 
-def _score_extractable_structure(markdown: str) -> tuple[int, list[str]]:
-    """Structure extractible : listes, tableaux, FAQ, découpage en H2."""
+def _score_extractable_structure(markdown: str, analysis: SerpAnalysis) -> tuple[int, list[str]]:
+    """Structure extractible : listes, tableaux, FAQ, découpage en H2.
+
+    Les seuils ont été relevés après calibrage sur 12 articles réellement
+    produits : aux valeurs initiales, 4 d'entre eux sortaient à 100/100 sans la
+    moindre remarque. Un score que la sortie nominale sature n'a aucune valeur
+    de diagnostic — c'est l'auto-flatterie de l'E-E-A-T réécrite en code.
+    """
     lists = len(_BULLET.findall(markdown)) + len(_NUMBERED.findall(markdown))
-    tables = len(_TABLE_ROW.findall(markdown))
+    # Un tableau markdown minimal fait déjà 2 lignes (en-tête + séparateur) sans
+    # porter la moindre donnée. Il en faut 4 pour deux lignes de contenu.
+    table_rows = len(_TABLE_ROW.findall(markdown))
     h2s = _H2.findall(markdown)
     faq_h3 = len(_H3.findall(markdown))
     has_faq = any("faq" in _normalize(h) for h in h2s)
+    # Calibré sur la SERP plutôt que sur une constante : le bon découpage dépend
+    # du sujet, et l'analyse du top 10 le sait mieux que nous.
+    expected_h2 = max(4, round(analysis.recommended_h2_count * 0.8))
 
     checks = [
         _Check(
             30,
-            lists >= 3,
-            "Moins de 3 éléments de liste dans tout l'article : rien à extraire sous "
-            "forme de puces. Convertir au moins une énumération en liste.",
+            lists >= 5,
+            "Moins de 5 éléments de liste dans tout l'article : trop peu de passages "
+            "extractibles sous forme de puces. Convertir des énumérations en listes.",
         ),
         _Check(
             20,
-            tables >= 2,
-            "Aucun tableau : les comparaisons et chiffres en tableau sont ce que les "
-            "moteurs génératifs reprennent le plus volontiers.",
+            table_rows >= 4,
+            "Aucun tableau porteur de données (il en faut au moins deux lignes de "
+            "contenu) : les comparaisons en tableau sont ce que les moteurs "
+            "génératifs reprennent le plus volontiers.",
         ),
         _Check(
             25,
-            has_faq and faq_h3 >= 3,
-            "Section FAQ absente ou de moins de 3 questions. La FAQ alimente le schema "
+            has_faq and faq_h3 >= 4,
+            "Section FAQ absente ou de moins de 4 questions. La FAQ alimente le schema "
             "FAQPage et fournit des paires question/réponse directement citables.",
         ),
         _Check(
             25,
-            len(h2s) >= 4,
-            "Moins de 4 sections H2 : l'article est trop peu découpé pour qu'un passage "
-            "précis soit isolé et cité.",
+            len(h2s) >= expected_h2,
+            f"Moins de {expected_h2} sections H2 alors que le top 10 en compte "
+            f"{analysis.recommended_h2_count} en moyenne : l'article est trop peu "
+            "découpé pour qu'un passage précis soit isolé et cité.",
         ),
     ]
     return _tally(checks)
