@@ -992,3 +992,101 @@ class PipelineJob(BaseModel):
     error: str | None = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ============================================================
+# AUDIT DE MAILLAGE D'UN SITE EXISTANT (chantier 14)
+# ============================================================
+#
+# Le pont vers les clients déjà en portefeuille des agences : au lieu de créer
+# un cocon neuf, on mesure le maillage d'un site en ligne. Entièrement
+# déterministe — aucun appel LLM, donc aucun coût marginal — et c'est justement
+# ce qui le rend crédible : chaque chiffre du rapport se recompte à la main.
+
+
+class SiteAuditRequest(BaseModel):
+    """Ce que l'agence fournit pour lancer un audit."""
+
+    start_url: str = Field(..., description="URL du site ou du sitemap.xml")
+    max_pages: int = Field(
+        default=200,
+        ge=5,
+        le=1000,
+        description=(
+            "Plafond de pages explorées. Un crawl occupe le worker, qui est unique : "
+            "sans plafond, un site de 10 000 pages bloquerait toutes les générations."
+        ),
+    )
+    respect_robots: bool = Field(
+        default=True,
+        description=(
+            "Respecter robots.txt. Désactivable parce que l'agence audite un site "
+            "qu'elle gère — mais activé par défaut, on visite le site d'autrui."
+        ),
+    )
+
+
+class PageLinkStats(BaseModel):
+    """Une page du site et sa position dans le graphe de liens internes."""
+
+    url: str
+    title: str | None = None
+    inbound: int = Field(..., ge=0, description="Liens internes reçus d'autres pages")
+    outbound: int = Field(..., ge=0, description="Liens internes émis vers d'autres pages")
+    depth: int | None = Field(
+        default=None,
+        description="Clics depuis la page d'entrée. None = inatteignable par les liens.",
+    )
+    word_count: int | None = None
+
+
+class SiteAuditReport(BaseModel):
+    """Rapport d'audit — tout est compté, rien n'est estimé."""
+
+    start_url: str
+    sitemap_url: str | None = None
+    pages_discovered: int = Field(..., ge=0, description="URLs trouvées dans le sitemap")
+    pages_crawled: int = Field(..., ge=0)
+    pages_failed: dict[str, int] = Field(
+        default_factory=dict, description="Motif d'échec -> nb d'URLs"
+    )
+    failed_urls: dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "URL -> motif. Un décompte par motif ne suffit pas dans un livrable "
+            "d'audit : l'agence doit savoir QUELLES pages n'ont pas pu être lues, "
+            "sinon elle ne peut ni les vérifier ni les corriger."
+        ),
+    )
+    truncated: bool = Field(
+        default=False, description="True si le plafond `max_pages` a été atteint"
+    )
+
+    total_internal_links: int = Field(..., ge=0)
+    orphans: list[str] = Field(
+        default_factory=list, description="Pages ne recevant AUCUN lien interne"
+    )
+    dead_ends: list[str] = Field(
+        default_factory=list, description="Pages n'émettant aucun lien interne"
+    )
+    unreachable: list[str] = Field(
+        default_factory=list,
+        description=(
+            "Pages qu'aucun chemin de liens ne relie à la page d'entrée. Surensemble "
+            "utile des orphelines : une page peut recevoir un lien et rester "
+            "inatteignable si son unique référent l'est aussi."
+        ),
+    )
+    reciprocity_rate: float = Field(
+        ..., ge=0, le=1, description="Part des liens dont le retour existe aussi"
+    )
+    avg_inbound: float = Field(..., ge=0)
+    avg_outbound: float = Field(..., ge=0)
+    depth_distribution: dict[str, int] = Field(
+        default_factory=dict,
+        description="Profondeur de clic -> nb de pages. Clé texte : JSON n'a pas de clé entière.",
+    )
+    pages: list[PageLinkStats] = Field(default_factory=list)
+    findings: list[str] = Field(
+        default_factory=list, description="Ce qui cloche, formulé pour l'agence"
+    )
